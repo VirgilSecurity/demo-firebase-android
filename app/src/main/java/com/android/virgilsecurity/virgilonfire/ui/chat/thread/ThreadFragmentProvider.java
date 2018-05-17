@@ -31,54 +31,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import dagger.Module;
+import dagger.android.ContributesAndroidInjector;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    4/13/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
 
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
-    }
+@Module
+public abstract class ThreadFragmentProvider {
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    @ContributesAndroidInjector(modules = ThreadFragmentModule.class)
+    abstract ThreadFragment bindThreadFragment();
 }

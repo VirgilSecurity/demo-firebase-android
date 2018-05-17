@@ -31,54 +31,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
+
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
+@RunWith(AndroidJUnit4.class)
+public class ExampleInstrumentedTest {
+    @Test
+    public void useAppContext() throws Exception {
+        // Context of the app under test.
+        Context appContext = InstrumentationRegistry.getTargetContext();
+
+        assertEquals("com.android.virgilsecurity.jwtworkexample", appContext.getPackageName());
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
-    }
-
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

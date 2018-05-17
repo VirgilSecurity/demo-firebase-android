@@ -31,54 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.util;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import java.lang.reflect.Type;
 
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
+/**
+ * .._  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    4/16/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+public final class SerializationUtils {
+
+    private static Gson gson;
+
+    private static Gson getMapper() {
+        return gson == null ? new Gson() : gson;
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
+    public static String toJson(Object toSerialize) {
+        return getMapper().toJson(toSerialize);
     }
-}
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    public static <T> T fromJson(String toDeserialize, Type classType) {
+        return getMapper().fromJson(toDeserialize, classType);
+    }
 }

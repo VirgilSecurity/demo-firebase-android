@@ -31,54 +31,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.data.remote;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import com.appunite.websocket.rx.RxWebSockets;
+import com.appunite.websocket.rx.messages.RxEvent;
+import com.appunite.websocket.rx.messages.RxEventStringMessage;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import javax.inject.Inject;
 
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
+import io.reactivex.disposables.Disposable;
+import rx.Subscription;
+
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    4/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+public class WebSocketHelper {
+
+    private RxWebSockets rxWebSockets;
+    private OnRxEventListener onMessageReceiveListener;
+    private Subscription webSocketSubscription;
+
+    @Inject
+    public WebSocketHelper(RxWebSockets rxWebSockets) {
+        this.rxWebSockets = rxWebSockets;
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
+    private void initRxWebSocket() {
+        webSocketSubscription = rxWebSockets.webSocketObservable()
+                                            .subscribe(rxEvent -> {
+                                                if (onMessageReceiveListener != null)
+                                                    onMessageReceiveListener.onRxEvent(rxEvent);
+                                            });
     }
-}
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    public void setOnMessageReceiveListener(OnRxEventListener onMessageReceiveListener) {
+        this.onMessageReceiveListener = onMessageReceiveListener;
+        initRxWebSocket();
+    }
+
+    public void unsubscribe() {
+        webSocketSubscription.unsubscribe();
+    }
+
+    public interface OnRxEventListener {
+        void onRxEvent(RxEvent message);
+    }
 }

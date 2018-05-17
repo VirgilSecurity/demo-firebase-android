@@ -31,54 +31,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.di;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import android.app.Application;
+import android.content.Context;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import com.android.virgilsecurity.virgilonfire.R;
+import com.android.virgilsecurity.virgilonfire.data.local.PropertyManager;
+import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivityComponent;
+import com.android.virgilsecurity.virgilonfire.util.DefaultErrorResolver;
+import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
+import javax.annotation.Nullable;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import dagger.Module;
+import dagger.Provides;
+
+import static com.android.virgilsecurity.virgilonfire.di.InjectionConstants.REQUEST_ID_TOKEN;
+
+/**
+ * Created by Danylo Oliinyk on 3/26/18 at Virgil Security.
+ * -__o
+ */
+
+@Module(subcomponents = ChatControlActivityComponent.class)
+public class UtilModule {
+
+    @Provides @Singleton static Context provideContext(Application application) {
+        return application;
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
+    @Provides @Singleton static PropertyManager providePropertyManager(Context context) {
+        return new PropertyManager(context);
     }
-}
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    @Provides @Singleton static UserManager provideUserManager(Context context) {
+        return new UserManager(context);
+    }
+
+    @Provides @Singleton ErrorResolver provideErrorResolver() {
+        return new DefaultErrorResolver();
+    }
+
+    @Provides @Singleton @Named(REQUEST_ID_TOKEN) @Nullable String provideRequestIdToken(Context context) {
+        return context.getString(R.string.requestIdToken);
+    }
 }

@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright (c) 2015-2018, Virgil Security, Inc.
+  ~
+  ~ Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
+  ~
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~     (1) Redistributions of source code must retain the above copyright notice, this
+  ~     list of conditions and the following disclaimer.
+  ~
+  ~     (2) Redistributions in binary form must reproduce the above copyright notice,
+  ~     this list of conditions and the following disclaimer in the documentation
+  ~     and/or other materials provided with the distribution.
+  ~
+  ~     (3) Neither the name of virgil nor the names of its
+  ~     contributors may be used to endorse or promote products derived from
+  ~     this software without specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  ~ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  ~ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  ~ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  ~ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  ~ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<resources>
+
+    <string name="app_name">Quickstart E2EE</string>
+
+    <!-- Credentials -->
+    <string name="requestIdToken">681673183198-m9sm47puqhdirvms732m8fa4k996n1ev.apps.googleusercontent.com</string>
+
+    <!-- General -->
+    <string name="no_internet">Please, check your internet state</string>
+    <string name="error_loading">Please, swipe from top to retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="press_exit_once_more">Press back once more to exit</string>
+    <string name="virgil_securiry_copyright">Copyright © 2015–2018 Virgil Security Inc.</string>
+    <string name="error_sending_message">Error sending message</string>
+
+    <!-- LogIn -->
+    <string name="sample_messenger">Sample messenger</string>
+    <string name="please_sign_in">Please sign in to continue</string>
+    <string name="multiply_cards">Multiply cards error</string>
+    <string name="no_private_key">It seems that you\'ve lost your private key</string>
+    <string name="new_keys">Generate new keys</string>
+    <string name="outdate_old_card">You lost your private key. So you can generate new one, but you
+        won\'t be able to decrypt old messages.\nGenerate?</string>
+
+    <!-- Threads List -->
+    <string name="threads_list_name">Threads List</string>
+    <string name="no_threads">No conversations yet. Check if service is fine.</string>
+
+    <!-- Thread -->
+    <string name="enter_your_message">Enter your message</string>
+    <string name="send">Send</string>
+    <string name="no_messages">No messages yet.\nBut You can fix it (:</string>
+
+    <!-- Drawer -->
+    <string name="log_out">Log out</string>
+
+</resources>

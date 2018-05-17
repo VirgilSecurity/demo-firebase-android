@@ -31,54 +31,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire;
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import android.app.Activity;
+import android.app.Application;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+import com.android.virgilsecurity.virgilonfire.di.DaggerAppComponent;
 
-allprojects {
-    ext {
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.0.2"
-        rxAndroid = "2.1.5"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.HasActivityInjector;
+
+/**
+ * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
+ * -__o
+ */
+
+public class JwtExampleApp extends Application implements HasActivityInjector {
+
+    @Inject DispatchingAndroidInjector<Activity> activityDispatchingAndroidInjector;
+
+    @Override public void onCreate() {
+        super.onCreate();
+
+        DaggerAppComponent.builder()
+                          .application(this)
+                          .build()
+                          .inject(this);
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-        }
-        maven {
-            url 'https://jitpack.io'
-        }
+    @Override public AndroidInjector<Activity> activityInjector() {
+        return activityDispatchingAndroidInjector;
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }
