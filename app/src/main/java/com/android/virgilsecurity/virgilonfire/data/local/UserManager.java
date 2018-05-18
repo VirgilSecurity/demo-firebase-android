@@ -35,9 +35,8 @@ package com.android.virgilsecurity.virgilonfire.data.local;
 
 import android.content.Context;
 
-import com.android.virgilsecurity.virgilonfire.data.model.GoogleToken;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.Token;
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
 import com.google.gson.Gson;
 import com.virgilsecurity.sdk.cards.Card;
 
@@ -48,31 +47,12 @@ import com.virgilsecurity.sdk.cards.Card;
 
 public class UserManager extends PropertyManager {
 
-    private static final String CURRENT_USER = "CURRENT_USER";
     private static final String USER_CARD = "USER_CARD";
-    private static final String GOOGLE_TOKEN = "GOOGLE_TOKEN";
+    private static final String TOKEN = "TOKEN";
 
     public UserManager(Context context) {
         super(context);
     }
-
-
-    public void setCurrentUser(DefaultUser user) {
-        setValue(CURRENT_USER, new Gson().toJson(user));
-    }
-
-    public DefaultUser getCurrentUser() {
-        return new Gson().fromJson(
-                (String) getValue(CURRENT_USER,
-                                  PropertyManager.SupportedTypes.STRING,
-                                  null),
-                DefaultUser.class);
-    }
-
-    public void clearCurrentUser() {
-        clearValue(CURRENT_USER);
-    }
-
 
     public void setUserCard(Card card) {
         setValue(USER_CARD, new Gson().toJson(card));
@@ -91,20 +71,20 @@ public class UserManager extends PropertyManager {
     }
 
 
-    public void setGoogleToken(Token token) {
-        setValue(GOOGLE_TOKEN, new Gson().toJson(token));
+    public void setToken(Token token) {
+        setValue(TOKEN, new Gson().toJson(token));
     }
 
-    public GoogleToken getGoogleToken() {
+    public DefaultToken getToken() {
         return new Gson().fromJson(
-                (String) getValue(GOOGLE_TOKEN,
+                (String) getValue(TOKEN,
                                   SupportedTypes.STRING,
                                   null),
-                GoogleToken.class
+                DefaultToken.class
         );
     }
 
-    public void clearGoogleToken() {
-        clearValue(GOOGLE_TOKEN);
+    public void clearToken() {
+        clearValue(TOKEN);
     }
 }

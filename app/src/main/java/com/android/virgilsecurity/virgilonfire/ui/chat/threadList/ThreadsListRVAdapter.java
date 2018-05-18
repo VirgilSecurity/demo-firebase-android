@@ -41,6 +41,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
 import com.android.virgilsecurity.virgilonfire.data.model.User;
 
@@ -66,7 +68,7 @@ import butterknife.ButterKnife;
 
 public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdapter.ThreadHolder> {
 
-    private List<User> items;
+    private List<ChatThread> items;
     private ClickListener clickListener;
 
     ThreadsListRVAdapter() {
@@ -85,7 +87,7 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
 
     @Override
     public void onBindViewHolder(ThreadHolder holder, int position) {
-        holder.bind(items.get(position).getName());
+        holder.bind(items.get(position).getReceiver());
     }
 
     @Override
@@ -93,7 +95,7 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
         return items != null ? items.size() : -1;
     }
 
-    void setItems(List<DefaultUser> items) {
+    void setItems(List<DefaultChatThread> items) {
         if (items != null)
             this.items = new ArrayList<>(items);
         else

@@ -33,7 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.data.remote;
 
-import com.android.virgilsecurity.virgilonfire.data.model.GoogleToken;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
 
 import retrofit2.Call;
@@ -48,6 +48,6 @@ import retrofit2.http.POST;
 public interface JwtExampleService {
 
     @POST("token") Call<TokenResponse> getToken(
-            @Body GoogleToken token
+            @Body DefaultToken token
     );
 }

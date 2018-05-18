@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.ui.chat;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -48,21 +49,20 @@ import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseActivityDi;
 import com.android.virgilsecurity.virgilonfire.ui.chat.thread.ThreadFragment;
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.ThreadsListFragment;
+import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.dialog.CreateThreadDialog;
 import com.android.virgilsecurity.virgilonfire.ui.login.LogInActivity;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 import com.android.virgilsecurity.virgilonfire.util.common.OnFinishTimer;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import butterknife.BindView;
+import butterknife.internal.Utils;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasFragmentInjector;
@@ -85,6 +85,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     @Inject protected DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
     @Inject UserManager userManager;
     @Inject @Named(REQUEST_ID_TOKEN) @Nullable String requestIdToken;
+    @Inject FirebaseAuth firebaseAuth;
 
     @BindView(R.id.toolbar)
     protected Toolbar toolbar;
@@ -152,7 +153,8 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                 threadFragment.setInterlocutorName(data);
 
             showBackButton(true, (view) -> onBackPressed());
-            showHamburger(false, (view) -> {});
+            showHamburger(false, (view) -> {
+            });
 
             UiUtils.hideFragment(getFragmentManager(), threadsListFragment);
             UiUtils.showFragment(getFragmentManager(), threadFragment);
@@ -167,8 +169,8 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
         TextView tvUsernameDrawer =
                 nvNavigation.getHeaderView(0)
                             .findViewById(R.id.tvUsernameDrawer);
-        tvUsernameDrawer.setText(userManager.getCurrentUser()
-                                            .getName());
+        tvUsernameDrawer.setText(firebaseAuth.getCurrentUser()
+                                             .getEmail().toLowerCase());
 
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -177,21 +179,34 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
 
         nvNavigation.setNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
+                case R.id.itemNewChat:
+                    dlDrawer.closeDrawer(Gravity.START);
+                    createThreadDialog =
+                            new CreateThreadDialog(this, R.style.NotTransBtnsDialogTheme,
+                                                   getString(R.string.create_thread),
+                                                   getString(R.string.enter_username));
+
+                    createThreadDialog.setOnCreateThreadDialogListener((username -> {
+                        if (ParseUser.getCurrentUser().getUsername().equals(username)) {
+                            Utils.toast(this, R.string.no_chat_with_yourself);
+                        }
+                        else {
+                            createThreadDialog.showProgress(true);
+                            getPresenter().requestUser(username);
+                        }
+                    }));
+
+                    createThreadDialog.show();
+
+                    return true;
                 case R.id.itemLogOut:
                     dlDrawer.closeDrawer(Gravity.START);
 
                     showBaseLoading(true);
 
-                    userManager.clearCurrentUser();
                     userManager.clearUserCard();
 
-                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(requestIdToken)
-                            .requestEmail()
-                            .build();
-
-                    GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
-                    googleSignInClient.signOut();
+                    firebaseAuth.signOut();
 
                     threadFragment.disposeAll();
                     threadsListFragment.disposeAll();

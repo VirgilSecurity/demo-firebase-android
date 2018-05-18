@@ -33,7 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.data.remote;
 
-import com.android.virgilsecurity.virgilonfire.data.model.GoogleToken;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
 
 import retrofit2.Call;
@@ -52,7 +52,7 @@ public class ServiceHelper {
         this.service = retrofit.create(JwtExampleService.class);
     }
 
-    public Call<TokenResponse> getToken(GoogleToken googleToken) {
+    public Call<TokenResponse> getToken(DefaultToken googleToken) {
         return service.getToken(googleToken);
     }
 }

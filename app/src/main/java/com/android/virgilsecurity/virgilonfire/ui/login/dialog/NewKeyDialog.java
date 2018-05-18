@@ -38,23 +38,16 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.transition.TransitionManager;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
-import com.android.virgilsecurity.virgilonfire.util.common.OnFinishTimer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.internal.Utils;
 
 /**
  * Created by Danylo Oliinyk on 11/26/17 at Virgil Security.
@@ -90,7 +83,7 @@ public class NewKeyDialog extends Dialog {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_create_thread);
+        setContentView(R.layout.dialog_new_key);
         setCancelable(true);
         ButterKnife.bind(this);
 

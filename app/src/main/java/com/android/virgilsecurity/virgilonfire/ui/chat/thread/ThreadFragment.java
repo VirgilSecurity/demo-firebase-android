@@ -56,6 +56,7 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 
 import java.util.List;
@@ -78,6 +79,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Inject protected ThreadFragmentPresenter presenter;
     @Inject protected ErrorResolver errorResolver;
     @Inject protected UserManager userManager;
+    @Inject protected FirebaseAuth firebaseAuth;
 
     private String interlocutorName;
     private Card interlocutorCard;
@@ -104,7 +106,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Override public void onResume() {
         super.onResume();
 
-        presenter.turnOnMessageListener();
+        //        messageReceivedInteractor.onDataReceived(message);
+
     }
 
     @Override public void onPause() {
@@ -191,8 +194,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         switch (v.getId()) {
             case R.id.btnSend:
                 String text = etMessage.getText()
-                                          .toString()
-                                          .trim();
+                                       .toString()
+                                       .trim();
                 if (!text.isEmpty()) {
                     if (interlocutorCard != null) {
                         lockSendUi(true, true);
@@ -208,8 +211,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     private void sendMessage(String text) {
         showProgress(true);
-        Message message = new DefaultMessage(userManager.getCurrentUser()
-                                                        .getName(),
+        Message message = new DefaultMessage(firebaseAuth.getCurrentUser()
+                                                         .getEmail().toLowerCase(),
                                              interlocutorName,
                                              text);
 

@@ -41,6 +41,7 @@ import com.android.virgilsecurity.virgilonfire.data.virgil.GetTokenCallbackImpl;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivityComponent;
+import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.ModelSigner;
 import com.virgilsecurity.sdk.cards.validation.CardVerifier;
 import com.virgilsecurity.sdk.cards.validation.VirgilCardVerifier;
@@ -123,14 +124,14 @@ public class VirgilModule {
                                                AccessTokenProvider tokenProvider,
                                                CardVerifier cardVerifier,
                                                PrivateKeyStorage privateKeyStorage,
-                                               UserManager userManager) {
+                                               FirebaseAuth firebaseAuth) {
         return new VirgilHelper(() -> cardClient,
                                 () -> modelSigner,
                                 () -> cardCrypto,
                                 () -> tokenProvider,
                                 () -> cardVerifier,
                                 () -> privateKeyStorage,
-                                () -> userManager);
+                                () -> firebaseAuth);
     }
 
     @Provides @Singleton static VirgilRx provideVirgilRx(VirgilHelper virgilHelper) {

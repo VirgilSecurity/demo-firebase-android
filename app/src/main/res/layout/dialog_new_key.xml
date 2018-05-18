@@ -72,21 +72,6 @@
             android:textSize="@dimen/increased_text"
             tools:text="Body message text" />
 
-        <EditText
-            android:id="@+id/etUsername"
-            style="@style/TextInputBlack"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/default_text"
-            android:layout_marginStart="@dimen/default_margin"
-            android:layout_marginTop="@dimen/half_default_margin"
-            android:hint="@string/email"
-            android:inputType="text"
-            android:maxLines="1"
-            android:textColorHint="@color/black_coral"
-            android:textSize="@dimen/increased_text"
-            tools:text="Email" />
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -114,28 +99,5 @@
                 android:textAllCaps="true"
                 android:textColor="@color/colorAccent" />
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llLoadingRoot"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/default_margin"
-        android:layout_marginTop="@dimen/default_margin"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/half_default_margin"
-            android:gravity="center"
-            android:text="@string/creating_thread" />
     </LinearLayout>
 </FrameLayout>

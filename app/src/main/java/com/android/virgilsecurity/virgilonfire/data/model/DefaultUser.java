@@ -33,6 +33,8 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
+import java.util.List;
+
 /**
  * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
  * -__o
@@ -40,13 +42,39 @@ package com.android.virgilsecurity.virgilonfire.data.model;
 
 public class DefaultUser implements User {
 
-    final private String name;
+    private String name;
+    private List<String> channels;
+
+    public DefaultUser() {
+
+    }
 
     public DefaultUser(String name) {
         this.name = name;
     }
 
+    public DefaultUser(List<String> channels) {
+        this.channels = channels;
+    }
+
+    public DefaultUser(String name, List<String> channels) {
+        this.name = name;
+        this.channels = channels;
+    }
+
     @Override public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getChannels() {
+        return channels;
+    }
+
+    public void setChannels(List<String> channels) {
+        this.channels = channels;
     }
 }

@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.data.virgil;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.DecryptionException;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.KeyGenerationException;
+import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.cards.CardManager;
 import com.virgilsecurity.sdk.cards.ModelSigner;
@@ -66,7 +67,7 @@ public class VirgilHelper {
 
     private final CardManager cardManager;
     private final PrivateKeyStorage privateKeyStorage;
-    private final UserManager userManager;
+    private final FirebaseAuth firebaseAuth;
 
     public VirgilHelper(InitCardClient initCardClient,
                         InitModelSigner initModelSigner,
@@ -74,18 +75,15 @@ public class VirgilHelper {
                         InitAccessTokenProvider initAccessTokenProvider,
                         InitCardVerifier initCardVerifier,
                         InitPrivateKeyStorage initPrivateKeyStorage,
-                        InitUserManager initUserManager) {
+                        InitFirebaseAuth initFirebaseAuth) {
 
         this.privateKeyStorage = initPrivateKeyStorage.initialize();
-        this.userManager = initUserManager.initialize();
+        this.firebaseAuth = initFirebaseAuth.initialize();
 
-        cardManager = new CardManager.Builder()
-                .setCardClient(initCardClient.initialize())
-                .setModelSigner(initModelSigner.initialize())
-                .setCrypto(initCardCrypto.initialize())
-                .setAccessTokenProvider(initAccessTokenProvider.initialize())
-                .setCardVerifier(initCardVerifier.initialize())
-                .build();
+        cardManager = new CardManager(initCardCrypto.initialize(),
+                                      initAccessTokenProvider.initialize(),
+                                      initCardVerifier.initialize());
+
     }
 
     public Card publishCard(String identity) throws CryptoException, VirgilServiceException {
@@ -99,7 +97,8 @@ public class VirgilHelper {
         return cardManager.publishCard(cardModel);
     }
 
-    public Card outdateCard(String identity, String previousCardId) throws CryptoException, VirgilServiceException {
+    public Card outdateCard(String identity,
+                            String previousCardId) throws CryptoException, VirgilServiceException {
         VirgilKeyPair keyPair = generateKeyPair();
 
         privateKeyStorage.store(keyPair.getPrivateKey(), identity, null);
@@ -135,8 +134,8 @@ public class VirgilHelper {
             byte[] decryptedData =
                     getVirgilCrypto().decrypt(cipherData,
                                               (VirgilPrivateKey) privateKeyStorage.load(
-                                                      userManager.getCurrentUser()
-                                                                 .getName())
+                                                      firebaseAuth.getCurrentUser()
+                                                                  .getEmail().toLowerCase())
                                                                                   .getLeft());
             return ConvertionUtils.toString(decryptedData);
         } catch (CryptoException e) {
@@ -168,7 +167,6 @@ public class VirgilHelper {
     }
 
 
-
     public interface InitCardClient {
         CardClient initialize();
     }
@@ -193,7 +191,7 @@ public class VirgilHelper {
         PrivateKeyStorage initialize();
     }
 
-    public interface InitUserManager {
-        UserManager initialize();
+    public interface InitFirebaseAuth {
+        FirebaseAuth initialize();
     }
 }

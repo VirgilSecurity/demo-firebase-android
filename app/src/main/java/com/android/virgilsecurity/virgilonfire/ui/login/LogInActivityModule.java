@@ -46,7 +46,4 @@ import dagger.Provides;
 @Module
 public class LogInActivityModule {
 
-    @Provides FirebaseAuth provideFirebaseAuth() {
-        return FirebaseAuth.getInstance();
-    }
 }

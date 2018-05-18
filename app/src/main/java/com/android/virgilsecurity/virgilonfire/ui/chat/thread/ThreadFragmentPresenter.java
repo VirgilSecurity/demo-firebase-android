@@ -35,29 +35,17 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
 import android.content.Context;
 
-import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
-import com.android.virgilsecurity.virgilonfire.data.model.ResponseType;
-import com.android.virgilsecurity.virgilonfire.data.remote.WebSocketHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
-import com.android.virgilsecurity.virgilonfire.util.SerializationUtils;
-import com.appunite.websocket.rx.RxMoreObservables;
-import com.appunite.websocket.rx.messages.RxEventConn;
-import com.appunite.websocket.rx.messages.RxEventConnected;
-import com.appunite.websocket.rx.messages.RxEventDisconnected;
-import com.appunite.websocket.rx.messages.RxEventStringMessage;
-import com.google.gson.JsonObject;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -81,7 +69,6 @@ import rx.Subscription;
  */
 public class ThreadFragmentPresenter implements BasePresenter {
 
-    private WebSocketHelper socketHelper;
     private Context context;
     private DataReceivedInteractor<Message> messageReceivedInteractor;
     private WebSocketInteractor webSocketInteractor;
@@ -95,8 +82,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
     private VirgilHelper virgilHelper;
 
     @Inject
-    public ThreadFragmentPresenter(WebSocketHelper socketHelper,
-                                   Context context,
+    public ThreadFragmentPresenter(Context context,
                                    DataReceivedInteractor<Message> messageReceivedInteractor,
                                    WebSocketInteractor webSocketInteractor,
                                    OnMessageSentInteractor onMessageSentInteractor,
@@ -104,7 +90,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                    SearchCardsInteractor searchCardsInteractor,
                                    UserManager userManager,
                                    VirgilHelper virgilHelper) {
-        this.socketHelper = socketHelper;
         this.context = context;
         this.messageReceivedInteractor = messageReceivedInteractor;
         this.webSocketInteractor = webSocketInteractor;
@@ -115,40 +100,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
         this.virgilHelper = virgilHelper;
 
         compositeDisposable = new CompositeDisposable();
-    }
-
-    public void turnOnMessageListener() {
-        socketHelper.setOnMessageReceiveListener(rxEvent -> {
-            if (rxEvent instanceof RxEventConnected) {
-                webSocketInterlocutor = ((RxEventConn) rxEvent).sender();
-                webSocketInteractor.onConnected();
-            } else if (rxEvent instanceof RxEventDisconnected) {
-                webSocketInterlocutor = null;
-                webSocketInteractor.onDisconnected();
-            }
-
-            if (rxEvent instanceof RxEventStringMessage) {
-                JsonObject jsonObject =
-                        SerializationUtils.fromJson(((RxEventStringMessage) rxEvent).message(),
-                                                    JsonObject.class);
-
-                if (jsonObject.get("type")
-                              .getAsString()
-                              .equals(ResponseType.MESSAGE.getType())) {
-                    DefaultMessage message =
-                            SerializationUtils.fromJson(jsonObject.get("responseObject")
-                                                                  .toString(),
-                                                        DefaultMessage.class);
-
-                    messageReceivedInteractor.onDataReceived(message);
-                }
-            }
-        });
-    }
-
-    public void turnOffMessageListener() {
-        socketHelper.setOnMessageReceiveListener(rxEvent -> {
-        });
     }
 
     public void requestSendMessage(Card interlocutorCard, Message message) {
@@ -162,17 +113,26 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                                       message.getReceiver(),
                                                       encryptedText);
 
-        sendMessageSubscription =
-                RxMoreObservables.sendMessage(webSocketInterlocutor,
-                                              SerializationUtils.toJson(encryptedMessage))
-                                 .subscribe(success -> {
-                                     if (success)
-                                         onMessageSentInteractor.onSendMessageSuccess();
-                                     else
-                                         onMessageSentInteractor.onSendMessageError(
-                                                 new Throwable(
-                                                         context.getString(R.string.error_sending_message)));
-                                 });
+//        val newMessage = mapOf(
+//                NAME_FIELD to edit_name.text.toString(),
+//                TEXT_FIELD to edit_message.text.toString())
+//        firestoreChat.set(newMessage)
+//                     .addOnSuccessListener( {
+//                                                    // Toast Successful Se
+//                                            })
+//                .addOnFailureListener { e -> Log.e("ERROR", e.message) }
+
+//        sendMessageSubscription =
+//                RxMoreObservables.sendMessage(webSocketInterlocutor,
+//                                              SerializationUtils.toJson(encryptedMessage))
+//                                 .subscribe(success -> {
+//                                     if (success)
+//                                         onMessageSentInteractor.onSendMessageSuccess();
+//                                     else
+//                                         onMessageSentInteractor.onSendMessageError(
+//                                                 new Throwable(
+//                                                         context.getString(R.string.error_sending_message)));
+//                                 });
     }
 
     public void requestSearchCards(String identity) {
@@ -194,5 +154,13 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable.clear();
         if (sendMessageSubscription != null)
             sendMessageSubscription.unsubscribe();
+    }
+
+    public void turnOnMessageListener() {
+        // TODO set firestoreChat.addSnapshotListener
+    }
+
+    public void turnOffMessageListener() {
+        // TODO clear firestoreChat.addSnapshotListener
     }
 }

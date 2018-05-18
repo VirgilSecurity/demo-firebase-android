@@ -33,19 +33,32 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.threadList;
 
+import com.android.virgilsecurity.virgilonfire.R;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
-import com.android.virgilsecurity.virgilonfire.data.model.ResponseType;
-import com.android.virgilsecurity.virgilonfire.data.model.response.UsersResponse;
-import com.android.virgilsecurity.virgilonfire.data.remote.WebSocketHelper;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
-import com.android.virgilsecurity.virgilonfire.util.SerializationUtils;
-import com.appunite.websocket.rx.messages.RxEventStringMessage;
-import com.google.gson.JsonObject;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * . _  _
@@ -59,39 +72,99 @@ import javax.inject.Inject;
  */
 public class ThreadsListFragmentPresenter implements BasePresenter {
 
-    private WebSocketHelper helper;
-    private DataReceivedInteractor<List<DefaultUser>> onMessageReceivedInteractor;
+    private static final String COLLECTION_CHANNELS = "Channels";
+    private static final String COLLECTION_USERS = "Users";
+    private static final String KEY_PROPERTY_MEMBERS = "members";
+
+    private FirebaseFirestore firebaseFirestore;
+    private FirebaseAuth firebaseAuth;
+    private DataReceivedInteractor<List<DefaultChatThread>> onMessageReceivedInteractor;
+    private CompositeDisposable compositeDisposable;
 
     @Inject
-    public ThreadsListFragmentPresenter(WebSocketHelper helper,
-                                        DataReceivedInteractor<List<DefaultUser>> onMessageReceivedInteractor) {
-        this.helper = helper;
+    public ThreadsListFragmentPresenter(FirebaseFirestore firebaseFirestore,
+                                        FirebaseAuth firebaseAuth,
+                                        DataReceivedInteractor<List<DefaultChatThread>> onMessageReceivedInteractor) {
+        this.firebaseFirestore = firebaseFirestore;
+        this.firebaseAuth = firebaseAuth;
         this.onMessageReceivedInteractor = onMessageReceivedInteractor;
+
+        compositeDisposable = new CompositeDisposable();
     }
 
-    public void requestUsersList() {
-        helper.setOnMessageReceiveListener(rxEvent -> {
-            if (rxEvent instanceof RxEventStringMessage) {
-                JsonObject jsonObject =
-                        SerializationUtils.fromJson(((RxEventStringMessage) rxEvent).message(),
-                                                    JsonObject.class);
+    public void requestThreadsList() {
+        Disposable requestUsersDisposable =
+                Single.zip(getCurrentUser(), getChannels(),
+                           (defaultUser, documentSnapshots) -> {
+                               List<DefaultChatThread> threads = new ArrayList<>();
 
-                if (jsonObject.get("type")
-                              .getAsString()
-                              .equals(ResponseType.USERS_LIST.getType())) {
-                    UsersResponse usersResponse =
-                            SerializationUtils.fromJson(jsonObject.get("responseObject")
-                                                                  .toString(),
-                                                        UsersResponse.class);
+                               for (String channelId : defaultUser.getChannels()) {
+                                   for (DocumentSnapshot document : documentSnapshots) {
+                                       if (document.getId().equals(channelId)) {
+                                           String[] members = (String[]) document.get(KEY_PROPERTY_MEMBERS);
+                                           String senderId = members[0].equals(firebaseAuth.getCurrentUser()
+                                                                                           .getEmail()
+                                                                                           .toLowerCase())
+                                                             ? members[0] : members[1];
+                                           String receiverId = members[0].equals(senderId) ? members[1] : members[0];
+                                           threads.add(new DefaultChatThread(document.getId(),
+                                                                             senderId,
+                                                                             receiverId));
+                                       }
+                                   }
+                               }
 
-                    onMessageReceivedInteractor.onDataReceived(usersResponse.getUsers());
-                }
-            }
+                               return threads;
+                           })
+                      .observeOn(AndroidSchedulers.mainThread())
+                      .subscribeOn(Schedulers.io())
+                      .subscribe((threads, throwable) -> {
+                          onMessageReceivedInteractor.onDataReceived(threads);
+                      });
+
+        compositeDisposable.add(requestUsersDisposable);
+//
+    }
+
+    private Single<DefaultUser> getCurrentUser() {
+        return Single.create(emitter -> {
+            firebaseFirestore.collection(COLLECTION_USERS)
+                             .document(firebaseAuth.getCurrentUser()
+                                                   .getEmail()
+                                                   .toLowerCase())
+                             .get()
+                             .addOnCompleteListener(task -> {
+                                 if (task.isSuccessful()) {
+                                     DocumentSnapshot documentSnapshot = task.getResult();
+
+                                     DefaultUser user = documentSnapshot.toObject(DefaultUser.class);
+                                     user.setName(documentSnapshot.getId());
+
+                                     emitter.onSuccess(user);
+                                 } else {
+                                     emitter.onError(task.getException());
+                                 }
+                             });
+        });
+    }
+
+    private Single<List<DocumentSnapshot>> getChannels() {
+        return Single.create(emitter -> {
+            firebaseFirestore.collection(COLLECTION_CHANNELS)
+                             .get()
+                             .addOnCompleteListener(task -> {
+                                 if (task.isSuccessful()) {
+                                     QuerySnapshot querySnapshot = task.getResult();
+                                     emitter.onSuccess(querySnapshot.getDocuments());
+                                 } else {
+                                     emitter.onError(task.getException());
+                                 }
+                             });
         });
     }
 
     @Override
     public void disposeAll() {
-        helper.unsubscribe();
+        compositeDisposable.clear();
     }
 }

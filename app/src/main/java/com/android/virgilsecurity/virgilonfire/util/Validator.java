@@ -31,16 +31,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.remote;
+package com.android.virgilsecurity.virgilonfire.util;
 
-import com.appunite.websocket.rx.RxWebSockets;
-import com.appunite.websocket.rx.messages.RxEvent;
-import com.appunite.websocket.rx.messages.RxEventStringMessage;
+import android.content.Context;
+import android.widget.EditText;
 
-import javax.inject.Inject;
-
-import io.reactivex.disposables.Disposable;
-import rx.Subscription;
+import com.android.virgilsecurity.virgilonfire.R;
 
 /**
  * . _  _
@@ -48,39 +44,35 @@ import rx.Subscription;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/17/18
+ * ....|  _/    5/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-public class WebSocketHelper {
+public class Validator {
 
-    private RxWebSockets rxWebSockets;
-    private OnRxEventListener onMessageReceiveListener;
-    private Subscription webSocketSubscription;
+    private Validator() {
 
-    @Inject
-    public WebSocketHelper(RxWebSockets rxWebSockets) {
-        this.rxWebSockets = rxWebSockets;
     }
 
-    private void initRxWebSocket() {
-        webSocketSubscription = rxWebSockets.webSocketObservable()
-                                            .subscribe(rxEvent -> {
-                                                if (onMessageReceiveListener != null)
-                                                    onMessageReceiveListener.onRxEvent(rxEvent);
-                                            });
+    public static String validate(EditText editText, FieldType fieldType) {
+        String text = editText.getText()
+                              .toString()
+                              .trim();
+
+        switch (fieldType) {
+            case EMAIL:
+                if (text.isEmpty())
+                    return "Email should not be empty";
+            case PASSWORD:
+                if (text.isEmpty())
+                    return "Email should not be empty";
+        }
+
+        return null;
     }
 
-    public void setOnMessageReceiveListener(OnRxEventListener onMessageReceiveListener) {
-        this.onMessageReceiveListener = onMessageReceiveListener;
-        initRxWebSocket();
-    }
-
-    public void unsubscribe() {
-        webSocketSubscription.unsubscribe();
-    }
-
-    public interface OnRxEventListener {
-        void onRxEvent(RxEvent message);
+    public enum FieldType {
+        EMAIL,
+        PASSWORD
     }
 }

@@ -44,6 +44,7 @@ import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,14 +75,13 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
     }
 
     private final VirgilHelper virgilHelper;
-    private final UserManager userManager;
+    private final FirebaseAuth firebaseAuth;
     private List<Message> items;
 
-    @Inject
-    ThreadRVAdapter(VirgilHelper virgilHelper,
-                    UserManager userManager) {
+    @Inject ThreadRVAdapter(VirgilHelper virgilHelper,
+                            FirebaseAuth firebaseAuth) {
         this.virgilHelper = virgilHelper;
-        this.userManager = userManager;
+        this.firebaseAuth = firebaseAuth;
 
         items = Collections.emptyList();
     }
@@ -113,13 +113,15 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
 
     @Override
     public void onBindViewHolder(HolderMessage viewHolder, int position) {
-        viewHolder.bind(virgilHelper.decrypt(items.get(position).getText()));
+        viewHolder.bind(virgilHelper.decrypt(items.get(position)
+                                                  .getText()));
     }
 
     @Override public int getItemViewType(int position) {
         if (items.get(position)
                  .getSender()
-                 .equals(userManager.getCurrentUser().getName())) {
+                 .equals(firebaseAuth.getCurrentUser()
+                                     .getEmail().toLowerCase())) {
             return MessageType.ME;
         } else {
             return MessageType.YOU;

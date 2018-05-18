@@ -36,7 +36,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.android.virgilsecurity.jwtworkexample"
+        applicationId "com.android.virgilsecurity.virgilonfire"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
@@ -99,6 +99,9 @@ dependencies {
     // Apache commons
     implementation "org.apache.commons:commons-lang3:$apacheCommons"
 
-    // Firebase auth
+//    // Firestore
     implementation "com.google.firebase:firebase-auth:$firebaseAuth"
+    implementation "com.google.firebase:firebase-firestore:$firebaseFirestore"
 }
+
+//apply plugin: 'com.google.gms.google-services'

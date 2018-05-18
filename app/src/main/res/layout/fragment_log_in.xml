@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2015-2018, Virgil Security, Inc.
   ~
   ~ Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
@@ -51,9 +50,9 @@
             android:background="@color/colorPrimary"
             android:gravity="center"
             android:paddingTop="@dimen/twenty_margin"
-            android:text="@string/sample_messenger"
+            android:text="@string/virgil_firebase_messenger"
             android:textColor="@color/snow"
-            android:textSize="20sp" />
+            android:textSize="15sp" />
 
         <ImageView
             android:layout_width="match_parent"
@@ -71,24 +70,96 @@
             android:layout_height="58dp"
             android:background="@color/virgil_light"
             android:gravity="center"
-            android:text="@string/please_sign_in"
+            android:text="@string/please_enter_creds"
             android:textColor="@color/snow"
             android:textSize="17sp" />
     </LinearLayout>
 
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/signInButton"
-        app:buttonSize="wide"
-        android:layout_width="wrap_content"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tilEmail"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="@dimen/fourty_margin"
+        android:layout_marginStart="@dimen/fourty_margin"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/textView2"
+        app:layout_constraintBottom_toTopOf="@+id/tilPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_chainStyle="packed">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:maxLength="32"
+            android:textColorHint="@color/black_olive"
+            android:textSize="16sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/tilPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/fourty_margin"
+        android:layout_marginStart="@dimen/fourty_margin"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnSignUp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tilEmail"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:passwordToggleEnabled="true">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:maxLength="32"
+            android:textColorHint="@color/black_olive"
+            android:textSize="16sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/btnSignIn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/twenty_margin"
+        android:layout_marginStart="@dimen/fourty_margin"
+        android:layout_marginEnd="@dimen/half_default_margin"
+        android:background="@drawable/bg_btn_round_32"
+        android:minHeight="42dp"
+        android:text="@string/signin"
+        android:textAllCaps="false"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        android:textColor="@color/black_olive"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnSignUp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilPassword" />
+
+    <Button
+        android:id="@+id/btnSignUp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/fourty_margin"
+        android:layout_marginStart="@dimen/half_default_margin"
+        android:background="@drawable/bg_btn_round_32"
+        android:minHeight="42dp"
+        android:text="@string/signup"
+        android:textAllCaps="false"
+        android:textColor="@color/black_olive"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/btnSignIn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnSignIn"
+        app:layout_constraintTop_toTopOf="@id/btnSignIn" />
 
     <TextView
         android:id="@+id/textView2"

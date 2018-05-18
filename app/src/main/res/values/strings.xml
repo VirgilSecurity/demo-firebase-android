@@ -33,7 +33,7 @@
 
 <resources>
 
-    <string name="app_name">Quickstart E2EE</string>
+    <string name="app_name">Virgil'on'Fire</string>
 
     <!-- Credentials -->
     <string name="requestIdToken">681673183198-m9sm47puqhdirvms732m8fa4k996n1ev.apps.googleusercontent.com</string>
@@ -48,13 +48,14 @@
     <string name="error_sending_message">Error sending message</string>
 
     <!-- LogIn -->
-    <string name="sample_messenger">Sample messenger</string>
-    <string name="please_sign_in">Please sign in to continue</string>
+    <string name="virgil_firebase_messenger">Virgil-Firebase messenger</string>
+    <string name="please_enter_creds">Please enter your credentials</string>
     <string name="multiply_cards">Multiply cards error</string>
     <string name="no_private_key">It seems that you\'ve lost your private key</string>
-    <string name="new_keys">Generate new keys</string>
-    <string name="outdate_old_card">You lost your private key. So you can generate new one, but you
-        won\'t be able to decrypt old messages.\nGenerate?</string>
+    <string name="new_private_key">Generate new private</string>
+    <string name="new_private_key_generation">There\'s no private key for entered identity on this device.
+        \nGenerate new one? (You
+        won\'t be able to decrypt old messages)</string>
 
     <!-- Threads List -->
     <string name="threads_list_name">Threads List</string>
@@ -67,5 +68,9 @@
 
     <!-- Drawer -->
     <string name="log_out">Log out</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="signup">SignUp</string>
+    <string name="signin">SignIn</string>
 
 </resources>

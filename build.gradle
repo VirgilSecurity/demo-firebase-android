@@ -44,13 +44,14 @@ buildscript {
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+        classpath 'com.google.gms:google-services:3.3.1'
     }
 }
 
 allprojects {
     ext {
         supportLibrary = "26.1.0"
-        constraintLayout = "1.0.2"
+        constraintLayout = "1.1.0"
         virgilSdk = "5.0.2"
         virgilCrypto = "5.0.2@aar"
         rxJava = "2.0.2"
@@ -65,6 +66,7 @@ allprojects {
         converterGson = "2.3.0"
         apacheCommons = "3.7"
         firebaseAuth = "15.1.0"
+        firebaseFirestore = "16.0.0"
     }
 
     repositories {

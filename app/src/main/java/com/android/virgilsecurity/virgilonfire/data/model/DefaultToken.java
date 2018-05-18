@@ -31,29 +31,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire;
+package com.android.virgilsecurity.virgilonfire.data.model;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
+import com.google.gson.annotations.SerializedName;
 
 /**
- * Instrumented test, which will execute on an Android device.
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    4/2/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
-@RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
-    @Test
-    public void useAppContext() throws Exception {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+public class DefaultToken implements Token {
 
-        assertEquals("com.android.virgilsecurity.jwtworkexample", appContext.getPackageName());
+    @SerializedName("token")
+    private final String token;
+
+    public DefaultToken(String token) {
+        this.token = token;
+    }
+
+    @Override public String getToken() {
+        return token;
     }
 }

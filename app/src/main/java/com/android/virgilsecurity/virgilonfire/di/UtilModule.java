@@ -35,6 +35,7 @@ package com.android.virgilsecurity.virgilonfire.di;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.PropertyManager;
@@ -42,8 +43,9 @@ import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivityComponent;
 import com.android.virgilsecurity.virgilonfire.util.DefaultErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -78,5 +80,13 @@ public class UtilModule {
 
     @Provides @Singleton @Named(REQUEST_ID_TOKEN) @Nullable String provideRequestIdToken(Context context) {
         return context.getString(R.string.requestIdToken);
+    }
+
+    @Provides FirebaseAuth provideFirebaseAuth() {
+        return FirebaseAuth.getInstance();
+    }
+
+    @Provides FirebaseFirestore provideFirebaseFirestore() {
+        return FirebaseFirestore.getInstance();
     }
 }

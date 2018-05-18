@@ -34,26 +34,29 @@
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.text.InputFilter;
+import android.view.View;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
-import com.android.virgilsecurity.virgilonfire.data.model.GoogleToken;
-import com.android.virgilsecurity.virgilonfire.data.model.exception.MultiplyCardsException;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
 import com.android.virgilsecurity.virgilonfire.ui.login.dialog.NewKeyDialog;
+import com.android.virgilsecurity.virgilonfire.util.DefaultSymbolsInputFilter;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.ApiException;
+import com.android.virgilsecurity.virgilonfire.util.Validator;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.virgilsecurity.sdk.cards.Card;
 
 import java.util.List;
@@ -75,6 +78,7 @@ public final class LogInFragment
         implements LogInVirgilInteractor, LogInKeyStorageInteractor {
 
     private static final String REQUEST_SERVER_AUTH_CODE = "snubKcPLscvA9owuCtlAZAOv";
+    private static final String ALLOWED_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-()/='+:?!%&*<>;{}@#_";
 
     private static final int RC_SIGN_IN = 42;
 
@@ -84,8 +88,14 @@ public final class LogInFragment
     @Inject protected ErrorResolver errorResolver;
     @Inject @Named(REQUEST_ID_TOKEN) @Nullable protected String requestIdToken;
 
-    @BindView(R.id.signInButton)
-    protected SignInButton signInButton;
+    @BindView(R.id.etEmail)
+    protected TextInputEditText etEmail;
+    @BindView(R.id.etPassword)
+    protected TextInputEditText etPassword;
+    @BindView(R.id.btnSignIn)
+    protected View btnSignIn;
+    @BindView(R.id.btnSignUp)
+    protected View btnSignUp;
 
     public static LogInFragment newInstance() {
 
@@ -101,60 +111,80 @@ public final class LogInFragment
     }
 
     @Override protected void postButterInit() {
+        initInputFields();
         initFirebaseAuth();
     }
 
+    private void initInputFields() {
+        etEmail.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
+        etPassword.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
+    }
+
+
     private void initFirebaseAuth() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(requestIdToken)
-                .requestEmail()
-                .build();
+        btnSignIn.setOnClickListener(v -> {
+            String error;
 
-        googleSignInClient = GoogleSignIn.getClient(activity, gso);
+            error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
+            if (error != null) {
+                etEmail.setError(error);
+                return;
+            }
 
-        signInButton.setOnClickListener(v -> {
-            Intent signInIntent = googleSignInClient.getSignInIntent();
-            startActivityForResult(signInIntent, RC_SIGN_IN);
+            error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
+            if (error != null) {
+                etPassword.setError(error);
+                return;
+            }
+
+            firebaseAuth.createUserWithEmailAndPassword(etEmail.getText()
+                                                               .toString(),
+                                                        etPassword.getText()
+                                                                  .toString())
+                        .addOnCompleteListener(this::handleSignInResult);
+        });
+
+        btnSignUp.setOnClickListener(v -> {
+            String error;
+
+            error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
+            if (error != null) {
+                etEmail.setError(error);
+                return;
+            }
+
+            error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
+            if (error != null) {
+                etPassword.setError(error);
+                return;
+            }
+
+            firebaseAuth.signInWithEmailAndPassword(etEmail.getText()
+                                                               .toString(),
+                                                        etPassword.getText()
+                                                                  .toString())
+                        .addOnCompleteListener(this::handleSignInResult);
         });
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void handleSignInResult(Task<AuthResult> task) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
 
-        if (requestCode == RC_SIGN_IN) {
-            @SuppressLint("RestrictedApi")
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
-    }
+        if (user != null) {
+            presenter.requestSearchCards(user.getEmail());
+        } else {
+            String error = errorResolver.resolve(task.getException());
+            if (error == null && task.getException() != null)
+                error = task.getException()
+                            .getMessage();
 
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            UiUtils.toast(this, "Signed In as " + account.getDisplayName());
-
-            DefaultUser user = new DefaultUser(account.getEmail().split("@")[0]);
-            userManager.setCurrentUser(user);
-            userManager.setGoogleToken(new GoogleToken(account.getIdToken()));
-
-            presenter.requestSearchCards(user.getName());
-        } catch (ApiException e) {
-            UiUtils.toast(this, "Error\nCode: " + e.getStatusCode()
-                    + "\nMessage: " + e.getMessage());
+            UiUtils.toast(this, error == null ? "Try again" : error);
         }
     }
 
     @Override public void onSearchCardSuccess(List<Card> cards) {
-        if (cards.size() > 1) {
-            presenter.disposeAll();
-            UiUtils.toast(this, R.string.multiply_cards);
-            throw new MultiplyCardsException("LogInFragment -> more than 1 card present " +
-                                                     "after search for current identity");
-        }
-
-        presenter.requestIfKeyExists(cards.get(0).getIdentity());
+        presenter.requestIfKeyExists(cards.get(0)
+                                          .getIdentity());
     }
 
     @SuppressLint("RestrictedApi") @Override public void onSearchCardError(Throwable t) {
@@ -167,21 +197,33 @@ public final class LogInFragment
         // then it's normal behaviour. Proceed.
         if (error != null) {
             UiUtils.toast(this, error);
-            googleSignInClient.signOut();
+            firebaseAuth.signOut();
             presenter.disposeAll();
 
             return;
         }
 
-        presenter.requestPublishCard(userManager.getCurrentUser()
-                                                .getName());
+        presenter.requestPublishCard(firebaseAuth.getCurrentUser()
+                                                 .getEmail().toLowerCase());
     }
 
     @Override public void onPublishCardSuccess(Card card) {
         userManager.setUserCard(card);
-        activity.startChatControlActivity(userManager.getCurrentUser()
-                                                     .getName());
+        firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                userManager.setToken(new DefaultToken(task.getResult().getToken()));
 
+                activity.startChatControlActivity(firebaseAuth.getCurrentUser()
+                                                              .getEmail().toLowerCase());
+            } else {
+                String error = errorResolver.resolve(task.getException());
+                if (error == null && task.getException() != null)
+                    error = task.getException()
+                                .getMessage();
+
+                UiUtils.toast(this, error == null ? "Error getting token" : error);
+            }
+        });
     }
 
     @Override public void onPublishCardError(Throwable t) {
@@ -189,20 +231,33 @@ public final class LogInFragment
     }
 
     @Override public void onKeyExists() {
-        activity.startChatControlActivity(userManager.getCurrentUser()
-                                                     .getName());
+        firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                userManager.setToken(new DefaultToken(task.getResult().getToken()));
+
+                activity.startChatControlActivity(firebaseAuth.getCurrentUser()
+                                                              .getEmail().toLowerCase());
+            } else {
+                String error = errorResolver.resolve(task.getException());
+                if (error == null && task.getException() != null)
+                    error = task.getException()
+                                .getMessage();
+
+                UiUtils.toast(this, error == null ? "Error getting token" : error);
+            }
+        });
     }
 
     @Override public void onKeyNotExists() {
         presenter.disposeAll();
         NewKeyDialog newKeyDialog = new NewKeyDialog(activity,
                                                      R.style.NotTransBtnsDialogTheme,
-                                                     getString(R.string.new_keys),
-                                                     getString(R.string.outdate_old_card));
+                                                     getString(R.string.new_private_key),
+                                                     getString(R.string.new_private_key_generation));
 
         newKeyDialog.setOnNewKeysDialogListener(() -> {
-            presenter.requestPublishCard(userManager.getCurrentUser()
-                                                    .getName());
+            presenter.requestPublishCard(firebaseAuth.getCurrentUser()
+                                                     .getEmail().toLowerCase());
         });
     }
 

@@ -67,7 +67,4 @@ public class LogInFragmentModule {
         return new LogInPresenter(virgilRx, privateKeyStorage, logInVirgilInteractor, logInKeyStorageInteractor);
     }
 
-    @Provides FirebaseAuth provideFirebaseAuth() {
-        return FirebaseAuth.getInstance();
-    }
 }

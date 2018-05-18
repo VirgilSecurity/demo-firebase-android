@@ -31,30 +31,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.model;
+package com.android.virgilsecurity.virgilonfire.util;
 
-import com.google.gson.annotations.SerializedName;
+import android.text.InputFilter;
+import android.text.Spanned;
 
-/**
- * . _  _
- * .| || | _
- * -| || || |   Created by:
- * .| || || |-  Danylo Oliinyk
- * ..\_  || |   on
- * ....|  _/    4/2/18
- * ...-| | \    at Virgil Security
- * ....|_|-
- */
-public class GoogleToken implements Token {
+public class DefaultSymbolsInputFilter implements InputFilter {
 
-    @SerializedName("google_token")
-    private final String token;
+    public CharSequence filter(CharSequence source, int start, int end,
+                               Spanned dest, int dstart, int dend) {
 
-    public GoogleToken(String token) {
-        this.token = token;
-    }
+        final String constraint = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-()/='+:?!%&*<>;{}@#_";
 
-    @Override public String getToken() {
-        return token;
+        StringBuilder builder = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            char c = source.charAt(i);
+            if (constraint.contains(String.valueOf(c))) {
+                builder.append(c);
+            }
+        }
+
+        boolean allCharactersValid = (builder.length() == end - start);
+        return allCharactersValid ? null : builder.toString();
     }
 }

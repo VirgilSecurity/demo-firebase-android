@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.data.virgil;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper;
+import com.virgilsecurity.sdk.jwt.TokenContext;
 import com.virgilsecurity.sdk.jwt.accessProviders.CallbackJwtProvider;
 
 import java.io.IOException;
@@ -55,9 +56,9 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
         this.userManager = userManager;
     }
 
-    @Override public String onGetToken() {
+    @Override public String onGetToken(TokenContext tokenContext) {
         try {
-            return helper.getToken(userManager.getGoogleToken()).execute().body().getToken();
+            return helper.getToken(userManager.getToken()).execute().body().getToken();
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             throw new ServiceException("Failed on get token");

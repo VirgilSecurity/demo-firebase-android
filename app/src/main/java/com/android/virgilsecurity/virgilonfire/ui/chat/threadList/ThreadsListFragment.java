@@ -38,6 +38,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.android.virgilsecurity.virgilonfire.R;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity;
@@ -55,7 +56,7 @@ import butterknife.BindView;
  */
 
 public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
-        implements DataReceivedInteractor<List<DefaultUser>> {
+        implements DataReceivedInteractor<List<DefaultChatThread>> {
 
     @Inject protected ThreadsListRVAdapter adapter;
     @Inject protected ThreadsListFragmentPresenter presenter;
@@ -75,7 +76,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
         adapter.setClickListener((position, thread) -> {
             activity.changeFragmentWithData(ChatControlActivity.ChatState.THREAD, thread);
         });
-        presenter.requestUsersList();
+        presenter.requestThreadsList();
     }
 
     @Override public void onResume() {
@@ -94,7 +95,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
 
     }
 
-    @Override public void onDataReceived(List<DefaultUser> receivedData) {
+    @Override public void onDataReceived(List<DefaultChatThread> receivedData) {
         adapter.setItems(receivedData);
         activity.showBaseLoading(false);
         showProgress(false);
