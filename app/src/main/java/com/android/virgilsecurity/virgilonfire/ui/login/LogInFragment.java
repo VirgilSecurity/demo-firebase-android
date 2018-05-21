@@ -38,7 +38,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.View;
 
 import com.android.virgilsecurity.virgilonfire.R;
@@ -90,8 +93,12 @@ public final class LogInFragment
 
     @BindView(R.id.etEmail)
     protected TextInputEditText etEmail;
+    @BindView(R.id.tilEmail)
+    protected TextInputLayout tilEmail;
     @BindView(R.id.etPassword)
     protected TextInputEditText etPassword;
+    @BindView(R.id.tilPassword)
+    protected TextInputLayout tilPassword;
     @BindView(R.id.btnSignIn)
     protected View btnSignIn;
     @BindView(R.id.btnSignUp)
@@ -118,6 +125,34 @@ public final class LogInFragment
     private void initInputFields() {
         etEmail.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
         etPassword.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
+
+        etEmail.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                tilEmail.setError(null);
+            }
+
+            @Override public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        etPassword.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                tilPassword.setError(null);
+            }
+
+            @Override public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
 
@@ -127,17 +162,17 @@ public final class LogInFragment
 
             error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
             if (error != null) {
-                etEmail.setError(error);
+                tilEmail.setError(error);
                 return;
             }
 
             error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
             if (error != null) {
-                etPassword.setError(error);
+                tilPassword.setError(error);
                 return;
             }
 
-            firebaseAuth.createUserWithEmailAndPassword(etEmail.getText()
+            firebaseAuth.signInWithEmailAndPassword(etEmail.getText()
                                                                .toString(),
                                                         etPassword.getText()
                                                                   .toString())
@@ -155,11 +190,11 @@ public final class LogInFragment
 
             error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
             if (error != null) {
-                etPassword.setError(error);
+                tilPassword.setError(error);
                 return;
             }
 
-            firebaseAuth.signInWithEmailAndPassword(etEmail.getText()
+            firebaseAuth.createUserWithEmailAndPassword(etEmail.getText()
                                                                .toString(),
                                                         etPassword.getText()
                                                                   .toString())
@@ -171,7 +206,19 @@ public final class LogInFragment
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
         if (user != null) {
-            presenter.requestSearchCards(user.getEmail());
+            firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(taskGetIdToken -> {
+                if (taskGetIdToken.isSuccessful()) {
+                    userManager.setToken(new DefaultToken(taskGetIdToken.getResult().getToken()));
+                    presenter.requestSearchCards(user.getEmail());
+                } else {
+                    String error = errorResolver.resolve(taskGetIdToken.getException());
+                    if (error == null && taskGetIdToken.getException() != null)
+                        error = taskGetIdToken.getException()
+                                    .getMessage();
+
+                    UiUtils.toast(this, error == null ? "Error getting token" : error);
+                }
+            });
         } else {
             String error = errorResolver.resolve(task.getException());
             if (error == null && task.getException() != null)
@@ -209,21 +256,8 @@ public final class LogInFragment
 
     @Override public void onPublishCardSuccess(Card card) {
         userManager.setUserCard(card);
-        firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                userManager.setToken(new DefaultToken(task.getResult().getToken()));
-
                 activity.startChatControlActivity(firebaseAuth.getCurrentUser()
                                                               .getEmail().toLowerCase());
-            } else {
-                String error = errorResolver.resolve(task.getException());
-                if (error == null && task.getException() != null)
-                    error = task.getException()
-                                .getMessage();
-
-                UiUtils.toast(this, error == null ? "Error getting token" : error);
-            }
-        });
     }
 
     @Override public void onPublishCardError(Throwable t) {
@@ -231,21 +265,8 @@ public final class LogInFragment
     }
 
     @Override public void onKeyExists() {
-        firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                userManager.setToken(new DefaultToken(task.getResult().getToken()));
-
                 activity.startChatControlActivity(firebaseAuth.getCurrentUser()
                                                               .getEmail().toLowerCase());
-            } else {
-                String error = errorResolver.resolve(task.getException());
-                if (error == null && task.getException() != null)
-                    error = task.getException()
-                                .getMessage();
-
-                UiUtils.toast(this, error == null ? "Error getting token" : error);
-            }
-        });
     }
 
     @Override public void onKeyNotExists() {

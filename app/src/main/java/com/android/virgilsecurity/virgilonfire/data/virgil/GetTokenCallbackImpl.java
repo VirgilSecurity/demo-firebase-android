@@ -42,6 +42,8 @@ import com.virgilsecurity.sdk.jwt.accessProviders.CallbackJwtProvider;
 
 import java.io.IOException;
 
+import retrofit2.Response;
+
 /**
  * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
  * -__o
@@ -61,6 +63,10 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
 
     @Override public String onGetToken(TokenContext tokenContext) {
         try {
+            Response response = helper.getToken(userManager.getToken(),
+                                                firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                                      .execute();
+
             return helper.getToken(userManager.getToken(),
                                    firebaseAuth.getCurrentUser().getEmail().toLowerCase())
                          .execute()

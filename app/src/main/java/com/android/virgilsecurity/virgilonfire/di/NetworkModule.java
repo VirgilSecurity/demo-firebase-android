@@ -73,7 +73,7 @@ public class NetworkModule {
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(httpClient)
-                .baseUrl("http://10.0.2.2:7070") // FIXME: 3/22/18 change to remote url
+                .baseUrl("https://us-central1-fir-chat-ios-2c1d0.cloudfunctions.net/api/") // FIXME: 3/22/18 change to remote url
                 .build();
     }
 

@@ -48,7 +48,7 @@ import retrofit2.http.POST;
 
 public interface JwtExampleService {
 
-    @POST("token") Call<TokenResponse> getToken(
+    @POST("generate_jwt") Call<TokenResponse> getToken(
             @Header("Authorization") String token,
             @Body String identity
     );

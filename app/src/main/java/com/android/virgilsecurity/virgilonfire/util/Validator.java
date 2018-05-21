@@ -63,9 +63,12 @@ public class Validator {
             case EMAIL:
                 if (text.isEmpty())
                     return "Email should not be empty";
+                else if (text.split("@").length < 2)
+                    return "Wrong email format";
+
             case PASSWORD:
                 if (text.isEmpty())
-                    return "Email should not be empty";
+                    return "Password should not be empty";
         }
 
         return null;
