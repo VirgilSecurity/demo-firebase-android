@@ -78,6 +78,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
 
     public static final String USERNAME = "USERNAME";
 
+    private CreateThreadDialog createThreadDialog;
     private ThreadsListFragment threadsListFragment;
     private ThreadFragment threadFragment;
     private boolean secondPress;
@@ -138,6 +139,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
 
     public void changeFragmentWithData(@ChatState String tag, @Nullable String data) {
         if (tag.equals(ChatState.THREADS_LIST)) {
+            dlDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             showBackButton(false, (view) -> onBackPressed());
             showHamburger(true, view -> {
                 if (!dlDrawer.isDrawerOpen(Gravity.START))
@@ -152,6 +154,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
             if (data != null)
                 threadFragment.setInterlocutorName(data);
 
+            dlDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             showBackButton(true, (view) -> onBackPressed());
             showHamburger(false, (view) -> {
             });
@@ -187,12 +190,11 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                                                    getString(R.string.enter_username));
 
                     createThreadDialog.setOnCreateThreadDialogListener((username -> {
-                        if (ParseUser.getCurrentUser().getUsername().equals(username)) {
-                            Utils.toast(this, R.string.no_chat_with_yourself);
-                        }
-                        else {
+                        if (firebaseAuth.getCurrentUser().getEmail().toLowerCase().equals(username)) {
+                            UiUtils.toast(this, R.string.no_chat_with_yourself);
+                        } else {
                             createThreadDialog.showProgress(true);
-                            getPresenter().requestUser(username);
+                            threadsListFragment.issueCreateThread(username.toLowerCase());
                         }
                     }));
 
@@ -216,6 +218,16 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                     return false;
             }
         });
+    }
+
+    public void newThreadDialogShowProgress(boolean show) {
+        if (createThreadDialog != null)
+            createThreadDialog.showProgress(show);
+    }
+
+    public void newThreadDialogDismiss() {
+        if (createThreadDialog != null)
+            createThreadDialog.dismiss();
     }
 
     @Override public void onBackPressed() {

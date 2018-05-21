@@ -39,10 +39,12 @@ import android.view.View;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
+import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
+import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 
 import java.util.List;
 
@@ -56,13 +58,17 @@ import butterknife.BindView;
  */
 
 public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
-        implements DataReceivedInteractor<List<DefaultChatThread>> {
+        implements DataReceivedInteractor<List<DefaultChatThread>>,
+        CompleteInteractor<ThreadListFragmentPresenterReturnTypes> {
 
     @Inject protected ThreadsListRVAdapter adapter;
     @Inject protected ThreadsListFragmentPresenter presenter;
+    @Inject protected ErrorResolver errorResolver;
 
     @BindView(R.id.rvContacts) protected RecyclerView rvContacts;
     @BindView(R.id.pbLoading) View pbLoading;
+
+    private String interlocutor;
 
     @Override protected int getLayout() {
         return R.layout.fragment_threads_list;
@@ -103,5 +109,27 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
 
     private void showProgress(boolean show) {
         pbLoading.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    public void issueCreateThread(String interlocutor) {
+        if (interlocutor == null || interlocutor.isEmpty())
+            throw new IllegalArgumentException("Interlocutor should not be null or empty");
+
+        this.interlocutor = interlocutor;
+        presenter.requestCreateThread(interlocutor);
+    }
+
+    @Override public void onComplete(ThreadListFragmentPresenterReturnTypes type) {
+        switch (type) {
+            case CREATE_THREAD:
+                activity.changeFragmentWithData(ChatControlActivity.ChatState.THREAD, interlocutor);
+                break;
+        }
+    }
+
+    @Override public void onError(Throwable t) {
+        activity.newThreadDialogShowProgress(false);
+        String err = errorResolver.resolve(t);
+        UiUtils.toast(this, err != null ? err : t.getMessage());
     }
 }

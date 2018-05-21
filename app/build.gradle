@@ -104,4 +104,4 @@ dependencies {
     implementation "com.google.firebase:firebase-firestore:$firebaseFirestore"
 }
 
-//apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'

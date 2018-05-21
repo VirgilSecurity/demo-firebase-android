@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.data.virgil;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper;
+import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.jwt.TokenContext;
 import com.virgilsecurity.sdk.jwt.accessProviders.CallbackJwtProvider;
 
@@ -50,15 +51,21 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
 
     private final ServiceHelper helper;
     private final UserManager userManager;
+    private final FirebaseAuth firebaseAuth;
 
-    public GetTokenCallbackImpl(ServiceHelper helper, UserManager userManager) {
+    public GetTokenCallbackImpl(ServiceHelper helper, UserManager userManager, FirebaseAuth firebaseAuth) {
         this.helper = helper;
         this.userManager = userManager;
+        this.firebaseAuth = firebaseAuth;
     }
 
     @Override public String onGetToken(TokenContext tokenContext) {
         try {
-            return helper.getToken(userManager.getToken()).execute().body().getToken();
+            return helper.getToken(userManager.getToken(),
+                                   firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                         .execute()
+                         .body()
+                         .getToken();
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             throw new ServiceException("Failed on get token");

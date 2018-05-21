@@ -31,28 +31,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.remote;
+package com.android.virgilsecurity.virgilonfire.data.model.request;
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
-import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
+import com.google.firebase.firestore.PropertyName;
 
-import retrofit2.Call;
-import retrofit2.Retrofit;
+import java.util.List;
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    5/21/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
+public class CreateChannelRequest {
 
-public class ServiceHelper {
+    @PropertyName("members")
+    private List<String> members;
 
-    private JwtExampleService service;
+    @PropertyName("count")
+    private long count;
 
-    public ServiceHelper(Retrofit retrofit) {
-        this.service = retrofit.create(JwtExampleService.class);
+    public CreateChannelRequest() {
     }
 
-    public Call<TokenResponse> getToken(DefaultToken googleToken, String identity) {
-        return service.getToken(googleToken.getToken(), identity);
+    public CreateChannelRequest(List<String> members, long count) {
+        this.members = members;
+        this.count = count;
+    }
+
+    public List<String> getMembers() {
+        return members;
+    }
+
+    public long getCount() {
+        return count;
     }
 }

@@ -36,6 +36,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/itemNewChat"
+        android:title="@string/new_chat"
+        android:icon="@drawable/ic_group_add_black_24dp"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/itemLogOut"
         android:title="@string/log_out"
         android:icon="@drawable/ic_exit_to_app_black_24dp"

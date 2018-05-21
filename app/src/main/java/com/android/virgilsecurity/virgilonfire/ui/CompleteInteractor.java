@@ -31,28 +31,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.remote;
-
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
-import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
-
-import retrofit2.Call;
-import retrofit2.Retrofit;
+package com.android.virgilsecurity.virgilonfire.ui;
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    5/21/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
+public interface CompleteInteractor<E extends Enum<E>> {
 
-public class ServiceHelper {
+    void onComplete(E type);
 
-    private JwtExampleService service;
-
-    public ServiceHelper(Retrofit retrofit) {
-        this.service = retrofit.create(JwtExampleService.class);
-    }
-
-    public Call<TokenResponse> getToken(DefaultToken googleToken, String identity) {
-        return service.getToken(googleToken.getToken(), identity);
-    }
+    void onError(Throwable t);
 }

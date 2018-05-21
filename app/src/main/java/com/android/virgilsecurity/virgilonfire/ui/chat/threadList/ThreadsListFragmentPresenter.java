@@ -33,31 +33,32 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.threadList;
 
-import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
+import com.android.virgilsecurity.virgilonfire.data.model.exception.GenerateHashException;
+import com.android.virgilsecurity.virgilonfire.data.model.request.CreateChannelRequest;
+import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
+import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.virgilsecurity.sdk.crypto.HashAlgorithm;
+import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
+import com.virgilsecurity.sdk.utils.ConvertionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiConsumer;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -76,24 +77,31 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     private static final String COLLECTION_USERS = "Users";
     private static final String KEY_PROPERTY_MEMBERS = "members";
 
-    private FirebaseFirestore firebaseFirestore;
-    private FirebaseAuth firebaseAuth;
-    private DataReceivedInteractor<List<DefaultChatThread>> onMessageReceivedInteractor;
+    private final VirgilHelper virgilHelper;
+    private final FirebaseFirestore firebaseFirestore;
+    private final FirebaseAuth firebaseAuth;
+    private final DataReceivedInteractor<List<DefaultChatThread>> onDataReceivedInteractor;
+    private final CompleteInteractor<ThreadListFragmentPresenterReturnTypes> completeInteractor;
+
     private CompositeDisposable compositeDisposable;
 
     @Inject
     public ThreadsListFragmentPresenter(FirebaseFirestore firebaseFirestore,
                                         FirebaseAuth firebaseAuth,
-                                        DataReceivedInteractor<List<DefaultChatThread>> onMessageReceivedInteractor) {
+                                        VirgilHelper virgilHelper,
+                                        DataReceivedInteractor<List<DefaultChatThread>> onDataReceivedInteractor,
+                                        CompleteInteractor<ThreadListFragmentPresenterReturnTypes> completeInteractor) {
         this.firebaseFirestore = firebaseFirestore;
         this.firebaseAuth = firebaseAuth;
-        this.onMessageReceivedInteractor = onMessageReceivedInteractor;
+        this.virgilHelper = virgilHelper;
+        this.onDataReceivedInteractor = onDataReceivedInteractor;
+        this.completeInteractor = completeInteractor;
 
         compositeDisposable = new CompositeDisposable();
     }
 
     public void requestThreadsList() {
-        Disposable requestUsersDisposable =
+        Disposable requestThreadsDisposable =
                 Single.zip(getCurrentUser(), getChannels(),
                            (defaultUser, documentSnapshots) -> {
                                List<DefaultChatThread> threads = new ArrayList<>();
@@ -118,12 +126,24 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                            })
                       .observeOn(AndroidSchedulers.mainThread())
                       .subscribeOn(Schedulers.io())
-                      .subscribe((threads, throwable) -> {
-                          onMessageReceivedInteractor.onDataReceived(threads);
-                      });
+                      .subscribe((threads, throwable) -> onDataReceivedInteractor.onDataReceived(threads));
 
-        compositeDisposable.add(requestUsersDisposable);
-//
+        compositeDisposable.add(requestThreadsDisposable);
+    }
+
+    public void requestCreateThread(String interlocutor) {
+        String newThreadId = generateNewChannelId(interlocutor);
+
+        Disposable requestCreateThreadDisposable =
+                createThread(interlocutor, newThreadId)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .andThen(Completable.mergeArray(updateUserMe(newThreadId),
+                                                        updateUserInterlocutor(interlocutor, newThreadId)))
+                        .subscribe(() -> completeInteractor.onComplete(ThreadListFragmentPresenterReturnTypes.CREATE_THREAD),
+                                   completeInteractor::onError);
+
+        compositeDisposable.add(requestCreateThreadDisposable);
     }
 
     private Single<DefaultUser> getCurrentUser() {
@@ -161,6 +181,75 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                                  }
                              });
         });
+    }
+
+    private Completable createThread(String interlocutor, String newThreadId) {
+        return Completable.create(emitter -> {
+            List<String> members = new ArrayList<>();
+            members.add(firebaseAuth.getCurrentUser().getEmail().toLowerCase());
+            members.add(interlocutor);
+            CreateChannelRequest createChannelRequest = new CreateChannelRequest(members, 0);
+
+            firebaseFirestore.collection(COLLECTION_CHANNELS)
+                             .document(newThreadId)
+                             .set(createChannelRequest)
+                             .addOnCompleteListener(task -> {
+                                 if (task.isSuccessful())
+                                     emitter.onComplete();
+                                 else
+                                     emitter.onError(task.getException());
+                             });
+        });
+    }
+
+    private Completable updateUserMe(String newThreadId) {
+        return Completable.create(emitter -> {
+            firebaseFirestore.collection(COLLECTION_USERS)
+                             .document(firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                             .update("channels", newThreadId)
+                             .addOnCompleteListener(task -> {
+                                 if (task.isSuccessful())
+                                     emitter.onComplete();
+                                 else
+                                     emitter.onError(task.getException());
+                             });
+        });
+    }
+
+    private Completable updateUserInterlocutor(String interlocutor, String newThreadId) {
+        return Completable.create(emitter -> {
+            firebaseFirestore.collection(COLLECTION_USERS)
+                             .document(interlocutor)
+                             .update("channels", newThreadId)
+                             .addOnCompleteListener(task -> {
+                                 if (task.isSuccessful())
+                                     emitter.onComplete();
+                                 else
+                                     emitter.onError(task.getException());
+                             });
+        });
+    }
+
+    private String generateNewChannelId(String interlocutor) {
+        String userMe = firebaseAuth.getCurrentUser().getEmail().toLowerCase();
+        byte[] concatenatedHashedUsersData;
+
+        try {
+            if (userMe.compareTo(interlocutor) >= 0) {
+                concatenatedHashedUsersData = virgilHelper.getVirgilCrypto()
+                                                          .generateHash((userMe + interlocutor).getBytes(),
+                                                                        HashAlgorithm.SHA256);
+            } else {
+                concatenatedHashedUsersData = virgilHelper.getVirgilCrypto()
+                                                          .generateHash((interlocutor + userMe).getBytes(),
+                                                                        HashAlgorithm.SHA256);
+            }
+        } catch (CryptoException e) {
+            e.printStackTrace();
+            throw new GenerateHashException();
+        }
+
+        return ConvertionUtils.toHex(concatenatedHashedUsersData);
     }
 
     @Override

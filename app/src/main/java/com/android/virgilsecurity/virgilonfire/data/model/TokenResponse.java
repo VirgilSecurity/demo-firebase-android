@@ -42,8 +42,11 @@ import com.google.gson.annotations.SerializedName;
 
 public class TokenResponse {
 
-    @SerializedName("access_token")
-    private final String token;
+    @SerializedName("token")
+    private String token;
+
+    public TokenResponse() {
+    }
 
     public TokenResponse(String token) {
 

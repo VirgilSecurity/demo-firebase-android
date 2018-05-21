@@ -46,8 +46,12 @@
     <string name="press_exit_once_more">Press back once more to exit</string>
     <string name="virgil_securiry_copyright">Copyright © 2015–2018 Virgil Security Inc.</string>
     <string name="error_sending_message">Error sending message</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
 
     <!-- LogIn -->
+    <string name="signup">SignUp</string>
+    <string name="signin">SignIn</string>
     <string name="virgil_firebase_messenger">Virgil-Firebase messenger</string>
     <string name="please_enter_creds">Please enter your credentials</string>
     <string name="multiply_cards">Multiply cards error</string>
@@ -60,6 +64,10 @@
     <!-- Threads List -->
     <string name="threads_list_name">Threads List</string>
     <string name="no_threads">No conversations yet. Check if service is fine.</string>
+    <string name="enter_username">Enter username to start chat with</string>
+    <string name="creating_thread">Creating thread…</string>
+    <string name="new_chat">New thread</string>
+    <string name="no_chat_with_yourself">No chats with yourself, please</string>
 
     <!-- Thread -->
     <string name="enter_your_message">Enter your message</string>
@@ -68,9 +76,6 @@
 
     <!-- Drawer -->
     <string name="log_out">Log out</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="signup">SignUp</string>
-    <string name="signin">SignIn</string>
+    <string name="create_thread">Create thread</string>
 
 </resources>

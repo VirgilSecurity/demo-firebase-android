@@ -31,28 +31,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.remote;
-
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
-import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
-
-import retrofit2.Call;
-import retrofit2.Retrofit;
+package com.android.virgilsecurity.virgilonfire.data.model.exception;
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    5/21/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
+public class GenerateHashException extends RuntimeException {
 
-public class ServiceHelper {
-
-    private JwtExampleService service;
-
-    public ServiceHelper(Retrofit retrofit) {
-        this.service = retrofit.create(JwtExampleService.class);
+    public GenerateHashException() {
     }
 
-    public Call<TokenResponse> getToken(DefaultToken googleToken, String identity) {
-        return service.getToken(googleToken.getToken(), identity);
+    public GenerateHashException(String message) {
+        super(message);
+    }
+
+    public GenerateHashException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public GenerateHashException(Throwable cause) {
+        super(cause);
+    }
+
+    public GenerateHashException(String message,
+                                 Throwable cause,
+                                 boolean enableSuppression,
+                                 boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

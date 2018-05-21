@@ -33,7 +33,8 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.threadList;
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
+import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 
 import java.util.List;
@@ -59,7 +60,12 @@ public class ThreadsListFragmentModule {
         return new ThreadsListRVAdapter();
     }
 
-    @Provides DataReceivedInteractor<List<DefaultUser>> providesDataReceivedInteractor(
+    @Provides DataReceivedInteractor<List<DefaultChatThread>> providesDataReceivedInteractor(
+            ThreadsListFragment threadsListFragment) {
+        return threadsListFragment;
+    }
+
+    @Provides CompleteInteractor<ThreadListFragmentPresenterReturnTypes> providesCompleteInteractor(
             ThreadsListFragment threadsListFragment) {
         return threadsListFragment;
     }

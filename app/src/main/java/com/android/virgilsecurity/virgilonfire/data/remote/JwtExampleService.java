@@ -38,6 +38,7 @@ import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
@@ -48,6 +49,7 @@ import retrofit2.http.POST;
 public interface JwtExampleService {
 
     @POST("token") Call<TokenResponse> getToken(
-            @Body DefaultToken token
+            @Header("Authorization") String token,
+            @Body String identity
     );
 }
