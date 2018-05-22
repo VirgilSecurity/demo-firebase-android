@@ -41,6 +41,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.google.firebase.auth.FirebaseAuth;
@@ -131,7 +132,7 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
         return items != null ? items.size() : -1;
     }
 
-    void setItems(List<Message> items) {
+    void setItems(List<DefaultMessage> items) {
         if (items != null)
             this.items = new ArrayList<>(items);
         else

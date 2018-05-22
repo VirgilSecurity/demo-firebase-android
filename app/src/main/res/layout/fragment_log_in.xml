@@ -162,6 +162,16 @@
         app:layout_constraintStart_toEndOf="@id/btnSignIn"
         app:layout_constraintTop_toTopOf="@id/btnSignIn" />
 
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/btnSignIn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/btnSignIn"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"

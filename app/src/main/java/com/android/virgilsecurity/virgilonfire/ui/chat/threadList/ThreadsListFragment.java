@@ -81,7 +81,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
         rvContacts.setLayoutManager(layoutManager);
         rvContacts.setAdapter(adapter);
         adapter.setClickListener((position, thread) -> {
-            activity.changeFragmentWithData(ChatControlActivity.ChatState.THREAD, thread);
+            activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD, thread);
         });
         presenter.requestThreadsList();
     }
@@ -133,7 +133,8 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
             case CREATE_THREAD:
                 tvEmpty.setVisibility(View.GONE);
                 activity.newThreadDialogDismiss();
-                activity.changeFragmentWithData(ChatControlActivity.ChatState.THREAD, interlocutor);
+                activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
+                                                  adapter.getItemById(interlocutor));
                 break;
         }
     }

@@ -37,8 +37,27 @@ import android.content.Context;
 
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.Token;
+import com.android.virgilsecurity.virgilonfire.data.model.exception.CardParseException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.InstanceCreator;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.virgilsecurity.sdk.cards.Card;
+import com.virgilsecurity.sdk.cards.model.RawSignature;
+import com.virgilsecurity.sdk.cards.model.RawSignedModel;
+import com.virgilsecurity.sdk.crypto.CardCrypto;
+import com.virgilsecurity.sdk.crypto.PublicKey;
+import com.virgilsecurity.sdk.crypto.VirgilCardCrypto;
+import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
+import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
@@ -47,27 +66,50 @@ import com.virgilsecurity.sdk.cards.Card;
 
 public class UserManager extends PropertyManager {
 
-    private static final String USER_CARD = "USER_CARD";
+    private static final String USER_CARDS = "USER_CARDS";
     private static final String TOKEN = "TOKEN";
 
     public UserManager(Context context) {
         super(context);
     }
 
-    public void setUserCard(Card card) {
-        setValue(USER_CARD, new Gson().toJson(card));
+    public void setUserCards(List<Card> cards) {
+        List<RawSignedModel> rawSignedModels = new ArrayList<>();
+        for (Card card : cards)
+            rawSignedModels.add(card.getRawCard());
+
+        String serialized = new Gson().toJson(rawSignedModels);
+
+        setValue(USER_CARDS, serialized);
     }
 
-    public Card getUserCard() {
-        return new Gson().fromJson(
-                (String) getValue(USER_CARD,
-                                  SupportedTypes.STRING,
-                                  null),
-                Card.class);
+    public List<Card> getUserCards() {
+        String serialized = getValue(USER_CARDS,
+                                     SupportedTypes.STRING,
+                                     null);
+
+        List<RawSignedModel> rawSignedModels =
+                new Gson()
+                        .fromJson(serialized ,
+                                  new TypeToken<List<RawSignedModel>>() {
+                                  }.getType());
+
+        List<Card> cards = new ArrayList<>();
+        CardCrypto cardCrypto = new VirgilCardCrypto();
+        for (RawSignedModel cardModel : rawSignedModels) {
+            try {
+                cards.add(Card.parse(cardCrypto, cardModel));
+            } catch (CryptoException e) {
+                e.printStackTrace();
+                throw new CardParseException();
+            }
+        }
+
+        return cards;
     }
 
     public void clearUserCard() {
-        clearValue(USER_CARD);
+        clearValue(USER_CARDS);
     }
 
 

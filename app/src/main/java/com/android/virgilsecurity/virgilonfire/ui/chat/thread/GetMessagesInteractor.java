@@ -33,11 +33,9 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
-import com.android.virgilsecurity.virgilonfire.data.model.Message;
-import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 
-import dagger.Module;
-import dagger.Provides;
+import java.util.List;
 
 /**
  * . _  _
@@ -45,31 +43,13 @@ import dagger.Provides;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    5/22/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
+public interface GetMessagesInteractor {
 
-@Module
-public class ThreadFragmentModule {
+    void onGetMessagesSuccess(List<DefaultMessage> messages);
 
-    @Provides
-    DataReceivedInteractor<Message> provideDataReceivedInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    OnMessageSentInteractor provideOnMessageSentInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    SearchCardsInteractor provideSearchCardsInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    GetMessagesInteractor provideGetMessagesInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
+    void onGetMessagesError(Throwable t);
 }

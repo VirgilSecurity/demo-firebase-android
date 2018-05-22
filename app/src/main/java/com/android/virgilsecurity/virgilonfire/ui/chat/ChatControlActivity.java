@@ -35,6 +35,7 @@ package com.android.virgilsecurity.virgilonfire.ui.chat;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
@@ -42,10 +43,13 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseActivityDi;
 import com.android.virgilsecurity.virgilonfire.ui.chat.thread.ThreadFragment;
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.ThreadsListFragment;
@@ -62,7 +66,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import butterknife.BindView;
-import butterknife.internal.Utils;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasFragmentInjector;
@@ -134,10 +137,10 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     }
 
     public void changeFragment(@ChatState String tag) {
-        changeFragmentWithData(tag, null);
+        changeFragmentWithThread(tag, null);
     }
 
-    public void changeFragmentWithData(@ChatState String tag, @Nullable String data) {
+    public void changeFragmentWithThread(@ChatState String tag, @Nullable ChatThread chatThread) {
         if (tag.equals(ChatState.THREADS_LIST)) {
             dlDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             showBackButton(false, (view) -> onBackPressed());
@@ -151,8 +154,8 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
             UiUtils.hideFragment(getFragmentManager(), threadFragment);
             UiUtils.showFragment(getFragmentManager(), threadsListFragment);
         } else {
-            if (data != null)
-                threadFragment.setInterlocutorName(data);
+            if (chatThread != null)
+                threadFragment.setChatThread(chatThread);
 
             dlDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             showBackButton(true, (view) -> onBackPressed());
@@ -231,9 +234,14 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     }
 
     @Override public void onBackPressed() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
 
         if (threadFragment.isVisible()) {
-            changeFragmentWithData(ChatState.THREADS_LIST, getString(R.string.threads_list_name));
+            changeFragment(ChatState.THREADS_LIST);
             return;
         }
 

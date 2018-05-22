@@ -35,7 +35,6 @@ package com.android.virgilsecurity.virgilonfire.ui.login;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -55,13 +54,10 @@ import com.android.virgilsecurity.virgilonfire.util.DefaultSymbolsInputFilter;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 import com.android.virgilsecurity.virgilonfire.util.Validator;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.virgilsecurity.sdk.cards.Card;
 
@@ -83,7 +79,7 @@ import static com.android.virgilsecurity.virgilonfire.di.InjectionConstants.REQU
 
 public final class LogInFragment
         extends BaseFragmentDi<LogInActivity>
-        implements LogInVirgilInteractor, LogInKeyStorageInteractor {
+        implements LogInVirgilInteractor, LogInKeyStorageInteractor, RefreshUserCardsInteractor {
 
     private static final String COLLECTION_USERS = "Users";
 
@@ -106,6 +102,8 @@ public final class LogInFragment
     protected View btnSignIn;
     @BindView(R.id.btnSignUp)
     protected View btnSignUp;
+    @BindView(R.id.pbLoading)
+    protected View pbLoading;
 
     public static LogInFragment newInstance() {
 
@@ -161,6 +159,10 @@ public final class LogInFragment
 
     private void initFirebaseAuth() {
         btnSignIn.setOnClickListener(v -> {
+            pbLoading.setVisibility(View.VISIBLE);
+            btnSignIn.setVisibility(View.GONE);
+            btnSignUp.setVisibility(View.GONE);
+
             String error;
 
             error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
@@ -184,6 +186,10 @@ public final class LogInFragment
         });
 
         btnSignUp.setOnClickListener(v -> {
+            pbLoading.setVisibility(View.VISIBLE);
+            btnSignIn.setVisibility(View.GONE);
+            btnSignUp.setVisibility(View.GONE);
+
             String error;
 
             error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
@@ -273,6 +279,10 @@ public final class LogInFragment
         }); // If we can't resolve error here -
         // then it's normal behaviour. Proceed.
         if (error != null) {
+            pbLoading.setVisibility(View.GONE);
+            btnSignIn.setVisibility(View.VISIBLE);
+            btnSignUp.setVisibility(View.VISIBLE);
+
             UiUtils.toast(this, error);
             firebaseAuth.signOut();
             presenter.disposeAll();
@@ -284,22 +294,27 @@ public final class LogInFragment
                                                  .getEmail().toLowerCase());
     }
 
+
     @Override public void onPublishCardSuccess(Card card) {
-        userManager.setUserCard(card);
-        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                      .getEmail().toLowerCase());
+        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser().getEmail().toLowerCase());
     }
 
     @Override public void onPublishCardError(Throwable t) {
+        pbLoading.setVisibility(View.GONE);
+        btnSignIn.setVisibility(View.VISIBLE);
+        btnSignUp.setVisibility(View.VISIBLE);
+
         UiUtils.toast(this, errorResolver.resolve(t));
     }
 
     @Override public void onKeyExists() {
-        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                      .getEmail().toLowerCase());
+        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser().getEmail().toLowerCase());
     }
 
     @Override public void onKeyNotExists() {
+        pbLoading.setVisibility(View.GONE);
+        btnSignIn.setVisibility(View.VISIBLE);
+        btnSignUp.setVisibility(View.VISIBLE);
         presenter.disposeAll();
         NewKeyDialog newKeyDialog = new NewKeyDialog(activity,
                                                      R.style.NotTransBtnsDialogTheme,
@@ -316,5 +331,15 @@ public final class LogInFragment
         super.onStop();
 
         presenter.disposeAll();
+    }
+
+    @Override public void onRefreshUserCardsSuccess(List<Card> cards) {
+        userManager.setUserCards(cards);
+        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
+                                                      .getEmail().toLowerCase());
+    }
+
+    @Override public void onRefreshUserCardsError(Throwable t) {
+        UiUtils.toast(this, errorResolver.resolve(t));
     }
 }

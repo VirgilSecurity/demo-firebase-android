@@ -33,6 +33,8 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
+import com.google.firebase.firestore.PropertyName;
+
 /**
  * Created by Danylo Oliinyk on 3/27/18 at Virgil Security.
  * -__o
@@ -43,11 +45,13 @@ public class DefaultChatThread implements ChatThread {
     private final String threadId;
     private final String sender;
     private final String receiver;
+    private final long messagesCount;
 
-    public DefaultChatThread(String threadId, String sender, String receiver) {
+    public DefaultChatThread(String threadId, String sender, String receiver, long messagesCount) {
         this.threadId = threadId;
         this.sender = sender;
         this.receiver = receiver;
+        this.messagesCount = messagesCount;
     }
 
     @Override public String getThreadId() {
@@ -60,5 +64,9 @@ public class DefaultChatThread implements ChatThread {
 
     @Override public String getReceiver() {
         return receiver;
+    }
+
+    public long getMessagesCount() {
+        return messagesCount;
     }
 }

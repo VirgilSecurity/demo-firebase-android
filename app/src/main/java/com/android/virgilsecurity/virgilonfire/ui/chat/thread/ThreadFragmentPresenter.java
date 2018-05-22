@@ -34,18 +34,19 @@
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
-import com.android.virgilsecurity.virgilonfire.util.SerializationUtils;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 
@@ -55,12 +56,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.WebSocket;
-import rx.Subscription;
 
 /**
  * . _  _
@@ -73,26 +74,31 @@ import rx.Subscription;
  * ....|_|-
  */
 public class ThreadFragmentPresenter implements BasePresenter {
+    private static final String COLLECTION_CHANNELS = "Channels";
+    private static final String COLLECTION_MESSAGES = "Messages";
+    private static final String KEY_PROPERTY_COUNT = "count";
 
     private Context context;
     private DataReceivedInteractor<Message> messageReceivedInteractor;
     private OnMessageSentInteractor onMessageSentInteractor;
-    private WebSocket webSocketInterlocutor;
-    private Subscription sendMessageSubscription;
+    private GetMessagesInteractor getMessagesInteractor;
+    private SearchCardsInteractor searchCardsInteractor;
     private CompositeDisposable compositeDisposable;
     private VirgilRx virgilRx;
-    private SearchCardsInteractor searchCardsInteractor;
     private UserManager userManager;
     private VirgilHelper virgilHelper;
+    private FirebaseFirestore firestore;
 
     @Inject
     public ThreadFragmentPresenter(Context context,
                                    DataReceivedInteractor<Message> messageReceivedInteractor,
                                    OnMessageSentInteractor onMessageSentInteractor,
+                                   GetMessagesInteractor getMessagesInteractor,
                                    VirgilRx virgilRx,
                                    SearchCardsInteractor searchCardsInteractor,
                                    UserManager userManager,
-                                   VirgilHelper virgilHelper) {
+                                   VirgilHelper virgilHelper,
+                                   FirebaseFirestore firestore) {
         this.context = context;
         this.messageReceivedInteractor = messageReceivedInteractor;
         this.onMessageSentInteractor = onMessageSentInteractor;
@@ -100,14 +106,17 @@ public class ThreadFragmentPresenter implements BasePresenter {
         this.searchCardsInteractor = searchCardsInteractor;
         this.userManager = userManager;
         this.virgilHelper = virgilHelper;
+        this.firestore = firestore;
+        this.getMessagesInteractor = getMessagesInteractor;
 
         compositeDisposable = new CompositeDisposable();
     }
 
-    public void requestSendMessage(List<Card> interlocutorCards, Message message) {
+    public void requestSendMessage(List<Card> interlocutorCards, Message message, ChatThread chatThread) {
         List<VirgilPublicKey> publicKeys = new ArrayList<>();
-        publicKeys.add((VirgilPublicKey) userManager.getUserCard()
-                                                    .getPublicKey());
+
+        for (Card card : userManager.getUserCards())
+            publicKeys.add((VirgilPublicKey) card.getPublicKey());
 
         for (Card card : interlocutorCards)
             publicKeys.add((VirgilPublicKey) card.getPublicKey());
@@ -118,26 +127,24 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                                       encryptedText,
                                                       new Timestamp(new Date()));
 
-//        val newMessage = mapOf(
-//                NAME_FIELD to edit_name.text.toString(),
-//                TEXT_FIELD to edit_message.text.toString())
-//        firestoreChat.set(newMessage)
-//                     .addOnSuccessListener( {
-//                                                    // Toast Successful Se
-//                                            })
-//                .addOnFailureListener { e -> Log.e("ERROR", e.message) }
-//
-//        sendMessageSubscription =
-//                RxMoreObservables.sendMessage(webSocketInterlocutor,
-//                                              SerializationUtils.toJson(encryptedMessage))
-//                                 .subscribe(success -> {
-//                                     if (success)
-//                                         onMessageSentInteractor.onSendMessageSuccess();
-//                                     else
-//                                         onMessageSentInteractor.onSendMessageError(
-//                                                 new Throwable(
-//                                                         context.getString(R.string.error_sending_message)));
-//                                 });
+        Disposable sendMessageRequest = sendMessage((DefaultMessage) encryptedMessage,
+                                                    (DefaultChatThread) chatThread)
+                .subscribe(() -> {
+                               onMessageSentInteractor.onSendMessageSuccess();
+                           },
+                           error -> {
+                               onMessageSentInteractor.onSendMessageError(error);
+                           });
+
+        compositeDisposable.add(sendMessageRequest);
+    }
+
+    public void requestGetMessages(ChatThread chatThread) {
+        Disposable getMessagesRequest = getMessagesByChannelId(chatThread.getThreadId())
+                .subscribe(messages -> getMessagesInteractor.onGetMessagesSuccess(messages),
+                           error -> getMessagesInteractor.onGetMessagesError(error));
+
+        compositeDisposable.add(getMessagesRequest);
     }
 
     public void requestSearchCards(String identity) {
@@ -155,10 +162,55 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable.add(searchCardDisposable);
     }
 
+    private Single<List<DefaultMessage>> getMessagesByChannelId(String channelId) {
+        return Single.create(emitter -> {
+            firestore.collection(COLLECTION_CHANNELS)
+                     .document(channelId)
+                     .collection(COLLECTION_MESSAGES)
+                     .get()
+                     .addOnCompleteListener(task -> {
+                         if (task.isSuccessful()) {
+                             List<DefaultMessage> messages = new ArrayList<>();
+                             for (DocumentSnapshot snapshot : task.getResult())
+                                 messages.add(snapshot.toObject(DefaultMessage.class));
+
+                             emitter.onSuccess(messages);
+                         } else {
+                             emitter.onError(task.getException());
+                         }
+                     });
+        });
+    }
+
+    private Completable sendMessage(DefaultMessage message, DefaultChatThread chatThread) {
+        return Completable.create(emitter -> {
+            firestore.collection(COLLECTION_CHANNELS)
+                     .document(chatThread.getThreadId())
+                     .collection(COLLECTION_MESSAGES)
+                     .document(chatThread.getMessagesCount() + 1 + "")
+                     .set(message)
+                     .addOnCompleteListener(task -> {
+                         if (task.isSuccessful()) {
+                             emitter.onComplete();
+                         } else {
+                             emitter.onError(task.getException());
+                         }
+                     });
+        }).andThen(Completable.create(emitter -> {
+            firestore.collection(COLLECTION_CHANNELS)
+                     .document(chatThread.getThreadId())
+                     .update(KEY_PROPERTY_COUNT, chatThread.getMessagesCount() + 1)
+                     .addOnCompleteListener(task -> {
+                         if (task.isSuccessful())
+                             emitter.onComplete();
+                         else
+                             emitter.onError(task.getException());
+                     });
+        }));
+    }
+
     @Override public void disposeAll() {
         compositeDisposable.clear();
-        if (sendMessageSubscription != null)
-            sendMessageSubscription.unsubscribe();
     }
 
     public void turnOnMessageListener() {

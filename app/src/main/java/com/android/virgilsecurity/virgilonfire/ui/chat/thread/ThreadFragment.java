@@ -47,6 +47,7 @@ import android.widget.ImageButton;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.CardsNotFoundException;
@@ -74,7 +75,8 @@ import butterknife.OnClick;
  */
 
 public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
-        implements DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor {
+        implements DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor,
+        GetMessagesInteractor {
 
     @Inject protected ThreadRVAdapter adapter;
     @Inject protected ThreadFragmentPresenter presenter;
@@ -82,7 +84,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Inject protected UserManager userManager;
     @Inject protected FirebaseAuth firebaseAuth;
 
-    private String interlocutorName;
+    private ChatThread chatThread;
     private List<Card> interlocutorCards;
 
     @BindView(R.id.rvChat) protected RecyclerView rvChat;
@@ -106,9 +108,6 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     @Override public void onResume() {
         super.onResume();
-
-        //        messageReceivedInteractor.onDataReceived(message);
-
     }
 
     @Override public void onPause() {
@@ -133,15 +132,13 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Override
     public void onSendMessageSuccess() {
         etMessage.setText("");
-        lockSendUi(false, true);
-        lockSendUi(true, false);
+        lockSendUi(false, false);
     }
 
     @Override
     public void onSendMessageError(Throwable t) {
         etMessage.setText("");
-        lockSendUi(false, true);
-        lockSendUi(true, false);
+        lockSendUi(false, false);
         UiUtils.toast(this, errorResolver.resolve(t));
     }
 
@@ -163,26 +160,30 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         });
     }
 
-    private void lockSendUi(boolean lock, boolean lockInput) {
-        if (lock) {
+    private void lockSendUi(boolean lockButton, boolean lockInput) {
+        if (!lockButton && !lockInput) { // UI fully unlocked
+            btnSend.setEnabled(true);
+            etMessage.setEnabled(true);
+            btnSend.setBackground(ContextCompat.getDrawable(activity,
+                                                            R.drawable.bg_btn_chat_send));
+        } else if (lockButton && !lockInput) { // Locked only send button
             btnSend.setEnabled(false);
             btnSend.setBackground(ContextCompat.getDrawable(activity,
                                                             R.drawable.bg_btn_chat_send_pressed));
-            if (lockInput) {
-                etMessage.setEnabled(false);
-                InputMethodManager inputManager =
-                        (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        } else if (lockButton && lockInput) { // Locked both - send button and text input
+            btnSend.setEnabled(false);
+            etMessage.setEnabled(false);
 
-                if (inputManager != null)
-                    inputManager.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-                                                 InputMethodManager.HIDE_IMPLICIT_ONLY);
-            }
-        } else {
-            btnSend.setEnabled(true);
             btnSend.setBackground(ContextCompat.getDrawable(activity,
-                                                            R.drawable.bg_btn_chat_send));
-            if (lockInput)
-                etMessage.setEnabled(true);
+                                                            R.drawable.bg_btn_chat_send_pressed));
+            InputMethodManager inputManager =
+                    (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            if (inputManager != null)
+                inputManager.toggleSoftInput(InputMethodManager.SHOW_FORCED,
+                                             InputMethodManager.HIDE_IMPLICIT_ONLY);
+        } else { // Locked only input
+            etMessage.setEnabled(false);
         }
     }
 
@@ -198,7 +199,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
                         sendMessage(text);
                     } else {
                         lockSendUi(true, true);
-                        presenter.requestSearchCards(interlocutorName);
+                        presenter.requestSearchCards(chatThread.getReceiver());
                     }
                 }
                 break;
@@ -209,16 +210,18 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         showProgress(true);
         Message message = new DefaultMessage(firebaseAuth.getCurrentUser()
                                                          .getEmail().toLowerCase(),
-                                             interlocutorName,
+                                             chatThread.getReceiver(),
                                              text,
                                              new Timestamp(new Date()));
 
-        presenter.requestSendMessage(interlocutorCards, message);
+        presenter.requestSendMessage(interlocutorCards, message, chatThread);
     }
 
-    public void setInterlocutorName(@NonNull String interlocutorName) {
-        this.interlocutorName = interlocutorName;
-        activity.changeToolbarTitleExposed(interlocutorName);
+    public void setChatThread(@NonNull ChatThread chatThread) {
+        this.chatThread = chatThread;
+        activity.changeToolbarTitleExposed(this.chatThread.getReceiver());
+        presenter.requestGetMessages(chatThread);
+        showProgress(true);
     }
 
     @Override public void onSearchSuccess(List<Card> cards) {
@@ -237,8 +240,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         if (!text.isEmpty())
             sendMessage(text);
 
-        lockSendUi(false, true);
-        lockSendUi(true, false);
+        lockSendUi(false, false);
         showProgress(false);
     }
 
@@ -255,13 +257,28 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
             presenter.disposeAll();
         }
 
-        lockSendUi(false, true);
-        lockSendUi(true, false);
+        lockSendUi(false, false);
 
         showProgress(false);
     }
 
     private void showProgress(boolean show) {
         pbLoading.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    @Override public void onGetMessagesSuccess(List<DefaultMessage> messages) {
+        lockSendUi(false, false);
+
+        showProgress(false);
+        adapter.setItems(messages);
+    }
+
+    @Override public void onGetMessagesError(Throwable t) {
+        lockSendUi(false, false);
+
+        showProgress(false);
+
+        String err = errorResolver.resolve(t);
+        UiUtils.toast(this, err != null ? err : t.getMessage());
     }
 }

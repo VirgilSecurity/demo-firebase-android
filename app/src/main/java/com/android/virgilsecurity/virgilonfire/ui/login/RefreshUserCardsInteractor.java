@@ -31,13 +31,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
+package com.android.virgilsecurity.virgilonfire.ui.login;
 
-import com.android.virgilsecurity.virgilonfire.data.model.Message;
-import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.virgilsecurity.sdk.cards.Card;
 
-import dagger.Module;
-import dagger.Provides;
+import java.util.List;
 
 /**
  * . _  _
@@ -45,31 +43,13 @@ import dagger.Provides;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    5/22/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
+public interface RefreshUserCardsInteractor {
 
-@Module
-public class ThreadFragmentModule {
+    void onRefreshUserCardsSuccess(List<Card> cards);
 
-    @Provides
-    DataReceivedInteractor<Message> provideDataReceivedInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    OnMessageSentInteractor provideOnMessageSentInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    SearchCardsInteractor provideSearchCardsInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
-    GetMessagesInteractor provideGetMessagesInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
+    void onRefreshUserCardsError(Throwable t);
 }

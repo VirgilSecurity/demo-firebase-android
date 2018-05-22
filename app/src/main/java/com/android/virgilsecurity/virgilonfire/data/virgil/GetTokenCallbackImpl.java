@@ -68,7 +68,9 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
 //                                      .execute();
 
             return helper.getToken(userManager.getToken(),
-                                   firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                                   firebaseAuth.getCurrentUser()
+                                               .getEmail()
+                                               .toLowerCase())
                          .execute()
                          .body()
                          .getToken();

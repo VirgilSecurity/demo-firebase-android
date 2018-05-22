@@ -44,7 +44,7 @@ import com.google.firebase.firestore.PropertyName;
 
 public class DefaultMessage implements Message {
 
-    @Exclude
+    @PropertyName("sender")
     private String sender;
 
     @PropertyName("receiver")
@@ -66,7 +66,7 @@ public class DefaultMessage implements Message {
         this.createdAt = createdAt;
     }
 
-    @Exclude @Override public String getSender() {
+    @Override public String getSender() {
         return sender;
     }
 

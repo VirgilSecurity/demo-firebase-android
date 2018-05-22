@@ -59,12 +59,7 @@ public class LogInFragmentModule {
         return logInFragment;
     }
 
-    @Provides BasePresenter providePresenter(VirgilRx virgilRx,
-                                             PrivateKeyStorage privateKeyStorage,
-                                             LogInVirgilInteractor logInVirgilInteractor,
-                                             LogInKeyStorageInteractor logInKeyStorageInteractor) {
-
-        return new LogInPresenter(virgilRx, privateKeyStorage, logInVirgilInteractor, logInKeyStorageInteractor);
+    @Provides RefreshUserCardsInteractor provideRefreshUserCardsInteractor(LogInFragment logInFragment) {
+        return logInFragment;
     }
-
 }

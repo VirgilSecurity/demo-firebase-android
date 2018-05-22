@@ -33,13 +33,13 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
+import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
 
 import javax.inject.Inject;
 
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -52,21 +52,24 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LogInPresenter implements BasePresenter {
 
-    private CompositeDisposable compositeDisposable;
-    private LogInVirgilInteractor logInVirgilInteractor;
-    private LogInKeyStorageInteractor logInKeyStorageInteractor;
-    private VirgilRx virgilRx;
-    private PrivateKeyStorage privateKeyStorage;
+    private final CompositeDisposable compositeDisposable;
+    private final LogInVirgilInteractor logInVirgilInteractor;
+    private final LogInKeyStorageInteractor logInKeyStorageInteractor;
+    private final VirgilRx virgilRx;
+    private final PrivateKeyStorage privateKeyStorage;
+    private final RefreshUserCardsInteractor refreshUserCardsInteractor;
 
     @Inject
     public LogInPresenter(VirgilRx virgilRx,
                           PrivateKeyStorage privateKeyStorage,
                           LogInVirgilInteractor logInVirgilInteractor,
-                          LogInKeyStorageInteractor logInKeyStorageInteractor) {
+                          LogInKeyStorageInteractor logInKeyStorageInteractor,
+                          RefreshUserCardsInteractor refreshUserCardsInteractor) {
         this.virgilRx = virgilRx;
         this.privateKeyStorage = privateKeyStorage;
         this.logInVirgilInteractor = logInVirgilInteractor;
         this.logInKeyStorageInteractor = logInKeyStorageInteractor;
+        this.refreshUserCardsInteractor = refreshUserCardsInteractor;
 
         compositeDisposable = new CompositeDisposable();
     }
@@ -132,7 +135,19 @@ public class LogInPresenter implements BasePresenter {
             logInKeyStorageInteractor.onKeyNotExists();
     }
 
+    public void requestRefreshUserCards(String username) {
+        Disposable refreshUserCardsDisposable =
+                virgilRx.searchCards(username)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(refreshUserCardsInteractor::onRefreshUserCardsSuccess,
+                                   refreshUserCardsInteractor::onRefreshUserCardsError);
+
+        compositeDisposable.add(refreshUserCardsDisposable);
+    }
+
     @Override public void disposeAll() {
         compositeDisposable.clear();
     }
+
 }

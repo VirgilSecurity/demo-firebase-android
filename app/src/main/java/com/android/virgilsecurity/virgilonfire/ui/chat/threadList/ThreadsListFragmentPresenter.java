@@ -77,6 +77,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     private static final String COLLECTION_USERS = "Users";
     private static final String KEY_PROPERTY_MEMBERS = "members";
     private static final String KEY_PROPERTY_CHANNELS = "channels";
+    private static final String KEY_PROPERTY_COUNT = "count";
 
     private final VirgilHelper virgilHelper;
     private final FirebaseFirestore firebaseFirestore;
@@ -111,6 +112,8 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                                    for (DocumentSnapshot document : documentSnapshots) {
                                        if (document.getId().equals(channelId)) {
                                            List<String> members = (List<String>) document.get(KEY_PROPERTY_MEMBERS);
+                                           long messagesCount = (Long) document.get(KEY_PROPERTY_COUNT);
+
                                            String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
                                                                                            .getEmail()
                                                                                            .toLowerCase())
@@ -118,7 +121,8 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                                            String receiverId = members.get(0).equals(senderId) ? members.get(1) : members.get(0);
                                            threads.add(new DefaultChatThread(document.getId(),
                                                                              senderId,
-                                                                             receiverId));
+                                                                             receiverId,
+                                                                             messagesCount));
                                        }
                                    }
                                }

@@ -87,7 +87,7 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
 
     @Override
     public void onBindViewHolder(ThreadHolder holder, int position) {
-        holder.bind(items.get(position).getReceiver());
+        holder.bind(items.get(position));
     }
 
     @Override
@@ -108,6 +108,15 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
         this.clickListener = clickListener;
     }
 
+    public ChatThread getItemById(String interlocutor) {
+        for (ChatThread thread : items) {
+            if (thread.getReceiver().equals(interlocutor))
+                return thread;
+        }
+
+        return null;
+    }
+
     static class ThreadHolder extends RecyclerView.ViewHolder {
 
         private ClickListener listener;
@@ -126,8 +135,8 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
             this.listener = listener;
         }
 
-        void bind(String thread) {
-            tvUsername.setText(thread);
+        void bind(ChatThread thread) {
+            tvUsername.setText(thread.getReceiver());
 
             rlItemRoot.setOnClickListener((v) -> listener.onItemClicked(getAdapterPosition(),
                                                                         thread));
@@ -136,6 +145,6 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
 
     public interface ClickListener {
 
-        void onItemClicked(int position, String thread);
+        void onItemClicked(int position, ChatThread thread);
     }
 }

@@ -128,7 +128,7 @@ public class VirgilHelper {
     }
 
     public String decrypt(String text) {
-        byte[] cipherData = ConvertionUtils.toBytes(text);
+        byte[] cipherData = ConvertionUtils.base64ToBytes(text);
 
         try {
             byte[] decryptedData =
@@ -152,10 +152,10 @@ public class VirgilHelper {
         } catch (EncryptionException e) {
             e.printStackTrace();
             throw new com.android.virgilsecurity.virgilonfire.data.model.exception.EncryptionException(
-                    "Failed to decrypt data ):");
+                    "Failed to encrypt data ):");
         }
 
-        return ConvertionUtils.toString(encryptedData);
+        return ConvertionUtils.toBase64String(encryptedData);
     }
 
     public VirgilCrypto getVirgilCrypto() {

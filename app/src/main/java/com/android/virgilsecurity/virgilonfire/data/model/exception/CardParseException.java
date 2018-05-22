@@ -31,13 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
-
-import com.android.virgilsecurity.virgilonfire.data.model.Message;
-import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
-
-import dagger.Module;
-import dagger.Provides;
+package com.android.virgilsecurity.virgilonfire.data.model.exception;
 
 /**
  * . _  _
@@ -45,31 +39,28 @@ import dagger.Provides;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    5/22/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
+public class CardParseException extends RuntimeException {
 
-@Module
-public class ThreadFragmentModule {
-
-    @Provides
-    DataReceivedInteractor<Message> provideDataReceivedInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
+    public CardParseException() {
     }
 
-    @Provides
-    OnMessageSentInteractor provideOnMessageSentInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
+    public CardParseException(String message) {
+        super(message);
     }
 
-    @Provides
-    SearchCardsInteractor provideSearchCardsInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
+    public CardParseException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    @Provides
-    GetMessagesInteractor provideGetMessagesInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
+    public CardParseException(Throwable cause) {
+        super(cause);
+    }
+
+    public CardParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
