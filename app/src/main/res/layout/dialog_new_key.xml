@@ -55,7 +55,7 @@
             android:paddingStart="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
-            tools:text="Title" />
+            tools:body="Title" />
 
         <View
             android:layout_width="match_parent"
@@ -70,7 +70,7 @@
             android:paddingStart="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
-            tools:text="Body message text" />
+            tools:body="Body message body" />
 
         <LinearLayout
             android:layout_width="wrap_content"

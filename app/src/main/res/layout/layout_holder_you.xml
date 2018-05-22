@@ -51,5 +51,5 @@
         android:padding="@dimen/default_margin"
         android:textColor="@color/black"
         android:textSize="@dimen/increased_text"
-        tools:text="Hi, joe how are you, do you like to join our party in next week because you don't like party?" />
+        tools:body="Hi, joe how are you, do you like to join our party in next week because you don't like party?" />
 </RelativeLayout>

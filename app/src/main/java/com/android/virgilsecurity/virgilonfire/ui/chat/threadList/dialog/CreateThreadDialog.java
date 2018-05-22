@@ -95,7 +95,7 @@ public class CreateThreadDialog extends Dialog {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_new_key);
+        setContentView(R.layout.dialog_create_thread);
         setCancelable(true);
         ButterKnife.bind(this);
 

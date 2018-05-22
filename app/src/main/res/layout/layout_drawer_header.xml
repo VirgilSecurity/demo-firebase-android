@@ -64,7 +64,7 @@
             android:maxLines="2"
             android:textColor="@color/black_olive"
             android:textSize="@dimen/big_text"
-            tools:text="User Name" />
+            tools:body="User Name" />
     </LinearLayout>
 
     <View

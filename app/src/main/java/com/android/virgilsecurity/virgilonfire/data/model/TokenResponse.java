@@ -33,7 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
-import com.google.gson.annotations.SerializedName;
+import com.google.firebase.firestore.PropertyName;
 
 /**
  * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
@@ -42,7 +42,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class TokenResponse {
 
-    @SerializedName("token")
+    @PropertyName("token")
     private String token;
 
     public TokenResponse() {

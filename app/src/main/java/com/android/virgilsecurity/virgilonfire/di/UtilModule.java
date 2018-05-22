@@ -45,6 +45,7 @@ import com.android.virgilsecurity.virgilonfire.util.DefaultErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -87,6 +88,12 @@ public class UtilModule {
     }
 
     @Provides FirebaseFirestore provideFirebaseFirestore() {
-        return FirebaseFirestore.getInstance();
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        firestore.setFirestoreSettings(settings);
+
+        return firestore;
     }
 }

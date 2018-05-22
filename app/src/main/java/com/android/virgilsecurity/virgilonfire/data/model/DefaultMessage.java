@@ -33,6 +33,10 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.PropertyName;
+
 /**
  * Created by Danylo Oliinyk on 3/27/18 at Virgil Security.
  * -__o
@@ -40,17 +44,29 @@ package com.android.virgilsecurity.virgilonfire.data.model;
 
 public class DefaultMessage implements Message {
 
-    private final String sender;
-    private final String receiver;
-    private final String text;
+    @Exclude
+    private String sender;
 
-    public DefaultMessage(String sender, String receiver, String text) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.text = text;
+    @PropertyName("receiver")
+    private String receiver;
+
+    @PropertyName("body")
+    private String body;
+
+    @PropertyName("createdAr")
+    Timestamp createdAt;
+
+    public DefaultMessage() {
     }
 
-    @Override public String getSender() {
+    public DefaultMessage(String sender, String receiver, String body, Timestamp createdAt) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.body = body;
+        this.createdAt = createdAt;
+    }
+
+    @Exclude @Override public String getSender() {
         return sender;
     }
 
@@ -58,7 +74,11 @@ public class DefaultMessage implements Message {
         return receiver;
     }
 
-    @Override public String getText() {
-        return text;
+    @Override public String getBody() {
+        return body;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 }

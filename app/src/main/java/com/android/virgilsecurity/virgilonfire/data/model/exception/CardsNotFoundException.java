@@ -31,7 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
+package com.android.virgilsecurity.virgilonfire.data.model.exception;
 
 /**
  * . _  _
@@ -39,13 +39,31 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/17/18
+ * ....|  _/    4/16/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-public interface WebSocketInteractor {
+public class CardsNotFoundException extends RuntimeException {
 
-    void onConnected();
+    public CardsNotFoundException() {
+    }
 
-    void onDisconnected();
+    public CardsNotFoundException(String message) {
+        super(message);
+    }
+
+    public CardsNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public CardsNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
+    public CardsNotFoundException(String message,
+                                  Throwable cause,
+                                  boolean enableSuppression,
+                                  boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

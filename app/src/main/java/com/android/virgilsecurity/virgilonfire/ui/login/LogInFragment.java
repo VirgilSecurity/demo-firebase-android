@@ -47,6 +47,7 @@ import android.view.View;
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
 import com.android.virgilsecurity.virgilonfire.ui.login.dialog.NewKeyDialog;
@@ -56,12 +57,16 @@ import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 import com.android.virgilsecurity.virgilonfire.util.Validator;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.virgilsecurity.sdk.cards.Card;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -80,12 +85,10 @@ public final class LogInFragment
         extends BaseFragmentDi<LogInActivity>
         implements LogInVirgilInteractor, LogInKeyStorageInteractor {
 
-    private static final String REQUEST_SERVER_AUTH_CODE = "snubKcPLscvA9owuCtlAZAOv";
-    private static final String ALLOWED_SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-()/='+:?!%&*<>;{}@#_";
-
-    private static final int RC_SIGN_IN = 42;
+    private static final String COLLECTION_USERS = "Users";
 
     @Inject protected FirebaseAuth firebaseAuth;
+    @Inject protected FirebaseFirestore firestore;
     @Inject protected LogInPresenter presenter;
     @Inject protected UserManager userManager;
     @Inject protected ErrorResolver errorResolver;
@@ -173,9 +176,10 @@ public final class LogInFragment
             }
 
             firebaseAuth.signInWithEmailAndPassword(etEmail.getText()
-                                                               .toString(),
-                                                        etPassword.getText()
-                                                                  .toString())
+                                                           .toString()
+                                                           .toLowerCase(),
+                                                    etPassword.getText()
+                                                              .toString())
                         .addOnCompleteListener(this::handleSignInResult);
         });
 
@@ -195,14 +199,40 @@ public final class LogInFragment
             }
 
             firebaseAuth.createUserWithEmailAndPassword(etEmail.getText()
-                                                               .toString(),
+                                                               .toString()
+                                                               .toLowerCase(),
                                                         etPassword.getText()
                                                                   .toString())
-                        .addOnCompleteListener(this::handleSignInResult);
+                        .addOnCompleteListener(task -> {
+                            DefaultUser defaultUser = new DefaultUser();
+                            defaultUser.setCreatedAt(new Timestamp(new Date()));
+                            defaultUser.setChannels(new ArrayList<>());
+
+                            if (task.isSuccessful()) {
+                                firestore.collection(COLLECTION_USERS).document(etEmail.getText()
+                                                                                       .toString()
+                                                                                       .toLowerCase())
+                                         .set(defaultUser)
+                                         .addOnCompleteListener(taskCreateUser -> {
+                                             if (taskCreateUser.isSuccessful()) {
+                                                 handleSignInResult(taskCreateUser);
+                                             } else {
+                                                 activity.runOnUiThread(() -> {
+                                                     UiUtils.toast(this,
+                                                                   "Create user in firestore was not successful");
+                                                 });
+                                             }
+                                         });
+                            } else {
+                                activity.runOnUiThread(() -> {
+                                    UiUtils.toast(this, "Create user was not successful");
+                                });
+                            }
+                        });
         });
     }
 
-    private void handleSignInResult(Task<AuthResult> task) {
+    private void handleSignInResult(Task task) {
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
         if (user != null) {
@@ -214,7 +244,7 @@ public final class LogInFragment
                     String error = errorResolver.resolve(taskGetIdToken.getException());
                     if (error == null && taskGetIdToken.getException() != null)
                         error = taskGetIdToken.getException()
-                                    .getMessage();
+                                              .getMessage();
 
                     UiUtils.toast(this, error == null ? "Error getting token" : error);
                 }
@@ -256,8 +286,8 @@ public final class LogInFragment
 
     @Override public void onPublishCardSuccess(Card card) {
         userManager.setUserCard(card);
-                activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                              .getEmail().toLowerCase());
+        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
+                                                      .getEmail().toLowerCase());
     }
 
     @Override public void onPublishCardError(Throwable t) {
@@ -265,8 +295,8 @@ public final class LogInFragment
     }
 
     @Override public void onKeyExists() {
-                activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                              .getEmail().toLowerCase());
+        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
+                                                      .getEmail().toLowerCase());
     }
 
     @Override public void onKeyNotExists() {

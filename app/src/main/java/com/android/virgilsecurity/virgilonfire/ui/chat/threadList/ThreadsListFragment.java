@@ -67,6 +67,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
 
     @BindView(R.id.rvContacts) protected RecyclerView rvContacts;
     @BindView(R.id.pbLoading) View pbLoading;
+    @BindView(R.id.tvEmpty) View tvEmpty;
 
     private String interlocutor;
 
@@ -76,7 +77,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
 
     @Override protected void postButterInit() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
-        layoutManager.setReverseLayout(true);
+        layoutManager.setReverseLayout(false);
         rvContacts.setLayoutManager(layoutManager);
         rvContacts.setAdapter(adapter);
         adapter.setClickListener((position, thread) -> {
@@ -105,6 +106,14 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
         adapter.setItems(receivedData);
         activity.showBaseLoading(false);
         showProgress(false);
+
+        if (receivedData.isEmpty())
+            tvEmpty.setVisibility(View.VISIBLE);
+    }
+
+    @Override public void onDataReceivedError(Throwable t) {
+        String err = errorResolver.resolve(t);
+        UiUtils.toast(this, err != null ? err : t.getMessage());
     }
 
     private void showProgress(boolean show) {
@@ -122,6 +131,8 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
     @Override public void onComplete(ThreadListFragmentPresenterReturnTypes type) {
         switch (type) {
             case CREATE_THREAD:
+                tvEmpty.setVisibility(View.GONE);
+                activity.newThreadDialogDismiss();
                 activity.changeFragmentWithData(ChatControlActivity.ChatState.THREAD, interlocutor);
                 break;
         }

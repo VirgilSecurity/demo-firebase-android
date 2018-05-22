@@ -63,9 +63,9 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
 
     @Override public String onGetToken(TokenContext tokenContext) {
         try {
-            Response response = helper.getToken(userManager.getToken(),
-                                                firebaseAuth.getCurrentUser().getEmail().toLowerCase())
-                                      .execute();
+//            Response response = helper.getToken(userManager.getToken(),
+//                                                firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+//                                      .execute();
 
             return helper.getToken(userManager.getToken(),
                                    firebaseAuth.getCurrentUser().getEmail().toLowerCase())

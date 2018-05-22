@@ -59,11 +59,6 @@ public class ThreadFragmentModule {
     }
 
     @Provides
-    WebSocketInteractor providesWebSocketInteractor(ThreadFragment threadFragment) {
-         return threadFragment;
-    }
-
-    @Provides
     OnMessageSentInteractor providesOnMessageSentInteractor(ThreadFragment threadFragment) {
          return threadFragment;
     }

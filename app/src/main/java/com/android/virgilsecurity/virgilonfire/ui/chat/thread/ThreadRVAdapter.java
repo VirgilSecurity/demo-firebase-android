@@ -41,7 +41,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
-import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.google.firebase.auth.FirebaseAuth;
@@ -114,7 +113,7 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
     @Override
     public void onBindViewHolder(HolderMessage viewHolder, int position) {
         viewHolder.bind(virgilHelper.decrypt(items.get(position)
-                                                  .getText()));
+                                                  .getBody()));
     }
 
     @Override public int getItemViewType(int position) {

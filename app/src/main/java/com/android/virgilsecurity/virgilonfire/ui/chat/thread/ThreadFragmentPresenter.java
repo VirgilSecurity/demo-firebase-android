@@ -34,7 +34,9 @@
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
@@ -42,10 +44,13 @@ import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.android.virgilsecurity.virgilonfire.util.SerializationUtils;
+import com.google.firebase.Timestamp;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -71,7 +76,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
 
     private Context context;
     private DataReceivedInteractor<Message> messageReceivedInteractor;
-    private WebSocketInteractor webSocketInteractor;
     private OnMessageSentInteractor onMessageSentInteractor;
     private WebSocket webSocketInterlocutor;
     private Subscription sendMessageSubscription;
@@ -84,7 +88,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
     @Inject
     public ThreadFragmentPresenter(Context context,
                                    DataReceivedInteractor<Message> messageReceivedInteractor,
-                                   WebSocketInteractor webSocketInteractor,
                                    OnMessageSentInteractor onMessageSentInteractor,
                                    VirgilRx virgilRx,
                                    SearchCardsInteractor searchCardsInteractor,
@@ -92,7 +95,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                    VirgilHelper virgilHelper) {
         this.context = context;
         this.messageReceivedInteractor = messageReceivedInteractor;
-        this.webSocketInteractor = webSocketInteractor;
         this.onMessageSentInteractor = onMessageSentInteractor;
         this.virgilRx = virgilRx;
         this.searchCardsInteractor = searchCardsInteractor;
@@ -102,16 +104,19 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable = new CompositeDisposable();
     }
 
-    public void requestSendMessage(Card interlocutorCard, Message message) {
+    public void requestSendMessage(List<Card> interlocutorCards, Message message) {
         List<VirgilPublicKey> publicKeys = new ArrayList<>();
         publicKeys.add((VirgilPublicKey) userManager.getUserCard()
                                                     .getPublicKey());
-        publicKeys.add((VirgilPublicKey) interlocutorCard.getPublicKey());
 
-        String encryptedText = virgilHelper.encrypt(message.getText(), publicKeys);
+        for (Card card : interlocutorCards)
+            publicKeys.add((VirgilPublicKey) card.getPublicKey());
+
+        String encryptedText = virgilHelper.encrypt(message.getBody(), publicKeys);
         Message encryptedMessage = new DefaultMessage(message.getSender(),
                                                       message.getReceiver(),
-                                                      encryptedText);
+                                                      encryptedText,
+                                                      new Timestamp(new Date()));
 
 //        val newMessage = mapOf(
 //                NAME_FIELD to edit_name.text.toString(),
@@ -121,7 +126,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
 //                                                    // Toast Successful Se
 //                                            })
 //                .addOnFailureListener { e -> Log.e("ERROR", e.message) }
-
+//
 //        sendMessageSubscription =
 //                RxMoreObservables.sendMessage(webSocketInterlocutor,
 //                                              SerializationUtils.toJson(encryptedMessage))

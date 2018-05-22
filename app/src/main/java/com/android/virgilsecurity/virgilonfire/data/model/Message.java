@@ -44,5 +44,5 @@ public interface Message {
 
     String getReceiver();
 
-    String getText();
+    String getBody();
 }

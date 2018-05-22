@@ -76,6 +76,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     private static final String COLLECTION_CHANNELS = "Channels";
     private static final String COLLECTION_USERS = "Users";
     private static final String KEY_PROPERTY_MEMBERS = "members";
+    private static final String KEY_PROPERTY_CHANNELS = "channels";
 
     private final VirgilHelper virgilHelper;
     private final FirebaseFirestore firebaseFirestore;
@@ -109,12 +110,12 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                                for (String channelId : defaultUser.getChannels()) {
                                    for (DocumentSnapshot document : documentSnapshots) {
                                        if (document.getId().equals(channelId)) {
-                                           String[] members = (String[]) document.get(KEY_PROPERTY_MEMBERS);
-                                           String senderId = members[0].equals(firebaseAuth.getCurrentUser()
+                                           List<String> members = (List<String>) document.get(KEY_PROPERTY_MEMBERS);
+                                           String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
                                                                                            .getEmail()
                                                                                            .toLowerCase())
-                                                             ? members[0] : members[1];
-                                           String receiverId = members[0].equals(senderId) ? members[1] : members[0];
+                                                             ? members.get(0) : members.get(1);
+                                           String receiverId = members.get(0).equals(senderId) ? members.get(1) : members.get(0);
                                            threads.add(new DefaultChatThread(document.getId(),
                                                                              senderId,
                                                                              receiverId));
@@ -202,32 +203,55 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
         });
     }
 
-    private Completable updateUserMe(String newThreadId) {
-        return Completable.create(emitter -> {
+    private Single<List<String>> getUserChannels(String username) {
+        return Single.create(emitter -> {
             firebaseFirestore.collection(COLLECTION_USERS)
-                             .document(firebaseAuth.getCurrentUser().getEmail().toLowerCase())
-                             .update("channels", newThreadId)
+                             .document(username)
+                             .get()
                              .addOnCompleteListener(task -> {
-                                 if (task.isSuccessful())
-                                     emitter.onComplete();
-                                 else
+                                 if (task.isSuccessful()) {
+                                     emitter.onSuccess((List<String>) task.getResult().get(KEY_PROPERTY_CHANNELS));
+                                 } else {
                                      emitter.onError(task.getException());
+                                 }
                              });
         });
     }
 
+    private Completable updateUserMe(String newThreadId) {
+        return getUserChannels(firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                .flatMapCompletable(channels -> {
+                    return Completable.create(emitter -> {
+                        channels.add(newThreadId);
+                        firebaseFirestore.collection(COLLECTION_USERS)
+                                         .document(firebaseAuth.getCurrentUser().getEmail().toLowerCase())
+                                         .update("channels", channels)
+                                         .addOnCompleteListener(task -> {
+                                             if (task.isSuccessful())
+                                                 emitter.onComplete();
+                                             else
+                                                 emitter.onError(task.getException());
+                                         });
+                    });
+                });
+    }
+
     private Completable updateUserInterlocutor(String interlocutor, String newThreadId) {
-        return Completable.create(emitter -> {
-            firebaseFirestore.collection(COLLECTION_USERS)
-                             .document(interlocutor)
-                             .update("channels", newThreadId)
-                             .addOnCompleteListener(task -> {
-                                 if (task.isSuccessful())
-                                     emitter.onComplete();
-                                 else
-                                     emitter.onError(task.getException());
-                             });
-        });
+        return getUserChannels(interlocutor)
+                .flatMapCompletable(channels -> {
+                    return Completable.create(emitter -> {
+                        channels.add(newThreadId);
+                        firebaseFirestore.collection(COLLECTION_USERS)
+                                         .document(interlocutor)
+                                         .update("channels", channels)
+                                         .addOnCompleteListener(task -> {
+                                             if (task.isSuccessful())
+                                                 emitter.onComplete();
+                                             else
+                                                 emitter.onError(task.getException());
+                                         });
+                    });
+                });
     }
 
     private String generateNewChannelId(String interlocutor) {

@@ -34,7 +34,7 @@
 package com.android.virgilsecurity.virgilonfire.data.model.response;
 
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
-import com.google.gson.annotations.SerializedName;
+import com.google.firebase.firestore.PropertyName;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ import java.util.List;
  */
 public final class UsersResponse {
 
-    @SerializedName("users")
+    @PropertyName("users")
     private final List<DefaultUser> users;
 
     public UsersResponse(List<DefaultUser> users) {

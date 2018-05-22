@@ -49,16 +49,18 @@ import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
-import com.android.virgilsecurity.virgilonfire.data.model.exception.MultiplyCardsException;
+import com.android.virgilsecurity.virgilonfire.data.model.exception.CardsNotFoundException;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -72,8 +74,7 @@ import butterknife.OnClick;
  */
 
 public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
-        implements DataReceivedInteractor<Message>, OnMessageSentInteractor, WebSocketInteractor,
-        SearchCardsInteractor {
+        implements DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor {
 
     @Inject protected ThreadRVAdapter adapter;
     @Inject protected ThreadFragmentPresenter presenter;
@@ -82,7 +83,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Inject protected FirebaseAuth firebaseAuth;
 
     private String interlocutorName;
-    private Card interlocutorCard;
+    private List<Card> interlocutorCards;
 
     @BindView(R.id.rvChat) protected RecyclerView rvChat;
     @BindView(R.id.etMessage) EditText etMessage;
@@ -125,13 +126,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         activity.showBaseLoading(false);
     }
 
-    @Override public void onConnected() {
-        lockSendUi(false, true);
-        lockSendUi(true, false);
-    }
+    @Override public void onDataReceivedError(Throwable t) {
 
-    @Override public void onDisconnected() {
-        lockSendUi(true, true);
     }
 
     @Override
@@ -197,7 +193,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
                                        .toString()
                                        .trim();
                 if (!text.isEmpty()) {
-                    if (interlocutorCard != null) {
+                    if (interlocutorCards != null) {
                         lockSendUi(true, true);
                         sendMessage(text);
                     } else {
@@ -214,9 +210,10 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         Message message = new DefaultMessage(firebaseAuth.getCurrentUser()
                                                          .getEmail().toLowerCase(),
                                              interlocutorName,
-                                             text);
+                                             text,
+                                             new Timestamp(new Date()));
 
-        presenter.requestSendMessage(interlocutorCard, message);
+        presenter.requestSendMessage(interlocutorCards, message);
     }
 
     public void setInterlocutorName(@NonNull String interlocutorName) {
@@ -225,14 +222,13 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     }
 
     @Override public void onSearchSuccess(List<Card> cards) {
-        if (cards.size() > 1) {
+        if (cards.size() == 0) {
             presenter.disposeAll();
-            UiUtils.toast(this, R.string.multiply_cards);
-            throw new MultiplyCardsException("LogInFragment -> more than 1 card present " +
-                                                     "after search for current identity");
+            UiUtils.toast(this, R.string.no_cards_found);
+            throw new CardsNotFoundException("LogInFragment -> No cards was found");
         }
 
-        interlocutorCard = cards.get(0);
+        interlocutorCards = cards;
 
         String text = etMessage.getText()
                                .toString()

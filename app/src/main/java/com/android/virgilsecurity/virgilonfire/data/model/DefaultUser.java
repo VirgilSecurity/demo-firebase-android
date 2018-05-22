@@ -33,6 +33,11 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.PropertyName;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,27 +47,26 @@ import java.util.List;
 
 public class DefaultUser implements User {
 
+    @Exclude
     private String name;
+
+    @PropertyName("createdAt")
+    private Timestamp createdAt;
+
+    @PropertyName("channels")
     private List<String> channels;
 
     public DefaultUser() {
 
     }
 
-    public DefaultUser(String name) {
+    public DefaultUser(String name, Timestamp createdAt, List<String> channels) {
         this.name = name;
-    }
-
-    public DefaultUser(List<String> channels) {
+        this.createdAt = createdAt;
         this.channels = channels;
     }
 
-    public DefaultUser(String name, List<String> channels) {
-        this.name = name;
-        this.channels = channels;
-    }
-
-    @Override public String getName() {
+    @Exclude @Override public String getName() {
         return name;
     }
 
@@ -76,5 +80,13 @@ public class DefaultUser implements User {
 
     public void setChannels(List<String> channels) {
         this.channels = channels;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }

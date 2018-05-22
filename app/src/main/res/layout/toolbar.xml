@@ -84,7 +84,7 @@
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
-                tools:text="Chat list is very good like this hey dh dhhh fjfjfj" />
+                tools:body="Chat list is very good like this hey dh dhhh fjfjfj" />
         </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>

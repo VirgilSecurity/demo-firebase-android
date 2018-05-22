@@ -35,7 +35,7 @@ package com.android.virgilsecurity.virgilonfire.data.model.response;
 
 import com.android.virgilsecurity.virgilonfire.data.model.Response;
 import com.android.virgilsecurity.virgilonfire.data.model.ResponseType;
-import com.google.gson.annotations.SerializedName;
+import com.google.firebase.firestore.PropertyName;
 
 /**
  * .._  _
@@ -49,10 +49,10 @@ import com.google.gson.annotations.SerializedName;
  */
 public final class DefaultResponse<T> implements Response {
 
-    @SerializedName("type")
+    @PropertyName("type")
     private String type;
 
-    @SerializedName("responseObject")
+    @PropertyName("responseObject")
     private T responseObject;
 
     public DefaultResponse(ResponseType type, T responseObject) {

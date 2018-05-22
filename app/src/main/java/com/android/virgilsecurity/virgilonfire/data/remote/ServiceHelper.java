@@ -52,7 +52,7 @@ public class ServiceHelper {
         this.service = retrofit.create(JwtExampleService.class);
     }
 
-    public Call<TokenResponse> getToken(DefaultToken googleToken, String identity) {
-        return service.getToken(googleToken.getToken(), identity);
+    public Call<TokenResponse> getToken(DefaultToken token, String identity) {
+        return service.getToken("Bearer " + token.getToken(), identity);
     }
 }

@@ -46,4 +46,6 @@ package com.android.virgilsecurity.virgilonfire.ui.chat;
 public interface DataReceivedInteractor<T> {
 
     void onDataReceived(T receivedData);
+
+    void onDataReceivedError(Throwable t);
 }

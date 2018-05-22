@@ -33,7 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
-import com.google.gson.annotations.SerializedName;
+import com.google.firebase.firestore.PropertyName;
 
 /**
  * . _  _
@@ -47,7 +47,7 @@ import com.google.gson.annotations.SerializedName;
  */
 public class DefaultToken implements Token {
 
-    @SerializedName("token")
+    @PropertyName("token")
     private final String token;
 
     public DefaultToken(String token) {

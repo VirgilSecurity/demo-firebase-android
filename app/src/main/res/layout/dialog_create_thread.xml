@@ -55,7 +55,7 @@
             android:paddingStart="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
-            tools:text="Title" />
+            tools:body="Title" />
 
         <View
             android:layout_width="match_parent"
@@ -70,7 +70,7 @@
             android:paddingStart="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
-            tools:text="Body message text" />
+            tools:text="Body message body" />
 
         <EditText
             android:id="@+id/etUsername"
@@ -81,7 +81,7 @@
             android:layout_marginStart="@dimen/default_margin"
             android:layout_marginTop="@dimen/half_default_margin"
             android:hint="@string/email"
-            android:inputType="text"
+            android:inputType="textEmailAddress"
             android:maxLines="1"
             android:textColorHint="@color/black_coral"
             android:textSize="@dimen/increased_text"

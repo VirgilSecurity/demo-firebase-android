@@ -33,7 +33,7 @@
 
 <resources>
 
-    <string name="app_name">Virgil'on'Fire</string>
+    <string name="app_name">Firebase Demo</string>
 
     <!-- Credentials -->
     <string name="requestIdToken">681673183198-m9sm47puqhdirvms732m8fa4k996n1ev.apps.googleusercontent.com</string>
@@ -54,7 +54,7 @@
     <string name="signin">SignIn</string>
     <string name="virgil_firebase_messenger">Virgil-Firebase messenger</string>
     <string name="please_enter_creds">Please enter your credentials</string>
-    <string name="multiply_cards">Multiply cards error</string>
+    <string name="no_cards_found">No cards was found</string>
     <string name="no_private_key">It seems that you\'ve lost your private key</string>
     <string name="new_private_key">Generate new private</string>
     <string name="new_private_key_generation">There\'s no private key for entered identity on this device.
@@ -63,7 +63,7 @@
 
     <!-- Threads List -->
     <string name="threads_list_name">Threads List</string>
-    <string name="no_threads">No conversations yet. Check if service is fine.</string>
+    <string name="no_threads">No conversations yet. Add from menu.</string>
     <string name="enter_username">Enter username to start chat with</string>
     <string name="creating_thread">Creating thread…</string>
     <string name="new_chat">New thread</string>
