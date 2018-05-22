@@ -47,6 +47,7 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 
@@ -88,6 +89,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
     private UserManager userManager;
     private VirgilHelper virgilHelper;
     private FirebaseFirestore firestore;
+    private ListenerRegistration listenerRegistration;
 
     @Inject
     public ThreadFragmentPresenter(Context context,
@@ -213,11 +215,29 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable.clear();
     }
 
-    public void turnOnMessageListener() {
-        // TODO set firestoreChat.addSnapshotListener
+    public void turnOnMessageListener(ChatThread chatThread) {
+        listenerRegistration =
+                firestore.collection(COLLECTION_CHANNELS)
+                         .document(chatThread.getThreadId())
+                         .collection(COLLECTION_MESSAGES)
+                         .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                             if (e != null) {
+                                 getMessagesInteractor.onGetMessagesError(e);
+                                 return;
+                             }
+
+                             List<DefaultMessage> messages = new ArrayList<>();
+
+                             for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
+                                 DefaultMessage message = snapshot.toObject(DefaultMessage.class);
+                                 messages.add(message);
+                             }
+
+                             getMessagesInteractor.onGetMessagesSuccess(messages);
+                         });
     }
 
     public void turnOffMessageListener() {
-        // TODO clear firestoreChat.addSnapshotListener
+        listenerRegistration.remove();
     }
 }

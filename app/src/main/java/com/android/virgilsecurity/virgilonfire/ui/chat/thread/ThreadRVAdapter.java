@@ -76,7 +76,7 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
 
     private final VirgilHelper virgilHelper;
     private final FirebaseAuth firebaseAuth;
-    private List<Message> items;
+    private List<DefaultMessage> items;
 
     @Inject ThreadRVAdapter(VirgilHelper virgilHelper,
                             FirebaseAuth firebaseAuth) {
@@ -133,20 +133,27 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
     }
 
     void setItems(List<DefaultMessage> items) {
-        if (items != null)
+        if (items != null) {
+            items.removeAll(this.items);
             this.items = new ArrayList<>(items);
-        else
+        } else {
             this.items = Collections.emptyList();
+        }
 
         notifyDataSetChanged();
     }
 
-    void addItem(Message item) {
-        if (items == null)
+    void addItem(DefaultMessage item) {
+        if (items == null || items.isEmpty())
             items = new ArrayList<>();
 
         items.add(item);
         notifyDataSetChanged();
+    }
+
+    public void clearItems() {
+        if (items != null || !items.isEmpty())
+            items.clear();
     }
 
     static class HolderMessage extends RecyclerView.ViewHolder {

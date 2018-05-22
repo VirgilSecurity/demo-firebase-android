@@ -101,7 +101,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Override protected void postButterInit() {
         rvChat.setAdapter(adapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
-        layoutManager.setReverseLayout(true);
+        layoutManager.setReverseLayout(false);
         rvChat.setLayoutManager(layoutManager);
         initMessageInput();
     }
@@ -114,6 +114,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         super.onPause();
 
         presenter.turnOffMessageListener();
+        adapter.clearItems();
     }
 
     public void disposeAll() {
@@ -121,12 +122,14 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     }
 
     @Override public void onDataReceived(Message receivedData) {
-        adapter.addItem(receivedData);
+        adapter.addItem((DefaultMessage) receivedData);
         activity.showBaseLoading(false);
+        showProgress(false);
     }
 
     @Override public void onDataReceivedError(Throwable t) {
-
+        lockSendUi(false, false);
+        UiUtils.toast(this, errorResolver.resolve(t));
     }
 
     @Override
@@ -220,7 +223,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     public void setChatThread(@NonNull ChatThread chatThread) {
         this.chatThread = chatThread;
         activity.changeToolbarTitleExposed(this.chatThread.getReceiver());
-        presenter.requestGetMessages(chatThread);
+        presenter.turnOnMessageListener(chatThread);
         showProgress(true);
     }
 

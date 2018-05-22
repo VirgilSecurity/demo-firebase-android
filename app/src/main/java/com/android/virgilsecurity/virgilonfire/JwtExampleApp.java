@@ -68,3 +68,5 @@ public class JwtExampleApp extends Application implements HasActivityInjector {
         return activityDispatchingAndroidInjector;
     }
 }
+
+// TODO: 5/22/18 add Firebase token refresher
