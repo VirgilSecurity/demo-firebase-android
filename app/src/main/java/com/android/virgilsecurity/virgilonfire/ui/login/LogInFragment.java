@@ -160,8 +160,8 @@ public final class LogInFragment
     private void initFirebaseAuth() {
         btnSignIn.setOnClickListener(v -> {
             pbLoading.setVisibility(View.VISIBLE);
-            btnSignIn.setVisibility(View.GONE);
-            btnSignUp.setVisibility(View.GONE);
+            btnSignIn.setVisibility(View.INVISIBLE);
+            btnSignUp.setVisibility(View.INVISIBLE);
 
             String error;
 
@@ -187,8 +187,8 @@ public final class LogInFragment
 
         btnSignUp.setOnClickListener(v -> {
             pbLoading.setVisibility(View.VISIBLE);
-            btnSignIn.setVisibility(View.GONE);
-            btnSignUp.setVisibility(View.GONE);
+            btnSignIn.setVisibility(View.INVISIBLE);
+            btnSignUp.setVisibility(View.INVISIBLE);
 
             String error;
 
@@ -279,7 +279,7 @@ public final class LogInFragment
         }); // If we can't resolve error here -
         // then it's normal behaviour. Proceed.
         if (error != null) {
-            pbLoading.setVisibility(View.GONE);
+            pbLoading.setVisibility(View.INVISIBLE);
             btnSignIn.setVisibility(View.VISIBLE);
             btnSignUp.setVisibility(View.VISIBLE);
 
@@ -300,7 +300,7 @@ public final class LogInFragment
     }
 
     @Override public void onPublishCardError(Throwable t) {
-        pbLoading.setVisibility(View.GONE);
+        pbLoading.setVisibility(View.INVISIBLE);
         btnSignIn.setVisibility(View.VISIBLE);
         btnSignUp.setVisibility(View.VISIBLE);
 
@@ -312,7 +312,7 @@ public final class LogInFragment
     }
 
     @Override public void onKeyNotExists() {
-        pbLoading.setVisibility(View.GONE);
+        pbLoading.setVisibility(View.INVISIBLE);
         btnSignIn.setVisibility(View.VISIBLE);
         btnSignUp.setVisibility(View.VISIBLE);
         presenter.disposeAll();

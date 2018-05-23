@@ -44,6 +44,7 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.virgilsecurity.sdk.crypto.HashAlgorithm;
 import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
@@ -86,6 +87,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     private final CompleteInteractor<ThreadListFragmentPresenterReturnTypes> completeInteractor;
 
     private CompositeDisposable compositeDisposable;
+    private ListenerRegistration listenerRegistration;
 
     @Inject
     public ThreadsListFragmentPresenter(FirebaseFirestore firebaseFirestore,
@@ -102,6 +104,69 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
         compositeDisposable = new CompositeDisposable();
     }
 
+    public void turnOnThreadsListener() {
+        listenerRegistration =
+                firebaseFirestore.collection(COLLECTION_CHANNELS)
+                                 .addSnapshotListener((documentSnapshots, e) -> {
+                                     try {
+                                         Thread.sleep(2000);
+                                     } catch (InterruptedException e1) {
+                                         e1.printStackTrace();
+                                     }
+                                     firebaseFirestore.collection(COLLECTION_USERS)
+                                                      .document(firebaseAuth.getCurrentUser()
+                                                                            .getEmail()
+                                                                            .toLowerCase())
+                                                      .get()
+                                                      .addOnCompleteListener(task -> {
+                                                          if (task.isSuccessful()) {
+                                                              DocumentSnapshot documentSnapshot = task.getResult();
+
+                                                              DefaultUser defaultUser = documentSnapshot.toObject(
+                                                                      DefaultUser.class);
+                                                              defaultUser.setName(documentSnapshot.getId());
+
+                                                              List<DefaultChatThread> threads = new ArrayList<>();
+
+                                                              for (String channelId : defaultUser.getChannels()) {
+                                                                  for (DocumentSnapshot document : documentSnapshots) {
+                                                                      if (document.getId().equals(channelId)) {
+                                                                          List<String> members = (List<String>) document
+                                                                                  .get(KEY_PROPERTY_MEMBERS);
+                                                                          long messagesCount = (Long) document.get(
+                                                                                  KEY_PROPERTY_COUNT);
+
+                                                                          String senderId = members.get(0)
+                                                                                                   .equals(firebaseAuth.getCurrentUser()
+                                                                                                                       .getEmail()
+                                                                                                                       .toLowerCase())
+                                                                                            ? members.get(0) : members.get(
+                                                                                  1);
+                                                                          String receiverId = members.get(0)
+                                                                                                     .equals(senderId) ? members
+                                                                                                      .get(1) : members
+                                                                                                      .get(0);
+                                                                          threads.add(new DefaultChatThread(document.getId(),
+                                                                                                            senderId,
+                                                                                                            receiverId,
+                                                                                                            messagesCount));
+                                                                      }
+                                                                  }
+                                                              }
+
+                                                              onDataReceivedInteractor.onDataReceived(threads);
+                                                          } else {
+                                                              onDataReceivedInteractor.onDataReceivedError(task.getException());
+                                                          }
+                                                      });
+                                 });
+    }
+
+    public void turnOffThreadsListener() {
+        if (listenerRegistration != null)
+            listenerRegistration.remove();
+    }
+
     public void requestThreadsList() {
         Disposable requestThreadsDisposable =
                 Single.zip(getCurrentUser(), getChannels(),
@@ -115,10 +180,11 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                                            long messagesCount = (Long) document.get(KEY_PROPERTY_COUNT);
 
                                            String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
-                                                                                           .getEmail()
-                                                                                           .toLowerCase())
+                                                                                               .getEmail()
+                                                                                               .toLowerCase())
                                                              ? members.get(0) : members.get(1);
-                                           String receiverId = members.get(0).equals(senderId) ? members.get(1) : members.get(0);
+                                           String receiverId = members.get(0)
+                                                                      .equals(senderId) ? members.get(1) : members.get(0);
                                            threads.add(new DefaultChatThread(document.getId(),
                                                                              senderId,
                                                                              receiverId,

@@ -239,6 +239,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
     }
 
     public void turnOffMessageListener() {
-        listenerRegistration.remove();
+        if (listenerRegistration != null)
+            listenerRegistration.remove();
     }
 }

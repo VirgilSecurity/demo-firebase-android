@@ -33,6 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.threadList;
 
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -68,6 +69,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
     @BindView(R.id.rvContacts) protected RecyclerView rvContacts;
     @BindView(R.id.pbLoading) View pbLoading;
     @BindView(R.id.tvEmpty) View tvEmpty;
+    @BindView(R.id.srlRefresh) SwipeRefreshLayout srlRefresh;
 
     private String interlocutor;
 
@@ -83,13 +85,23 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
         adapter.setClickListener((position, thread) -> {
             activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD, thread);
         });
-        presenter.requestThreadsList();
+        srlRefresh.setOnRefreshListener(() -> {
+            presenter.turnOffThreadsListener();
+            presenter.turnOnThreadsListener();
+        });
     }
 
     @Override public void onResume() {
         super.onResume();
 
         activity.changeToolbarTitleExposed(getString(R.string.app_name));
+        presenter.turnOnThreadsListener();
+    }
+
+    @Override public void onPause() {
+        super.onPause();
+
+        presenter.turnOffThreadsListener();
     }
 
     @Override public void onDetach() {
@@ -103,15 +115,21 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
     }
 
     @Override public void onDataReceived(List<DefaultChatThread> receivedData) {
+        srlRefresh.setRefreshing(false);
+
         adapter.setItems(receivedData);
         activity.showBaseLoading(false);
         showProgress(false);
 
         if (receivedData.isEmpty())
             tvEmpty.setVisibility(View.VISIBLE);
+        else
+            tvEmpty.setVisibility(View.INVISIBLE);
     }
 
     @Override public void onDataReceivedError(Throwable t) {
+        srlRefresh.setRefreshing(false);
+
         String err = errorResolver.resolve(t);
         UiUtils.toast(this, err != null ? err : t.getMessage());
     }

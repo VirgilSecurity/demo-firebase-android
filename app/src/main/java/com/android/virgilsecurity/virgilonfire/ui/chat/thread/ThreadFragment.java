@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -81,6 +82,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         implements DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor,
         GetMessagesInteractor {
 
+    private static final int THRESHOLD_SCROLL = 5;
+
     @Inject protected ThreadRVAdapter adapter;
     @Inject protected ThreadFragmentPresenter presenter;
     @Inject protected ErrorResolver errorResolver;
@@ -97,6 +100,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @BindView(R.id.tvEmpty) View tvEmpty;
     @BindView(R.id.tvError) View tvError;
     @BindView(R.id.pbLoading) View pbLoading;
+    @BindView(R.id.srlRefresh) SwipeRefreshLayout srlRefresh;
 
     @Override protected int getLayout() {
         return R.layout.fragment_thread;
@@ -110,9 +114,15 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         initMessageInput();
         rvChat.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             if (bottom < oldBottom) {
-                rvChat.postDelayed(() -> rvChat.smoothScrollToPosition(
-                        rvChat.getAdapter().getItemCount() - 1), 100);
+                if (rvChat.getAdapter().getItemCount() > THRESHOLD_SCROLL) {
+                    rvChat.postDelayed(() -> rvChat.smoothScrollToPosition(
+                            rvChat.getAdapter().getItemCount() - 1), 100);
+                }
             }
+        });
+        srlRefresh.setOnRefreshListener(() -> {
+            presenter.turnOffMessageListener();
+            presenter.turnOnMessageListener(chatThread);
         });
     }
 
@@ -282,18 +292,23 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     @Override public void onGetMessagesSuccess(List<DefaultMessage> messages) {
         lockSendUi(false, false);
+        srlRefresh.setRefreshing(false);
 
         showProgress(false);
         Collections.sort(messages, (o1, o2) -> Long.compare(o1.getMessageId(), o2.getMessageId()));
         adapter.setItems(messages);
 
-        rvChat.postDelayed(() -> {
-            rvChat.smoothScrollToPosition(adapter.getItemCount() - 1);
-        }, 400);
+        if (rvChat.getAdapter().getItemCount() > THRESHOLD_SCROLL) {
+            rvChat.postDelayed(() -> {
+                rvChat.smoothScrollToPosition(adapter.getItemCount() - 1);
+            }, 400);
+        }
+
     }
 
     @Override public void onGetMessagesError(Throwable t) {
         lockSendUi(false, false);
+        srlRefresh.setRefreshing(false);
 
         showProgress(false);
 

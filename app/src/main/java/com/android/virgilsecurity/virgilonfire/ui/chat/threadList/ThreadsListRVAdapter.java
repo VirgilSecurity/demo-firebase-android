@@ -68,7 +68,7 @@ import butterknife.ButterKnife;
 
 public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdapter.ThreadHolder> {
 
-    private List<ChatThread> items;
+    private List<DefaultChatThread> items;
     private ClickListener clickListener;
 
     ThreadsListRVAdapter() {
@@ -96,10 +96,12 @@ public class ThreadsListRVAdapter extends RecyclerView.Adapter<ThreadsListRVAdap
     }
 
     void setItems(List<DefaultChatThread> items) {
-        if (items != null)
+        if (items != null) {
+            items.removeAll(this.items);
             this.items = new ArrayList<>(items);
-        else
+        } else {
             this.items = Collections.emptyList();
+        }
 
         notifyDataSetChanged();
     }

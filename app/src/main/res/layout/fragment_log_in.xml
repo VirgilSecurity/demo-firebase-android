@@ -143,7 +143,8 @@
         app:layout_constraintEnd_toStartOf="@id/btnSignUp"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilPassword" />
+        app:layout_constraintTop_toBottomOf="@id/tilPassword"
+        android:visibility="visible"/>
 
     <Button
         android:id="@+id/btnSignUp"
@@ -160,7 +161,8 @@
         app:layout_constraintBottom_toBottomOf="@id/btnSignIn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/btnSignIn"
-        app:layout_constraintTop_toTopOf="@id/btnSignIn" />
+        app:layout_constraintTop_toTopOf="@id/btnSignIn"
+        android:visibility="visible"/>
 
     <ProgressBar
         android:id="@+id/pbLoading"
