@@ -48,6 +48,7 @@ import android.widget.ImageButton;
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.CardsNotFoundException;
@@ -107,6 +108,12 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         layoutManager.setReverseLayout(false);
         rvChat.setLayoutManager(layoutManager);
         initMessageInput();
+        rvChat.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (bottom < oldBottom) {
+                rvChat.postDelayed(() -> rvChat.smoothScrollToPosition(
+                        rvChat.getAdapter().getItemCount() - 1), 100);
+            }
+        });
     }
 
     @Override public void onResume() {
@@ -139,6 +146,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     public void onSendMessageSuccess() {
         etMessage.setText("");
         lockSendUi(false, false);
+        ((DefaultChatThread) chatThread).setMessagesCount(((DefaultChatThread) chatThread).getMessagesCount() + 1);
     }
 
     @Override
@@ -278,7 +286,10 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         showProgress(false);
         Collections.sort(messages, (o1, o2) -> Long.compare(o1.getMessageId(), o2.getMessageId()));
         adapter.setItems(messages);
-        layoutManager.scrollToPosition(adapter.getItemCount() - 1);
+
+        rvChat.postDelayed(() -> {
+            rvChat.smoothScrollToPosition(adapter.getItemCount() - 1);
+        }, 400);
     }
 
     @Override public void onGetMessagesError(Throwable t) {

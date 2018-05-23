@@ -45,7 +45,7 @@ public class DefaultChatThread implements ChatThread {
     private final String threadId;
     private final String sender;
     private final String receiver;
-    private final long messagesCount;
+    private long messagesCount;
 
     public DefaultChatThread(String threadId, String sender, String receiver, long messagesCount) {
         this.threadId = threadId;
@@ -68,5 +68,9 @@ public class DefaultChatThread implements ChatThread {
 
     public long getMessagesCount() {
         return messagesCount;
+    }
+
+    public void setMessagesCount(long messagesCount) {
+        this.messagesCount = messagesCount;
     }
 }
