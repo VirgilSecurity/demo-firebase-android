@@ -56,6 +56,9 @@ public class DefaultMessage implements Message {
     @PropertyName("createdAr")
     Timestamp createdAt;
 
+    @Exclude
+    private long messageId;
+
     public DefaultMessage() {
     }
 
@@ -80,5 +83,13 @@ public class DefaultMessage implements Message {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    @Exclude public long getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(long messageId) {
+        this.messageId = messageId;
     }
 }

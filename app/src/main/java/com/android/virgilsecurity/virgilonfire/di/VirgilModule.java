@@ -89,9 +89,10 @@ public class VirgilModule {
     @Provides @Singleton static CallbackJwtProvider.GetTokenCallback provideGetTokenCallback(
             ServiceHelper serviceHelper,
             UserManager userManager,
-            FirebaseAuth firebaseAuth) {
+            FirebaseAuth firebaseAuth,
+            Context context) {
 
-        return new GetTokenCallbackImpl(serviceHelper, userManager, firebaseAuth);
+        return new GetTokenCallbackImpl(serviceHelper, userManager, firebaseAuth, context);
     }
 
     @Provides @Singleton static AccessTokenProvider provideAccessTokenProvider(

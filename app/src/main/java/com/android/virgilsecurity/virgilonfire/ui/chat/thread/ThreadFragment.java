@@ -61,6 +61,8 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -86,6 +88,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     private ChatThread chatThread;
     private List<Card> interlocutorCards;
+    private LinearLayoutManager layoutManager;
 
     @BindView(R.id.rvChat) protected RecyclerView rvChat;
     @BindView(R.id.etMessage) EditText etMessage;
@@ -100,7 +103,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     @Override protected void postButterInit() {
         rvChat.setAdapter(adapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
+        layoutManager = new LinearLayoutManager(activity);
         layoutManager.setReverseLayout(false);
         rvChat.setLayoutManager(layoutManager);
         initMessageInput();
@@ -273,7 +276,9 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         lockSendUi(false, false);
 
         showProgress(false);
+        Collections.sort(messages, (o1, o2) -> Long.compare(o1.getMessageId(), o2.getMessageId()));
         adapter.setItems(messages);
+        layoutManager.scrollToPosition(adapter.getItemCount() - 1);
     }
 
     @Override public void onGetMessagesError(Throwable t) {

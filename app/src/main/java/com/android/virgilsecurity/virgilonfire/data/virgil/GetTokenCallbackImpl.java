@@ -33,14 +33,29 @@
 
 package com.android.virgilsecurity.virgilonfire.data.virgil;
 
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
+
+import com.android.virgilsecurity.virgilonfire.JwtExampleApp;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
+import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper;
+import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GetTokenResult;
 import com.virgilsecurity.sdk.jwt.TokenContext;
 import com.virgilsecurity.sdk.jwt.accessProviders.CallbackJwtProvider;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Response;
 
@@ -54,26 +69,53 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
     private final ServiceHelper helper;
     private final UserManager userManager;
     private final FirebaseAuth firebaseAuth;
+    private final Context context;
 
-    public GetTokenCallbackImpl(ServiceHelper helper, UserManager userManager, FirebaseAuth firebaseAuth) {
+    public GetTokenCallbackImpl(ServiceHelper helper,
+                                UserManager userManager,
+                                FirebaseAuth firebaseAuth,
+                                Context context) {
         this.helper = helper;
         this.userManager = userManager;
         this.firebaseAuth = firebaseAuth;
+        this.context = context;
     }
 
     @Override public String onGetToken(TokenContext tokenContext) {
         try {
-//            Response response = helper.getToken(userManager.getToken(),
-//                                                firebaseAuth.getCurrentUser().getEmail().toLowerCase())
-//                                      .execute();
+            Response<TokenResponse> response = helper.getToken(userManager.getToken(),
+                                                               firebaseAuth.getCurrentUser()
+                                                            .getEmail()
+                                                            .toLowerCase())
+                                                     .execute();
 
-            return helper.getToken(userManager.getToken(),
-                                   firebaseAuth.getCurrentUser()
-                                               .getEmail()
-                                               .toLowerCase())
-                         .execute()
-                         .body()
-                         .getToken();
+            if (response.errorBody() != null && response.code() == 401) {
+//                new Handler(Looper.getMainLooper()).post(() -> {
+//                    UiUtils.toast(context, "Session is ended. Re-signIn please to refresh your token.");
+//                });
+
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+
+                Task<GetTokenResult> getTokenResultTask = firebaseAuth.getCurrentUser().getIdToken(true);
+                getTokenResultTask.addOnCompleteListener(executor, task -> {
+                    if (task.isSuccessful())
+                        userManager.setToken(new DefaultToken(task.getResult().getToken()));
+                });
+
+            try {
+                executor.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+                response = helper.getToken(userManager.getToken(),
+                                           firebaseAuth.getCurrentUser()
+                                                       .getEmail()
+                                                       .toLowerCase())
+                                 .execute();
+            }
+
+            return response.body().getToken();
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             throw new ServiceException("Failed on get token");

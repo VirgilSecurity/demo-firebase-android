@@ -230,6 +230,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
 
                              for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
                                  DefaultMessage message = snapshot.toObject(DefaultMessage.class);
+                                 message.setMessageId(Long.parseLong(snapshot.getId()));
                                  messages.add(message);
                              }
 

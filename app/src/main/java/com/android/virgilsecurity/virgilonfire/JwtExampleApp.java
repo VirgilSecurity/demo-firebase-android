@@ -35,6 +35,7 @@ package com.android.virgilsecurity.virgilonfire;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 
 import com.android.virgilsecurity.virgilonfire.di.DaggerAppComponent;
 import com.google.firebase.FirebaseApp;
@@ -68,5 +69,3 @@ public class JwtExampleApp extends Application implements HasActivityInjector {
         return activityDispatchingAndroidInjector;
     }
 }
-
-// TODO: 5/22/18 add Firebase token refresher
