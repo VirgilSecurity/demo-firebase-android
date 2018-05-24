@@ -47,6 +47,8 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -117,6 +119,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
     @Override public void onDataReceived(List<DefaultChatThread> receivedData) {
         srlRefresh.setRefreshing(false);
 
+        Collections.sort(receivedData, (o1, o2) -> o1.getReceiver().compareTo(o2.getReceiver()));
         adapter.setItems(receivedData);
         activity.showBaseLoading(false);
         showProgress(false);

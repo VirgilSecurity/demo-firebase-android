@@ -130,7 +130,8 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                                       new Timestamp(new Date()));
 
         Disposable sendMessageRequest = sendMessage((DefaultMessage) encryptedMessage,
-                                                    (DefaultChatThread) chatThread)
+                                                    chatThread.getThreadId(),
+                                                    ((DefaultChatThread) chatThread).getMessagesCount())
                 .subscribe(() -> {
                                onMessageSentInteractor.onSendMessageSuccess();
                            },
@@ -184,12 +185,12 @@ public class ThreadFragmentPresenter implements BasePresenter {
         });
     }
 
-    private Completable sendMessage(DefaultMessage message, DefaultChatThread chatThread) {
+    private Completable sendMessage(DefaultMessage message, String threadId, Long messagesCount) {
         return Completable.create(emitter -> {
             firestore.collection(COLLECTION_CHANNELS)
-                     .document(chatThread.getThreadId())
+                     .document(threadId)
                      .collection(COLLECTION_MESSAGES)
-                     .document(chatThread.getMessagesCount() + 1 + "")
+                     .document(messagesCount + 1 + "")
                      .set(message)
                      .addOnCompleteListener(task -> {
                          if (task.isSuccessful()) {
@@ -200,8 +201,8 @@ public class ThreadFragmentPresenter implements BasePresenter {
                      });
         }).andThen(Completable.create(emitter -> {
             firestore.collection(COLLECTION_CHANNELS)
-                     .document(chatThread.getThreadId())
-                     .update(KEY_PROPERTY_COUNT, chatThread.getMessagesCount() + 1)
+                     .document(threadId)
+                     .update(KEY_PROPERTY_COUNT, messagesCount + 1)
                      .addOnCompleteListener(task -> {
                          if (task.isSuccessful())
                              emitter.onComplete();

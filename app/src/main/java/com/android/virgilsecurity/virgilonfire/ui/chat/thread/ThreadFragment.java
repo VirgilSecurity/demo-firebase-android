@@ -82,7 +82,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         implements DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor,
         GetMessagesInteractor {
 
-    private static final int THRESHOLD_SCROLL = 5;
+    private static final int THRESHOLD_SCROLL = 1;
 
     @Inject protected ThreadRVAdapter adapter;
     @Inject protected ThreadFragmentPresenter presenter;
@@ -156,7 +156,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     public void onSendMessageSuccess() {
         etMessage.setText("");
         lockSendUi(false, false);
-        ((DefaultChatThread) chatThread).setMessagesCount(((DefaultChatThread) chatThread).getMessagesCount() + 1);
+//        ((DefaultChatThread) chatThread).setMessagesCount(((DefaultChatThread) chatThread).getMessagesCount() + 1);
     }
 
     @Override
@@ -261,11 +261,12 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
                                .toString()
                                .trim();
 
-        if (!text.isEmpty())
+        if (!text.isEmpty()) {
             sendMessage(text);
-
-        lockSendUi(false, false);
-        showProgress(false);
+        } else {
+            lockSendUi(false, false);
+            showProgress(false);
+        }
     }
 
     @Override public void onSearchError(Throwable t) {
@@ -297,6 +298,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         showProgress(false);
         Collections.sort(messages, (o1, o2) -> Long.compare(o1.getMessageId(), o2.getMessageId()));
         adapter.setItems(messages);
+        ((DefaultChatThread) chatThread).setMessagesCount(messages.size());
 
         if (rvChat.getAdapter().getItemCount() > THRESHOLD_SCROLL) {
             rvChat.postDelayed(() -> {
