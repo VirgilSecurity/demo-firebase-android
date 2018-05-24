@@ -74,6 +74,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
     @BindView(R.id.srlRefresh) SwipeRefreshLayout srlRefresh;
 
     private String interlocutor;
+    private boolean isCreateNewThread;
 
     @Override protected int getLayout() {
         return R.layout.fragment_threads_list;
@@ -91,13 +92,11 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
             presenter.turnOffThreadsListener();
             presenter.turnOnThreadsListener();
         });
-
     }
 
     @Override public void onResume() {
         super.onResume();
 
-        activity.changeToolbarTitleExposed(getString(R.string.app_name));
         presenter.turnOnThreadsListener();
     }
 
@@ -125,6 +124,12 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
         activity.showBaseLoading(false);
         showProgress(false);
 
+        if (isCreateNewThread) {
+            isCreateNewThread = false;
+            activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
+                                              adapter.getItemById(interlocutor));
+        }
+
         if (receivedData.isEmpty())
             tvEmpty.setVisibility(View.VISIBLE);
         else
@@ -148,6 +153,8 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
 
         this.interlocutor = interlocutor;
         presenter.requestCreateThread(interlocutor);
+
+        isCreateNewThread = true;
     }
 
     @Override public void onComplete(ThreadListFragmentPresenterReturnTypes type) {
@@ -155,14 +162,15 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
             case CREATE_THREAD:
                 tvEmpty.setVisibility(View.GONE);
                 activity.newThreadDialogDismiss();
-                activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
-                                                  adapter.getItemById(interlocutor));
+                break;
+            case REMOVE_CHAT_THREAD:
+                activity.newThreadDialogShowProgress(false);
                 break;
         }
     }
 
     @Override public void onError(Throwable t) {
-        activity.newThreadDialogShowProgress(false);
+        presenter.requestRemoveThread(interlocutor);
         String err = errorResolver.resolve(t);
         UiUtils.toast(this, err != null ? err : t.getMessage());
     }

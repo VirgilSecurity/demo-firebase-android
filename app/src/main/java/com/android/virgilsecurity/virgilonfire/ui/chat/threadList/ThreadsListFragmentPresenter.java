@@ -41,6 +41,7 @@ import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -52,10 +53,12 @@ import com.virgilsecurity.sdk.utils.ConvertionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
 import io.reactivex.Completable;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -108,58 +111,51 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
         listenerRegistration =
                 firebaseFirestore.collection(COLLECTION_CHANNELS)
                                  .addSnapshotListener((documentSnapshots, e) -> {
-                                     try {
-                                         Thread.sleep(2000);
-                                     } catch (InterruptedException e1) {
-                                         e1.printStackTrace();
-                                     }
                                      firebaseFirestore.collection(COLLECTION_USERS)
                                                       .document(firebaseAuth.getCurrentUser()
                                                                             .getEmail()
                                                                             .toLowerCase())
                                                       .get()
                                                       .addOnCompleteListener(task -> {
-                                                          if (task.isSuccessful()) {
-                                                              DocumentSnapshot documentSnapshot = task.getResult();
-
-                                                              DefaultUser defaultUser = documentSnapshot.toObject(
-                                                                      DefaultUser.class);
-                                                              defaultUser.setName(documentSnapshot.getId());
-
-                                                              List<DefaultChatThread> threads = new ArrayList<>();
-
-                                                              for (String channelId : defaultUser.getChannels()) {
-                                                                  for (DocumentSnapshot document : documentSnapshots) {
-                                                                      if (document.getId().equals(channelId)) {
-                                                                          List<String> members = (List<String>) document
-                                                                                  .get(KEY_PROPERTY_MEMBERS);
-                                                                          long messagesCount = (Long) document.get(
-                                                                                  KEY_PROPERTY_COUNT);
-
-                                                                          String senderId = members.get(0)
-                                                                                                   .equals(firebaseAuth.getCurrentUser()
-                                                                                                                       .getEmail()
-                                                                                                                       .toLowerCase())
-                                                                                            ? members.get(0) : members.get(
-                                                                                  1);
-                                                                          String receiverId = members.get(0)
-                                                                                                     .equals(senderId) ? members
-                                                                                                      .get(1) : members
-                                                                                                      .get(0);
-                                                                          threads.add(new DefaultChatThread(document.getId(),
-                                                                                                            senderId,
-                                                                                                            receiverId,
-                                                                                                            messagesCount));
-                                                                      }
-                                                                  }
-                                                              }
-
-                                                              onDataReceivedInteractor.onDataReceived(threads);
-                                                          } else {
-                                                              onDataReceivedInteractor.onDataReceivedError(task.getException());
-                                                          }
+                                                          updateThreads(documentSnapshots, task);
                                                       });
                                  });
+    }
+
+    private void updateThreads(QuerySnapshot documentSnapshots, Task<DocumentSnapshot> task) {
+        if (task.isSuccessful()) {
+            DocumentSnapshot documentSnapshot = task.getResult();
+
+            DefaultUser defaultUser = documentSnapshot.toObject(DefaultUser.class);
+            defaultUser.setName(documentSnapshot.getId());
+
+            List<DefaultChatThread> threads = new ArrayList<>();
+
+            for (String channelId : defaultUser.getChannels()) {
+                for (DocumentSnapshot document : documentSnapshots) {
+                    if (document.getId().equals(channelId)) {
+                        List<String> members = (List<String>) document.get(KEY_PROPERTY_MEMBERS);
+                        long messagesCount = (Long) document.get(KEY_PROPERTY_COUNT);
+
+                        String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
+                                                                            .getEmail()
+                                                                            .toLowerCase())
+                                          ? members.get(0) : members.get(1);
+                        String receiverId = members.get(0)
+                                                   .equals(senderId) ? members.get(1)
+                                                                     : members.get(0);
+                        threads.add(new DefaultChatThread(document.getId(),
+                                                          senderId,
+                                                          receiverId,
+                                                          messagesCount));
+                    }
+                }
+            }
+
+            onDataReceivedInteractor.onDataReceived(threads);
+        } else {
+            onDataReceivedInteractor.onDataReceivedError(task.getException());
+        }
     }
 
     public void turnOffThreadsListener() {
@@ -171,15 +167,37 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
         String newThreadId = generateNewChannelId(interlocutor);
 
         Disposable requestCreateThreadDisposable =
-                createThread(interlocutor, newThreadId)
+                updateUserMe(newThreadId)
+                        .andThen(updateUserInterlocutor(interlocutor, newThreadId))
+                        .andThen(createThread(interlocutor, newThreadId))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeOn(Schedulers.io())
-                        .andThen(Completable.mergeArray(updateUserMe(newThreadId),
-                                                        updateUserInterlocutor(interlocutor, newThreadId)))
                         .subscribe(() -> completeInteractor.onComplete(ThreadListFragmentPresenterReturnTypes.CREATE_THREAD),
                                    completeInteractor::onError);
 
         compositeDisposable.add(requestCreateThreadDisposable);
+    }
+
+    public void requestRemoveThread(String interlocutor) {
+        String newThreadId = generateNewChannelId(interlocutor);
+
+        Disposable requestRemoveThreadDisposable =
+                Completable.create(emitter -> {
+                    firebaseFirestore.collection(COLLECTION_CHANNELS)
+                                     .document(newThreadId)
+                                     .delete()
+                                     .addOnCompleteListener(task -> {
+                                         if (task.isSuccessful())
+                                             emitter.onComplete();
+                                         else
+                                             emitter.onError(task.getException());
+                                     });
+                }).observeOn(AndroidSchedulers.mainThread())
+                           .subscribeOn(Schedulers.io())
+                           .subscribe(() -> completeInteractor.onComplete(ThreadListFragmentPresenterReturnTypes.REMOVE_CHAT_THREAD),
+                                      completeInteractor::onError);
+
+        compositeDisposable.add(requestRemoveThreadDisposable);
     }
 
     private Single<DefaultUser> getCurrentUser() {

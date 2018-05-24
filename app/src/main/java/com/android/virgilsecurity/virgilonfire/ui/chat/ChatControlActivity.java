@@ -151,6 +151,8 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                     dlDrawer.closeDrawer(Gravity.START);
             });
 
+            changeToolbarTitle(getString(R.string.app_name));
+
             UiUtils.hideFragment(getFragmentManager(), threadFragment);
             UiUtils.showFragment(getFragmentManager(), threadsListFragment);
         } else {

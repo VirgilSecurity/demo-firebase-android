@@ -44,5 +44,6 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.threadList;
  * ....|_|-
  */
 public enum ThreadListFragmentPresenterReturnTypes {
-    CREATE_THREAD
+    CREATE_THREAD,
+    REMOVE_CHAT_THREAD
 }
