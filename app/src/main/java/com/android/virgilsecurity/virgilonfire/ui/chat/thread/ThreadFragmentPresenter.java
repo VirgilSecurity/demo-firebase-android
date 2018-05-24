@@ -58,6 +58,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Completable;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -132,6 +133,8 @@ public class ThreadFragmentPresenter implements BasePresenter {
         Disposable sendMessageRequest = sendMessage((DefaultMessage) encryptedMessage,
                                                     chatThread.getThreadId(),
                                                     ((DefaultChatThread) chatThread).getMessagesCount())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
                 .subscribe(() -> {
                                onMessageSentInteractor.onSendMessageSuccess();
                            },

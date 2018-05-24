@@ -91,6 +91,7 @@ public class ThreadsListFragment extends BaseFragmentDi<ChatControlActivity>
             presenter.turnOffThreadsListener();
             presenter.turnOnThreadsListener();
         });
+
     }
 
     @Override public void onResume() {

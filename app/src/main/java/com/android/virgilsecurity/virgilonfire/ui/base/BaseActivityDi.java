@@ -171,6 +171,5 @@ public abstract class BaseActivityDi extends AppCompatActivity {
     public void showBaseLoading(boolean show) {
         llBaseLoading.setVisibility(show ? View.VISIBLE : View.GONE);
         llBaseLoading.requestFocus();
-        hideKeyboard();
     }
 }

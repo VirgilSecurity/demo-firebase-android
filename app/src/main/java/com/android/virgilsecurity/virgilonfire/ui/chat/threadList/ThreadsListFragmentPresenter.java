@@ -167,41 +167,6 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
             listenerRegistration.remove();
     }
 
-    public void requestThreadsList() {
-        Disposable requestThreadsDisposable =
-                Single.zip(getCurrentUser(), getChannels(),
-                           (defaultUser, documentSnapshots) -> {
-                               List<DefaultChatThread> threads = new ArrayList<>();
-
-                               for (String channelId : defaultUser.getChannels()) {
-                                   for (DocumentSnapshot document : documentSnapshots) {
-                                       if (document.getId().equals(channelId)) {
-                                           List<String> members = (List<String>) document.get(KEY_PROPERTY_MEMBERS);
-                                           long messagesCount = (Long) document.get(KEY_PROPERTY_COUNT);
-
-                                           String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
-                                                                                               .getEmail()
-                                                                                               .toLowerCase())
-                                                             ? members.get(0) : members.get(1);
-                                           String receiverId = members.get(0)
-                                                                      .equals(senderId) ? members.get(1) : members.get(0);
-                                           threads.add(new DefaultChatThread(document.getId(),
-                                                                             senderId,
-                                                                             receiverId,
-                                                                             messagesCount));
-                                       }
-                                   }
-                               }
-
-                               return threads;
-                           })
-                      .observeOn(AndroidSchedulers.mainThread())
-                      .subscribeOn(Schedulers.io())
-                      .subscribe((threads, throwable) -> onDataReceivedInteractor.onDataReceived(threads));
-
-        compositeDisposable.add(requestThreadsDisposable);
-    }
-
     public void requestCreateThread(String interlocutor) {
         String newThreadId = generateNewChannelId(interlocutor);
 
