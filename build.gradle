@@ -57,7 +57,7 @@ allprojects {
         appName = "FbaseDemo"
         majorVersion = "0"
         minorVersion = "1"
-        patchVersion = "0"
+        patchVersion = "1"
 
         supportLibrary = "26.1.0"
         constraintLayout = "1.1.0"
