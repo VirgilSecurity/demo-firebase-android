@@ -54,6 +54,11 @@ buildscript {
 
 allprojects {
     ext {
+        appName = "FbaseDemo"
+        majorVersion = "0"
+        minorVersion = "1"
+        patchVersion = "0"
+
         supportLibrary = "26.1.0"
         constraintLayout = "1.1.0"
         virgilSdk = "5.0.2"

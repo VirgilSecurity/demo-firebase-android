@@ -41,8 +41,9 @@ android {
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
-        versionName "1.0"
+        versionName majorVersion + "." + minorVersion + "." + patchVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        setProperty("archivesBaseName", appName + "-v" + versionName)
     }
 
     buildTypes {

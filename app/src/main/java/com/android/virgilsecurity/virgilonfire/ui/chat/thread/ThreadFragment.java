@@ -152,7 +152,6 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     @Override
     public void onSendMessageSuccess() {
-        etMessage.setText("");
         lockSendUi(false);
     }
 
@@ -204,8 +203,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
                         lockSendUi(true);
                         sendMessage(text);
                     } else {
-                        lockSendUi(true);
-                        presenter.requestSearchCards(chatThread.getReceiver());
+                        UiUtils.toast(this, "No interlocutor cards");
                     }
                 }
                 break;
@@ -221,15 +219,19 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
                                              new Timestamp(new Date()));
 
         presenter.requestSendMessage(interlocutorCards, message, chatThread);
+        etMessage.setText("");
     }
 
     public void setChatThread(@NonNull ChatThread chatThread) {
         this.chatThread = chatThread;
+
+        showProgress(true);
+        lockSendUi(true);
+        activity.changeToolbarTitleExposed(this.chatThread.getReceiver());
+
         adapter.clearItems();
         interlocutorCards = null;
-        activity.changeToolbarTitleExposed(this.chatThread.getReceiver());
-        presenter.turnOnMessageListener(chatThread);
-        showProgress(true);
+        presenter.requestSearchCards(chatThread.getReceiver());
     }
 
     @Override public void onSearchSuccess(List<Card> cards) {
@@ -240,17 +242,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         }
 
         interlocutorCards = cards;
-
-        String text = etMessage.getText()
-                               .toString()
-                               .trim();
-
-        if (!text.isEmpty()) {
-            sendMessage(text);
-        } else {
-            lockSendUi(false);
-            showProgress(false);
-        }
+        presenter.turnOnMessageListener(chatThread);
+        lockSendUi(false);
     }
 
     @Override public void onSearchError(Throwable t) {
