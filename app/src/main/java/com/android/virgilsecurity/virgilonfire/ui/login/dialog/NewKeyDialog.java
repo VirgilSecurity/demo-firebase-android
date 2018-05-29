@@ -97,10 +97,10 @@ public class NewKeyDialog extends Dialog {
     void onInterfaceClick(View v) {
         switch (v.getId()) {
             case R.id.btnCancel:
-                cancel();
+                onCreateNewKeysListener.onCancelCreateNewKeys(v, this);
                 break;
             case R.id.btnOk:
-                onCreateNewKeysListener.onCreateNewKeys();
+                onCreateNewKeysListener.onCreateNewKeys(v, this);
                 break;
         }
     }
@@ -110,6 +110,8 @@ public class NewKeyDialog extends Dialog {
     }
 
     public interface OnCreateNewKeysListener {
-        void onCreateNewKeys();
+        void onCreateNewKeys(View v, Dialog dialog);
+
+        void onCancelCreateNewKeys(View v, Dialog dialog);
     }
 }

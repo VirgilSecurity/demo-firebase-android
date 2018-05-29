@@ -41,12 +41,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="SplashTheme" parent="AppTheme">
-        <item name="android:windowBackground">@drawable/splash_screen</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
     <style name="TextInputBlack">
         <item name="colorAccent">@color/black</item>
     </style>
@@ -57,6 +51,11 @@
 
     <style name="NotTransBtnsDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="colorPrimary">@color/colorAccent</item>
+    </style>
+
+    <style name="error_appearance" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@android:color/holo_red_light</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
 </resources>

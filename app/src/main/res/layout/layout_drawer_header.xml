@@ -61,7 +61,8 @@
             android:layout_marginStart="@dimen/default_margin"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:maxLines="2"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textColor="@color/black_olive"
             android:textSize="@dimen/big_text"
             tools:body="User Name" />

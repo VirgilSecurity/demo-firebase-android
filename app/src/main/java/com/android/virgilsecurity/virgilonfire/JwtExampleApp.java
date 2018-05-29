@@ -35,10 +35,8 @@ package com.android.virgilsecurity.virgilonfire;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 
 import com.android.virgilsecurity.virgilonfire.di.DaggerAppComponent;
-import com.google.firebase.FirebaseApp;
 
 import javax.inject.Inject;
 
@@ -57,8 +55,6 @@ public class JwtExampleApp extends Application implements HasActivityInjector {
 
     @Override public void onCreate() {
         super.onCreate();
-//        FirebaseApp.initializeApp(this);
-
         DaggerAppComponent.builder()
                           .application(this)
                           .build()

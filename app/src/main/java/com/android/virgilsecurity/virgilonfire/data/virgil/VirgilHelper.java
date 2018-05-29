@@ -140,7 +140,7 @@ public class VirgilHelper {
             return ConvertionUtils.toString(decryptedData);
         } catch (CryptoException e) {
             e.printStackTrace();
-            throw new DecryptionException("Failed to decrypt data ):");
+            return "Message encrypted";
         }
     }
 

@@ -34,6 +34,7 @@
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -159,20 +160,20 @@ public final class LogInFragment
 
     private void initFirebaseAuth() {
         btnSignIn.setOnClickListener(v -> {
-            pbLoading.setVisibility(View.VISIBLE);
-            btnSignIn.setVisibility(View.INVISIBLE);
-            btnSignUp.setVisibility(View.INVISIBLE);
+            showProgress(true);
 
             String error;
 
             error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
             if (error != null) {
+                showProgress(false);
                 tilEmail.setError(error);
                 return;
             }
 
             error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
             if (error != null) {
+                showProgress(false);
                 tilPassword.setError(error);
                 return;
             }
@@ -186,20 +187,20 @@ public final class LogInFragment
         });
 
         btnSignUp.setOnClickListener(v -> {
-            pbLoading.setVisibility(View.VISIBLE);
-            btnSignIn.setVisibility(View.INVISIBLE);
-            btnSignUp.setVisibility(View.INVISIBLE);
+            showProgress(true);
 
             String error;
 
             error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
             if (error != null) {
+                showProgress(false);
                 etEmail.setError(error);
                 return;
             }
 
             error = Validator.validate(etPassword, Validator.FieldType.PASSWORD);
             if (error != null) {
+                showProgress(false);
                 tilPassword.setError(error);
                 return;
             }
@@ -231,11 +232,18 @@ public final class LogInFragment
                                          });
                             } else {
                                 activity.runOnUiThread(() -> {
+                                    showProgress(false);
                                     UiUtils.toast(this, "Create user was not successful");
                                 });
                             }
                         });
         });
+    }
+
+    private void showProgress(boolean show) {
+        pbLoading.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        btnSignIn.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
+        btnSignUp.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void handleSignInResult(Task task) {
@@ -256,6 +264,9 @@ public final class LogInFragment
                 }
             });
         } else {
+            firebaseAuth.signOut();
+            showProgress(false);
+
             String error = errorResolver.resolve(task.getException());
             if (error == null && task.getException() != null)
                 error = task.getException()
@@ -279,9 +290,7 @@ public final class LogInFragment
         }); // If we can't resolve error here -
         // then it's normal behaviour. Proceed.
         if (error != null) {
-            pbLoading.setVisibility(View.INVISIBLE);
-            btnSignIn.setVisibility(View.VISIBLE);
-            btnSignUp.setVisibility(View.VISIBLE);
+            showProgress(false);
 
             UiUtils.toast(this, error);
             firebaseAuth.signOut();
@@ -300,9 +309,9 @@ public final class LogInFragment
     }
 
     @Override public void onPublishCardError(Throwable t) {
-        pbLoading.setVisibility(View.INVISIBLE);
-        btnSignIn.setVisibility(View.VISIBLE);
-        btnSignUp.setVisibility(View.VISIBLE);
+        showProgress(false);
+
+        firebaseAuth.signOut();
 
         UiUtils.toast(this, errorResolver.resolve(t));
     }
@@ -312,19 +321,29 @@ public final class LogInFragment
     }
 
     @Override public void onKeyNotExists() {
-        pbLoading.setVisibility(View.INVISIBLE);
-        btnSignIn.setVisibility(View.VISIBLE);
-        btnSignUp.setVisibility(View.VISIBLE);
+        showProgress(false);
+
         presenter.disposeAll();
         NewKeyDialog newKeyDialog = new NewKeyDialog(activity,
                                                      R.style.NotTransBtnsDialogTheme,
                                                      getString(R.string.new_private_key),
                                                      getString(R.string.new_private_key_generation));
 
-        newKeyDialog.setOnNewKeysDialogListener(() -> {
-            presenter.requestPublishCard(firebaseAuth.getCurrentUser()
-                                                     .getEmail().toLowerCase());
+        newKeyDialog.setOnNewKeysDialogListener(new NewKeyDialog.OnCreateNewKeysListener() {
+            @Override public void onCreateNewKeys(View v, Dialog dialog) {
+                showProgress(true);
+                dialog.dismiss();
+                presenter.requestPublishCard(firebaseAuth.getCurrentUser()
+                                                         .getEmail().toLowerCase());
+            }
+
+            @Override public void onCancelCreateNewKeys(View v, Dialog dialog) {
+                firebaseAuth.signOut();
+                dialog.cancel();
+            }
         });
+
+        newKeyDialog.show();
     }
 
     @Override public void onStop() {
@@ -340,6 +359,8 @@ public final class LogInFragment
     }
 
     @Override public void onRefreshUserCardsError(Throwable t) {
+
+        firebaseAuth.signOut();
         UiUtils.toast(this, errorResolver.resolve(t));
     }
 }

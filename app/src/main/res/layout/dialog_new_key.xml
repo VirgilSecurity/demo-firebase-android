@@ -53,6 +53,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/half_default_margin"
             android:paddingStart="@dimen/default_margin"
+            android:paddingEnd="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
             tools:body="Title" />
@@ -68,6 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/default_margin"
             android:paddingStart="@dimen/default_margin"
+            android:paddingEnd="@dimen/default_margin"
             android:textColor="@color/oxford_blue"
             android:textSize="@dimen/increased_text"
             tools:body="Body message body" />

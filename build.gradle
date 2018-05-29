@@ -38,11 +38,17 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.2'
 
         classpath 'com.google.gms:google-services:3.3.1'
+
+        // Crashlytics
+//        classpath 'io.fabric.tools:gradle:1.25.4'
     }
 }
 
@@ -63,18 +69,20 @@ allprojects {
         rxRetrofitAdapter = "2.0.2"
         converterGson = "2.3.0"
         apacheCommons = "3.7"
-        firebaseAuth = "15.1.0"
-        firebaseFirestore = "16.0.0"
+        firebaseCore = "16.0.0"
+        firebaseAuth = "16.0.1"
+        firebaseFirestore = "17.0.1"
+//        crashlytics = "2.9.3"
     }
 
     repositories {
         google()
         jcenter()
         maven {
-            url 'https://maven.google.com/'
+            url 'https://jitpack.io'
         }
         maven {
-            url 'https://jitpack.io'
+            url 'https://maven.fabric.io/public'
         }
     }
 }
@@ -82,3 +90,4 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+

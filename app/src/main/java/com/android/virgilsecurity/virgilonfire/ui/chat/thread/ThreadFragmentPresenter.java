@@ -193,7 +193,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
             firestore.collection(COLLECTION_CHANNELS)
                      .document(threadId)
                      .collection(COLLECTION_MESSAGES)
-                     .document(messagesCount + 1 + "")
+                     .document(messagesCount + "")
                      .set(message)
                      .addOnCompleteListener(task -> {
                          if (task.isSuccessful()) {

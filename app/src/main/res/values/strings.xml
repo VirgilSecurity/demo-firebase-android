@@ -45,7 +45,6 @@
     <string name="ok">OK</string>
     <string name="press_exit_once_more">Press back once more to exit</string>
     <string name="virgil_securiry_copyright">Copyright © 2015–2018 Virgil Security Inc.</string>
-    <string name="error_sending_message">Error sending message</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
 
@@ -55,11 +54,10 @@
     <string name="virgil_firebase_messenger">Virgil-Firebase messenger</string>
     <string name="please_enter_creds">Please enter your credentials</string>
     <string name="no_cards_found">No cards was found</string>
-    <string name="no_private_key">It seems that you\'ve lost your private key</string>
     <string name="new_private_key">Generate new private</string>
     <string name="new_private_key_generation">There\'s no private key for entered identity on this device.
         \nGenerate new one? (You
-        won\'t be able to decrypt old messages)</string>
+        won\'t be able to decrypt old messages on this device)</string>
 
     <!-- Threads List -->
     <string name="threads_list_name">Threads List</string>
