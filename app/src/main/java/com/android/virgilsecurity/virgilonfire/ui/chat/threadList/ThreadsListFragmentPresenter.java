@@ -326,7 +326,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
             throw new GenerateHashException();
         }
 
-        return ConvertionUtils.toHex(concatenatedHashedUsersData);
+        return ConvertionUtils.toHex(concatenatedHashedUsersData).toLowerCase();
     }
 
     @Override
