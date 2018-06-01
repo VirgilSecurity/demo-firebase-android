@@ -58,3 +58,9 @@ google-services.json
 freeline.py
 freeline/
 freeline_project_description.json
+
+# JS
+**/node_modules/*
+
+# Firebase
+.firebaserc
