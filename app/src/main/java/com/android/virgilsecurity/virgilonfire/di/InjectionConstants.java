@@ -45,6 +45,5 @@ package com.android.virgilsecurity.virgilonfire.di;
  */
 public final class InjectionConstants {
 
-    public static final String REQUEST_ID_TOKEN = "requestIdToken";
-
+    public static final String ROOM_DB_NAME = "ROOM_DB_NAME";
 }

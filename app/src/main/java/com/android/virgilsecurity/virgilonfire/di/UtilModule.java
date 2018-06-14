@@ -34,11 +34,13 @@
 package com.android.virgilsecurity.virgilonfire.di;
 
 import android.app.Application;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.PropertyManager;
+import com.android.virgilsecurity.virgilonfire.data.local.RoomDb;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivityComponent;
 import com.android.virgilsecurity.virgilonfire.util.DefaultErrorResolver;
@@ -52,8 +54,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-
-import static com.android.virgilsecurity.virgilonfire.di.InjectionConstants.REQUEST_ID_TOKEN;
 
 /**
  * Created by Danylo Oliinyk on 3/26/18 at Virgil Security.
@@ -79,10 +79,6 @@ public class UtilModule {
         return new DefaultErrorResolver();
     }
 
-    @Provides @Singleton @Named(REQUEST_ID_TOKEN) @Nullable String provideRequestIdToken(Context context) {
-        return context.getString(R.string.requestIdToken);
-    }
-
     @Provides FirebaseAuth provideFirebaseAuth() {
         return FirebaseAuth.getInstance();
     }
@@ -95,5 +91,15 @@ public class UtilModule {
         firestore.setFirestoreSettings(settings);
 
         return firestore;
+    }
+
+    @Provides @Singleton @Named(InjectionConstants.ROOM_DB_NAME) String provideRoomDbName(Context context) {
+        return context.getString(R.string.room_db_name);
+    }
+
+    @Provides @Singleton RoomDb provideRoom(Context context, @Named(InjectionConstants.ROOM_DB_NAME) String roomDbName) {
+        return Room.databaseBuilder(context.getApplicationContext(), RoomDb.class, roomDbName)
+                   .fallbackToDestructiveMigration()
+                   .build();
     }
 }

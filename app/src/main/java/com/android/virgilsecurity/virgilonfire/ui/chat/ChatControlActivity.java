@@ -35,7 +35,6 @@ package com.android.virgilsecurity.virgilonfire.ui.chat;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
@@ -43,8 +42,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
@@ -63,14 +60,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.BindView;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasFragmentInjector;
-
-import static com.android.virgilsecurity.virgilonfire.di.InjectionConstants.REQUEST_ID_TOKEN;
 
 /**
  * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
@@ -88,7 +82,6 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
 
     @Inject protected DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
     @Inject UserManager userManager;
-    @Inject @Named(REQUEST_ID_TOKEN) @Nullable String requestIdToken;
     @Inject FirebaseAuth firebaseAuth;
 
     @BindView(R.id.toolbar)

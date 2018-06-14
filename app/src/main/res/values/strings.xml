@@ -35,9 +35,6 @@
 
     <string name="app_name">Firebase Demo</string>
 
-    <!-- Credentials -->
-    <string name="requestIdToken">681673183198-m9sm47puqhdirvms732m8fa4k996n1ev.apps.googleusercontent.com</string>
-
     <!-- General -->
     <string name="no_internet">Please, check your internet state</string>
     <string name="error_loading">Please, swipe from top to retry</string>
@@ -47,6 +44,7 @@
     <string name="virgil_securiry_copyright">Copyright © 2015–2018 Virgil Security Inc.</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="room_db_name">firebase_virgil_demo_database</string>
 
     <!-- LogIn -->
     <string name="signup">SignUp</string>

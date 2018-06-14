@@ -104,7 +104,6 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @Override protected int getLayout() {
         return R.layout.fragment_thread;
     }
-
     @Override protected void postButterInit() {
         rvChat.setAdapter(adapter);
         layoutManager = new LinearLayoutManager(activity);

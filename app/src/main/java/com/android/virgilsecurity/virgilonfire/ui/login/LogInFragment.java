@@ -36,7 +36,6 @@ package com.android.virgilsecurity.virgilonfire.ui.login;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.text.Editable;
@@ -67,11 +66,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.BindView;
-
-import static com.android.virgilsecurity.virgilonfire.di.InjectionConstants.REQUEST_ID_TOKEN;
 
 /**
  * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
@@ -89,7 +85,6 @@ public final class LogInFragment
     @Inject protected LogInPresenter presenter;
     @Inject protected UserManager userManager;
     @Inject protected ErrorResolver errorResolver;
-    @Inject @Named(REQUEST_ID_TOKEN) @Nullable protected String requestIdToken;
 
     @BindView(R.id.etEmail)
     protected TextInputEditText etEmail;

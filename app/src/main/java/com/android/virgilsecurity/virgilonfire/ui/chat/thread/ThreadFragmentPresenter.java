@@ -33,17 +33,21 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
+import com.android.virgilsecurity.virgilonfire.data.local.RoomDb;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
+import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -53,7 +57,12 @@ import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -79,18 +88,22 @@ public class ThreadFragmentPresenter implements BasePresenter {
     private static final String COLLECTION_CHANNELS = "Channels";
     private static final String COLLECTION_MESSAGES = "Messages";
     private static final String KEY_PROPERTY_COUNT = "count";
+    private static final String KEY_PROPERTY_BODY = "body";
 
-    private Context context;
-    private DataReceivedInteractor<Message> messageReceivedInteractor;
-    private OnMessageSentInteractor onMessageSentInteractor;
-    private GetMessagesInteractor getMessagesInteractor;
-    private SearchCardsInteractor searchCardsInteractor;
-    private CompositeDisposable compositeDisposable;
-    private VirgilRx virgilRx;
-    private UserManager userManager;
-    private VirgilHelper virgilHelper;
-    private FirebaseFirestore firestore;
+    private final Context context;
+    private final DataReceivedInteractor<Message> messageReceivedInteractor;
+    private final OnMessageSentInteractor onMessageSentInteractor;
+    private final GetMessagesInteractor getMessagesInteractor;
+    private final SearchCardsInteractor searchCardsInteractor;
+    private final CompositeDisposable compositeDisposable;
+    private final VirgilRx virgilRx;
+    private final UserManager userManager;
+    private final VirgilHelper virgilHelper;
+    private final FirebaseFirestore firestore;
+    private final RoomDb roomDb;
+
     private ListenerRegistration listenerRegistration;
+    private Disposable getMessagesDisposable;
 
     @Inject
     public ThreadFragmentPresenter(Context context,
@@ -101,7 +114,8 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                    SearchCardsInteractor searchCardsInteractor,
                                    UserManager userManager,
                                    VirgilHelper virgilHelper,
-                                   FirebaseFirestore firestore) {
+                                   FirebaseFirestore firestore,
+                                   RoomDb roomDb) {
         this.context = context;
         this.messageReceivedInteractor = messageReceivedInteractor;
         this.onMessageSentInteractor = onMessageSentInteractor;
@@ -111,6 +125,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
         this.virgilHelper = virgilHelper;
         this.firestore = firestore;
         this.getMessagesInteractor = getMessagesInteractor;
+        this.roomDb = roomDb;
 
         compositeDisposable = new CompositeDisposable();
     }
@@ -133,24 +148,10 @@ public class ThreadFragmentPresenter implements BasePresenter {
         Disposable sendMessageRequest = sendMessage((DefaultMessage) encryptedMessage,
                                                     chatThread.getThreadId(),
                                                     ((DefaultChatThread) chatThread).getMessagesCount())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(() -> {
-                               onMessageSentInteractor.onSendMessageSuccess();
-                           },
-                           error -> {
-                               onMessageSentInteractor.onSendMessageError(error);
-                           });
+                .subscribe(onMessageSentInteractor::onSendMessageSuccess,
+                           onMessageSentInteractor::onSendMessageError);
 
         compositeDisposable.add(sendMessageRequest);
-    }
-
-    public void requestGetMessages(ChatThread chatThread) {
-        Disposable getMessagesRequest = getMessagesByChannelId(chatThread.getThreadId())
-                .subscribe(messages -> getMessagesInteractor.onGetMessagesSuccess(messages),
-                           error -> getMessagesInteractor.onGetMessagesError(error));
-
-        compositeDisposable.add(getMessagesRequest);
     }
 
     public void requestSearchCards(String identity) {
@@ -168,30 +169,10 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable.add(searchCardDisposable);
     }
 
-    private Single<List<DefaultMessage>> getMessagesByChannelId(String channelId) {
-        return Single.create(emitter -> {
-            firestore.collection(COLLECTION_CHANNELS)
-                     .document(channelId)
-                     .collection(COLLECTION_MESSAGES)
-                     .get()
-                     .addOnCompleteListener(task -> {
-                         if (task.isSuccessful()) {
-                             List<DefaultMessage> messages = new ArrayList<>();
-                             for (DocumentSnapshot snapshot : task.getResult())
-                                 messages.add(snapshot.toObject(DefaultMessage.class));
-
-                             emitter.onSuccess(messages);
-                         } else {
-                             emitter.onError(task.getException());
-                         }
-                     });
-        });
-    }
-
-    private Completable sendMessage(DefaultMessage message, String threadId, Long messagesCount) {
+    private Completable sendMessage(DefaultMessage message, String channelId, Long messagesCount) {
         return Completable.create(emitter -> {
             firestore.collection(COLLECTION_CHANNELS)
-                     .document(threadId)
+                     .document(channelId)
                      .collection(COLLECTION_MESSAGES)
                      .document(messagesCount + "")
                      .set(message)
@@ -204,7 +185,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
                      });
         }).andThen(Completable.create(emitter -> {
             firestore.collection(COLLECTION_CHANNELS)
-                     .document(threadId)
+                     .document(channelId)
                      .update(KEY_PROPERTY_COUNT, messagesCount + 1)
                      .addOnCompleteListener(task -> {
                          if (task.isSuccessful())
@@ -212,14 +193,20 @@ public class ThreadFragmentPresenter implements BasePresenter {
                          else
                              emitter.onError(task.getException());
                      });
-        }));
+        })).observeOn(Schedulers.io())
+                          .andThen(Completable.create(insertMessageEmitter -> {
+                              message.setChannelId(channelId);
+                              roomDb.messageDao().inertMessage(message);
+                              insertMessageEmitter.onComplete();
+                          })).subscribeOn(Schedulers.io())
+                          .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override public void disposeAll() {
         compositeDisposable.clear();
     }
 
-    public void turnOnMessageListener(ChatThread chatThread) {
+    @SuppressLint("CheckResult") public void turnOnMessageListener(ChatThread chatThread) {
         listenerRegistration =
                 firestore.collection(COLLECTION_CHANNELS)
                          .document(chatThread.getThreadId())
@@ -235,11 +222,57 @@ public class ThreadFragmentPresenter implements BasePresenter {
                              for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
                                  DefaultMessage message = snapshot.toObject(DefaultMessage.class);
                                  message.setMessageId(Long.parseLong(snapshot.getId()));
+                                 message.setChannelId(chatThread.getThreadId());
                                  messages.add(message);
                              }
 
-                             getMessagesInteractor.onGetMessagesSuccess(messages);
+                             if (!messages.isEmpty()) {
+                                 Single.fromCallable(() -> {
+                                     return roomDb.messageDao().insertAll(messages);
+                                 }).subscribeOn(Schedulers.io())
+                                            .observeOn(Schedulers.io())
+                                            .flatMap((insertedIdentifiers) -> {
+
+                                                for (DefaultMessage message : messages) {
+                                                    if (!message.getBody().isEmpty())
+                                                        consumeMessage(message, chatThread);
+                                                }
+
+                                                return roomDb.messageDao().getAllById(chatThread.getThreadId());
+                                            })
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(getMessagesInteractor::onGetMessagesSuccess,
+                                                       getMessagesInteractor::onGetMessagesError);
+                             } else {
+                                 roomDb.messageDao().getAllById(chatThread.getThreadId())
+                                       .subscribeOn(Schedulers.io())
+                                       .observeOn(AndroidSchedulers.mainThread())
+                                       .subscribe(getMessagesInteractor::onGetMessagesSuccess,
+                                                  getMessagesInteractor::onGetMessagesError);
+                             }
                          });
+    }
+
+    private void consumeMessage(DefaultMessage message, ChatThread chatThread) {
+        if (message.getSender().equals(chatThread.getReceiver())) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            firestore.collection(COLLECTION_CHANNELS)
+                     .document(chatThread.getThreadId())
+                     .collection(COLLECTION_MESSAGES)
+                     .document(String.valueOf(message.getMessageId()))
+                     .update(KEY_PROPERTY_BODY, "")
+                     .addOnCompleteListener(executor, task -> {
+                         if (!task.isSuccessful())
+                             throw new ServiceException("Consuming message error");
+                     });
+
+            try {
+                executor.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void turnOffMessageListener() {

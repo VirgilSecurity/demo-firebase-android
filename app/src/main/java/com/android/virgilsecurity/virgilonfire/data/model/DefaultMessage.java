@@ -33,6 +33,11 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.PropertyName;
@@ -42,26 +47,37 @@ import com.google.firebase.firestore.PropertyName;
  * -__o
  */
 
+@Entity
 public class DefaultMessage implements Message {
 
+    @ColumnInfo(name = "sender")
     @PropertyName("sender")
     private String sender;
 
+    @ColumnInfo(name = "receiver")
     @PropertyName("receiver")
     private String receiver;
 
+    @ColumnInfo(name = "body")
     @PropertyName("body")
     private String body;
 
-    @PropertyName("createdAr")
-    Timestamp createdAt;
+    @ColumnInfo(name = "created_at")
+    @PropertyName("createdAt")
+    private Timestamp createdAt;
 
     @Exclude
+    @PrimaryKey
     private long messageId;
+
+    @Exclude
+    @ColumnInfo(name = "channel_id")
+    private String channelId;
 
     public DefaultMessage() {
     }
 
+    @Ignore
     public DefaultMessage(String sender, String receiver, String body, Timestamp createdAt) {
         this.sender = sender;
         this.receiver = receiver;
@@ -73,20 +89,44 @@ public class DefaultMessage implements Message {
         return sender;
     }
 
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
     @Override public String getReceiver() {
         return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 
     @Override public String getBody() {
         return body;
     }
 
+    public void setBody(String body) {
+        this.body = body;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
 
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Exclude public long getMessageId() {
         return messageId;
+    }
+
+    @Exclude public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
     public void setMessageId(long messageId) {

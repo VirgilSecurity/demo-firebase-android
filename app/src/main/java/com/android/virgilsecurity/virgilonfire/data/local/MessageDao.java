@@ -31,69 +31,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.data.local;
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    6/13/186/13/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
 
-buildscript {
-    
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
+import android.arch.persistence.room.Query;
 
-        classpath 'com.google.gms:google-services:3.3.1'
+import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
-    }
+import java.util.List;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+
+/**
+ * MessageDao
+ */
+@Dao
+public interface MessageDao {
+
+    @Query("SELECT * FROM defaultmessage WHERE channel_id LIKE :channelId") Single<List<DefaultMessage>> getAllById(
+            String channelId);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE) void inertMessage(DefaultMessage message);
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE) Long[] insertAll(List<DefaultMessage> messages);
 }
-
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
-
-        supportLibrary = "26.1.0"
-        constraintLayout = "1.1.0"
-        virgilSdk = "5.0.2"
-        virgilCrypto = "5.0.2@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.14.1"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.0"
-        firebaseAuth = "16.0.1"
-        firebaseFirestore = "17.0.1"
-        room = "1.1.0"
-//        crashlytics = "2.9.3"
-    }
-
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
