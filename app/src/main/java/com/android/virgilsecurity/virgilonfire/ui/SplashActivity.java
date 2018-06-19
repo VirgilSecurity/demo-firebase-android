@@ -54,7 +54,7 @@ public class SplashActivity extends Activity {
 
     private boolean isAuthenticated() {
         return true;
-    }
+    } // Whether user is signed in is checked on LogInActivity. But can be moved here.
 
     @Override public void onBackPressed() {
         // Must be empty, so we can't press back from the splash screen

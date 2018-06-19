@@ -171,7 +171,9 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                 nvNavigation.getHeaderView(0)
                             .findViewById(R.id.tvUsernameDrawer);
         tvUsernameDrawer.setText(firebaseAuth.getCurrentUser()
-                                             .getEmail().toLowerCase());
+                                             .getEmail()
+                                             .toLowerCase()
+                                             .split("@")[0]);
 
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -188,7 +190,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                                                    getString(R.string.enter_username));
 
                     createThreadDialog.setOnCreateThreadDialogListener((username -> {
-                        if (firebaseAuth.getCurrentUser().getEmail().toLowerCase().equals(username)) {
+                        if (firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0].equals(username)) {
                             UiUtils.toast(this, R.string.no_chat_with_yourself);
                         } else {
                             createThreadDialog.showProgress(true);

@@ -76,7 +76,7 @@
     </LinearLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:id="@+id/tilEmail"
+        android:id="@+id/tilId"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -91,11 +91,11 @@
         app:layout_constraintVertical_chainStyle="packed">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/etEmail"
+            android:id="@+id/etId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/email"
-            android:inputType="textEmailAddress"
+            android:hint="@string/id"
+            android:inputType="text"
             android:maxLength="32"
             android:textColorHint="@color/black_olive"
             android:textSize="16sp" />
@@ -112,7 +112,7 @@
         app:layout_constraintBottom_toTopOf="@+id/btnSignUp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tilEmail"
+        app:layout_constraintTop_toBottomOf="@+id/tilId"
         app:layout_constraintVertical_chainStyle="packed"
         app:passwordToggleEnabled="true">
 

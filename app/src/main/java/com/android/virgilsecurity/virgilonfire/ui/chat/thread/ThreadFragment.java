@@ -212,7 +212,9 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     private void sendMessage(String text) {
         showProgress(true);
         Message message = new DefaultMessage(firebaseAuth.getCurrentUser()
-                                                         .getEmail().toLowerCase(),
+                                                         .getEmail()
+                                                         .toLowerCase()
+                                                         .split("@")[0],
                                              chatThread.getReceiver(),
                                              text,
                                              new Timestamp(new Date()));

@@ -33,10 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.util;
 
-import android.content.Context;
 import android.widget.EditText;
-
-import com.android.virgilsecurity.virgilonfire.R;
 
 /**
  * . _  _
@@ -69,6 +66,12 @@ public class Validator {
             case PASSWORD:
                 if (text.isEmpty())
                     return "Password should not be empty";
+
+            case ID_WITH_NO_AT:
+                if (text.isEmpty())
+                    return "Id should not be empty";
+                else if (text.contains("@"))
+                    return "\'@\' symbol is not supported";
         }
 
         return null;
@@ -76,6 +79,7 @@ public class Validator {
 
     public enum FieldType {
         EMAIL,
-        PASSWORD
+        PASSWORD,
+        ID_WITH_NO_AT
     }
 }

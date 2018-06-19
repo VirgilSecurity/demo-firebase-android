@@ -137,7 +137,7 @@ public class CreateThreadDialog extends Dialog {
             case R.id.btnOk:
                 String error;
 
-                error = Validator.validate(etUsername, Validator.FieldType.EMAIL);
+                error = Validator.validate(etUsername, Validator.FieldType.ID_WITH_NO_AT);
                 if (error != null) {
                     etUsername.setError(error);
                     break;

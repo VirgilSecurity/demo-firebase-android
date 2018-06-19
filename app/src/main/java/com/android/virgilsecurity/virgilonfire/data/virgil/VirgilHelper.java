@@ -135,12 +135,18 @@ public class VirgilHelper {
                     getVirgilCrypto().decrypt(cipherData,
                                               (VirgilPrivateKey) privateKeyStorage.load(
                                                       firebaseAuth.getCurrentUser()
-                                                                  .getEmail().toLowerCase())
+                                                                  .getEmail()
+                                                                  .toLowerCase()
+                                                                  .split("@")[0])
                                                                                   .getLeft());
             return ConvertionUtils.toString(decryptedData);
         } catch (CryptoException e) {
-            e.printStackTrace();
-            return "Message encrypted";
+            if (text.isEmpty()) {
+                return "Message Deleted";
+            } else {
+                e.printStackTrace();
+                return "Message encrypted";
+            }
         }
     }
 

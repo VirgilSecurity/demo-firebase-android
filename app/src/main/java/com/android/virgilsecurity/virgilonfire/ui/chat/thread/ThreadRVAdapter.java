@@ -121,7 +121,9 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
         if (items.get(position)
                  .getSender()
                  .equals(firebaseAuth.getCurrentUser()
-                                     .getEmail().toLowerCase())) {
+                                     .getEmail()
+                                     .toLowerCase()
+                                     .split("@")[0])) {
             return MessageType.ME;
         } else {
             return MessageType.YOU;

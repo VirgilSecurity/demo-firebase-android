@@ -87,7 +87,7 @@ public final class LogInActivity extends BaseActivityDi implements HasFragmentIn
     @Override protected void postButterInit() {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null)
-            startChatControlActivity(user.getEmail());
+            startChatControlActivity(user.getEmail().toLowerCase().split("@")[0]);
 
         UiUtils.replaceFragmentNoTag(getFragmentManager(),
                                      R.id.flBaseContainer,

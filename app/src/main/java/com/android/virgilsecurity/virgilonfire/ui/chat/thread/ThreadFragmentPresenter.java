@@ -103,7 +103,6 @@ public class ThreadFragmentPresenter implements BasePresenter {
     private final RoomDb roomDb;
 
     private ListenerRegistration listenerRegistration;
-    private Disposable getMessagesDisposable;
 
     @Inject
     public ThreadFragmentPresenter(Context context,

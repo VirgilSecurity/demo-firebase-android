@@ -106,28 +106,6 @@ public class LogInPresenter implements BasePresenter {
         compositeDisposable.add(publishCardDisposable);
     }
 
-    public void requestRenewCard(String identity) {
-        Disposable renewCardDisposable =
-                virgilRx.searchCards(identity)
-                        .subscribeOn(Schedulers.io())
-                        .flatMap(cards -> {
-                            return virgilRx.publishAndoutdateCard(identity,
-                                                                  cards.get(0)
-                                                                       .getIdentifier());
-                        })
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((card, throwable) -> {
-                            if (throwable == null) {
-                                logInVirgilInteractor.onPublishCardSuccess(card);
-                            } else {
-                                privateKeyStorage.delete(identity);
-                                logInVirgilInteractor.onPublishCardError(throwable);
-                            }
-                        });
-
-        compositeDisposable.add(renewCardDisposable);
-    }
-
     public void requestIfKeyExists(String keyName) {
         if (privateKeyStorage.exists(keyName))
             logInKeyStorageInteractor.onKeyExists();

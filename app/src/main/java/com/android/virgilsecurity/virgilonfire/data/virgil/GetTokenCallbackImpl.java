@@ -85,8 +85,9 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
         try {
             Response<TokenResponse> response = helper.getToken(userManager.getToken(),
                                                                firebaseAuth.getCurrentUser()
-                                                            .getEmail()
-                                                            .toLowerCase())
+                                                                           .getEmail()
+                                                                           .toLowerCase()
+                                                                           .split("@")[0])
                                                      .execute();
 
             if (response.errorBody() != null && response.code() == 401) {
@@ -102,16 +103,17 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
                         userManager.setToken(new DefaultToken(task.getResult().getToken()));
                 });
 
-            try {
-                executor.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+                try {
+                    executor.awaitTermination(2, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 response = helper.getToken(userManager.getToken(),
                                            firebaseAuth.getCurrentUser()
                                                        .getEmail()
-                                                       .toLowerCase())
+                                                       .toLowerCase()
+                                                       .split("@")[0])
                                  .execute();
             }
 

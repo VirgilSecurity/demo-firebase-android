@@ -78,6 +78,7 @@ public final class LogInFragment
         extends BaseFragmentDi<LogInActivity>
         implements LogInVirgilInteractor, LogInKeyStorageInteractor, RefreshUserCardsInteractor {
 
+    private static final String DEFAULT_POSTFIX = "@virgilfirebase.com";
     private static final String COLLECTION_USERS = "Users";
 
     @Inject protected FirebaseAuth firebaseAuth;
@@ -86,10 +87,10 @@ public final class LogInFragment
     @Inject protected UserManager userManager;
     @Inject protected ErrorResolver errorResolver;
 
-    @BindView(R.id.etEmail)
-    protected TextInputEditText etEmail;
-    @BindView(R.id.tilEmail)
-    protected TextInputLayout tilEmail;
+    @BindView(R.id.etId)
+    protected TextInputEditText etId;
+    @BindView(R.id.tilId)
+    protected TextInputLayout tilId;
     @BindView(R.id.etPassword)
     protected TextInputEditText etPassword;
     @BindView(R.id.tilPassword)
@@ -120,16 +121,16 @@ public final class LogInFragment
     }
 
     private void initInputFields() {
-        etEmail.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
+        etId.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
         etPassword.setFilters(new InputFilter[]{new DefaultSymbolsInputFilter()});
 
-        etEmail.addTextChangedListener(new TextWatcher() {
+        etId.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
             }
 
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                tilEmail.setError(null);
+                tilId.setError(null);
             }
 
             @Override public void afterTextChanged(Editable s) {
@@ -159,10 +160,10 @@ public final class LogInFragment
 
             String error;
 
-            error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
+            error = Validator.validate(etId, Validator.FieldType.ID_WITH_NO_AT);
             if (error != null) {
                 showProgress(false);
-                tilEmail.setError(error);
+                tilId.setError(error);
                 return;
             }
 
@@ -173,9 +174,9 @@ public final class LogInFragment
                 return;
             }
 
-            firebaseAuth.signInWithEmailAndPassword(etEmail.getText()
-                                                           .toString()
-                                                           .toLowerCase(),
+            firebaseAuth.signInWithEmailAndPassword(etId.getText()
+                                                        .toString()
+                                                        .toLowerCase() + DEFAULT_POSTFIX,
                                                     etPassword.getText()
                                                               .toString())
                         .addOnCompleteListener(this::handleSignInResult);
@@ -186,10 +187,10 @@ public final class LogInFragment
 
             String error;
 
-            error = Validator.validate(etEmail, Validator.FieldType.EMAIL);
+            error = Validator.validate(etId, Validator.FieldType.ID_WITH_NO_AT);
             if (error != null) {
                 showProgress(false);
-                etEmail.setError(error);
+                tilId.setError(error);
                 return;
             }
 
@@ -200,9 +201,9 @@ public final class LogInFragment
                 return;
             }
 
-            firebaseAuth.createUserWithEmailAndPassword(etEmail.getText()
-                                                               .toString()
-                                                               .toLowerCase(),
+            firebaseAuth.createUserWithEmailAndPassword(etId.getText()
+                                                            .toString()
+                                                            .toLowerCase() + DEFAULT_POSTFIX,
                                                         etPassword.getText()
                                                                   .toString())
                         .addOnCompleteListener(task -> {
@@ -211,9 +212,9 @@ public final class LogInFragment
                             defaultUser.setChannels(new ArrayList<>());
 
                             if (task.isSuccessful()) {
-                                firestore.collection(COLLECTION_USERS).document(etEmail.getText()
-                                                                                       .toString()
-                                                                                       .toLowerCase())
+                                firestore.collection(COLLECTION_USERS).document(etId.getText()
+                                                                                    .toString()
+                                                                                    .toLowerCase())
                                          .set(defaultUser)
                                          .addOnCompleteListener(taskCreateUser -> {
                                              if (taskCreateUser.isSuccessful()) {
@@ -248,7 +249,7 @@ public final class LogInFragment
             firebaseAuth.getCurrentUser().getIdToken(false).addOnCompleteListener(taskGetIdToken -> {
                 if (taskGetIdToken.isSuccessful()) {
                     userManager.setToken(new DefaultToken(taskGetIdToken.getResult().getToken()));
-                    presenter.requestSearchCards(user.getEmail());
+                    presenter.requestSearchCards(user.getEmail().toLowerCase().split("@")[0]);
                 } else {
                     String error = errorResolver.resolve(taskGetIdToken.getException());
                     if (error == null && taskGetIdToken.getException() != null)
@@ -295,12 +296,17 @@ public final class LogInFragment
         }
 
         presenter.requestPublishCard(firebaseAuth.getCurrentUser()
-                                                 .getEmail().toLowerCase());
+                                                 .getEmail()
+                                                 .toLowerCase()
+                                                 .split("@")[0]);
     }
 
 
     @Override public void onPublishCardSuccess(Card card) {
-        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser().getEmail().toLowerCase());
+        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser()
+                                                      .getEmail()
+                                                      .toLowerCase()
+                                                      .split("@")[0]);
     }
 
     @Override public void onPublishCardError(Throwable t) {
@@ -312,7 +318,10 @@ public final class LogInFragment
     }
 
     @Override public void onKeyExists() {
-        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser().getEmail().toLowerCase());
+        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser()
+                                                      .getEmail()
+                                                      .toLowerCase()
+                                                      .split("@")[0]);
     }
 
     @Override public void onKeyNotExists() {
@@ -329,7 +338,9 @@ public final class LogInFragment
                 showProgress(true);
                 dialog.dismiss();
                 presenter.requestPublishCard(firebaseAuth.getCurrentUser()
-                                                         .getEmail().toLowerCase());
+                                                         .getEmail()
+                                                         .toLowerCase()
+                                                         .split("@")[0]);
             }
 
             @Override public void onCancelCreateNewKeys(View v, Dialog dialog) {
@@ -350,7 +361,9 @@ public final class LogInFragment
     @Override public void onRefreshUserCardsSuccess(List<Card> cards) {
         userManager.setUserCards(cards);
         activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                      .getEmail().toLowerCase());
+                                                      .getEmail()
+                                                      .toLowerCase()
+                                                      .split("@")[0]);
     }
 
     @Override public void onRefreshUserCardsError(Throwable t) {

@@ -76,15 +76,15 @@ public final class DefaultErrorResolver extends ErrorResolver {
                     return null;
             }
         } else if (t instanceof FirebaseAuthInvalidUserException) {
-            return "This email is not registered";
+            return "This Id is not registered";
         } else if (t instanceof FirebaseAuthInvalidCredentialsException) {
             return "Password is wrong";
         } else if (t instanceof FirebaseAuthWeakPasswordException) {
             return "Password is not strong enough";
         } else if (t instanceof FirebaseAuthInvalidCredentialsException) {
-            return "Email address is malformed";
+            return "Id is malformed";
         } else if (t instanceof FirebaseAuthUserCollisionException) {
-            return "User with current email already exists";
+            return "User with current Id already exists";
         } else {
             return null;
         }
