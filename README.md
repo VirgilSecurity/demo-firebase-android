@@ -33,7 +33,7 @@ https://github.com/VirgilSecurity/demo-firebase-android
 * Go to the Firebase console -> Functions tab and copy your function url from the Event column
 * Go to AS -> app/src/main/java/com/android/virgilsecurity/virgilonfire/di/NetworkModule.java and change variable 'BASE_URL' to:
 ```
-https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
+https://YOUR_FUNCTION_URL.cloudfunctions.net/api/
 ```
 
 ## Build and Run
