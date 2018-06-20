@@ -42,7 +42,7 @@
     <string name="ok">OK</string>
     <string name="press_exit_once_more">Press back once more to exit</string>
     <string name="virgil_securiry_copyright">Copyright © 2015–2018 Virgil Security Inc.</string>
-    <string name="id">Create Id (Ex.: Alice_123)</string>
+    <string name="id">Create ID (e.g. Alice_123)</string>
     <string name="password">Password</string>
     <string name="room_db_name">firebase_virgil_demo_database</string>
 
