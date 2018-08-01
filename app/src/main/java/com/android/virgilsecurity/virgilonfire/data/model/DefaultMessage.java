@@ -37,6 +37,7 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
@@ -47,7 +48,7 @@ import com.google.firebase.firestore.PropertyName;
  * -__o
  */
 
-@Entity
+@Entity(primaryKeys = {"messageId", "channel_id" })
 public class DefaultMessage implements Message {
 
     @ColumnInfo(name = "sender")
@@ -67,10 +68,11 @@ public class DefaultMessage implements Message {
     private Timestamp createdAt;
 
     @Exclude
-    @PrimaryKey
+    @ColumnInfo(name = "messageId")
     private long messageId;
 
     @Exclude
+    @NonNull
     @ColumnInfo(name = "channel_id")
     private String channelId;
 

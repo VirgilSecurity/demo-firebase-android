@@ -60,7 +60,7 @@ allprojects {
         patchVersion = "1"
 
         supportLibrary = "26.1.0"
-        constraintLayout = "1.1.0"
+        constraintLayout = "1.1.2"
         virgilSdk = "5.0.2"
         virgilCrypto = "5.0.2@aar"
         rxJava = "2.1.5"
@@ -74,10 +74,10 @@ allprojects {
         rxRetrofitAdapter = "2.0.2"
         converterGson = "2.3.0"
         apacheCommons = "3.7"
-        firebaseCore = "16.0.0"
-        firebaseAuth = "16.0.1"
-        firebaseFirestore = "17.0.1"
-        room = "1.1.0"
+        firebaseCore = "16.0.1"
+        firebaseAuth = "16.0.2"
+        firebaseFirestore = "17.0.4"
+        room = "1.1.1"
 //        crashlytics = "2.9.3"
     }
 
