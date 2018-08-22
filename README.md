@@ -29,8 +29,8 @@ https://github.com/VirgilSecurity/demo-firebase-android
 * Download the generated google-services.json file from Project Settings and copy it to the 'app' folder, as metioned in the instructions by Firebase. You're good to go!
 
 #### Cloud functions
-* To set up cloud functions for Virgil JWT generation follow the instructions [here](https://github.com/VirgilSecurity/demo-firebase-func)
-* Go to the Firebase console -> Functions tab and copy your function url from the Event column
+* In order for the mobile app to work, you need to deploy a Firebase cloud function that generates JWT tokens for Virgil's APIs. [Follow setup instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
+* Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function url from the Event column
 * Go to AS -> app/src/main/java/com/android/virgilsecurity/virgilonfire/di/NetworkModule.java and change variable 'BASE_URL' to:
 ```
 https://YOUR_FUNCTION_URL.cloudfunctions.net/api/
