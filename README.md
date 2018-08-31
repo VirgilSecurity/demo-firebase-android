@@ -8,7 +8,7 @@ Clone the repo to your computer: using your Android Studio, navigate to 'File ->
 https://github.com/VirgilSecurity/demo-firebase-android
 ```
 
-### Create Firebase project
+## Create Firebase project
 Go to the [Firebase console](https://console.firebase.google.com) and if you haven't created a project yet, create one now. If you already have one that you want to use, open it and skip to the **Firebase app setup**
 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
@@ -26,12 +26,12 @@ Go to the [Firebase console](https://console.firebase.google.com) and if you hav
   ```
 * Click **PUBLISH**.
 
-### Firebase Android app setup
+## Firebase Android app setup
 * In your Firebase project (on the Firebase console), click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **Add Firebase to your Android app**. Fill in all required fields.
 * Download the generated **google-services.json** file from Project Settings and copy it to the 'app' folder, as metioned in the instructions by Firebase. You're good to go!
 
-#### Firebase cloud functions setup
+## Firebase cloud functions setup
 
 > In order for the app to work, you need to deploy a Firebase function that creates JWT tokens for your authenticated users. If you already deployed this function for either the iOS or Android apps, you don't need to do it again.
 
