@@ -1,18 +1,18 @@
 # demo-firebase-android
-A simple Android application that demonstrates how end-to-end encryption works with firebase as a backend service for authentication and chat messaging. While this is a chat app, you can reuse it in any other apps to protect user data, documents, images.
+End-to-end encrypted, HIPAA-compliant Android chat sample app for Firebase. While this is a chat app, you can reuse it in any other apps to protect user data, documents, images using Virgil's end-to-end encryption. Only HIPAA-compliant for chat use-cases.
 
-## Getting Started
+## Clone project
 
-Start with cloning repository to computer. For example you can use Android Studio (AS). Open AS, navigate to 'File->New->Project from Version Control->Git' and fill in 'Git Repository URL' field with: 
+Clone the repo to your computer: using your Android Studio, navigate to 'File -> New -> Project from Version Control -> Git' and fill in the 'Git Repository URL' field with: 
 ```
 https://github.com/VirgilSecurity/demo-firebase-android
 ```
 
-### Firebase set up
-* Change package of project to yours. 
-* Go to the [Firebase console](https://console.firebase.google.com) and create your own project.
+### Create Firebase project
+Go to the [Firebase console](https://console.firebase.google.com) and if you haven't created a project yet, create one now. If you already have one that you want to use, open it and skip to the **Firebase app setup**
+
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
-  *  Click **Email/Password** and turn on the **Enable** switch, then click **Save**.
+*  Click **Email/Password** and turn on the **Enable** switch, then click **Save**.
 * Select the **Database** panel and then enable **Cloud Firestore**.
   * Click **Rules** and paste:
   ```
@@ -24,14 +24,20 @@ https://github.com/VirgilSecurity/demo-firebase-android
     }
   }
   ```
-  * Click **PUBLISH**.
-* Go to the Project settings and press 'Add Firebase to your Android app' then fill in all fields.
-* Download the generated google-services.json file from Project Settings and copy it to the 'app' folder, as metioned in the instructions by Firebase. You're good to go!
+* Click **PUBLISH**.
 
-#### Cloud functions
-* In order for the mobile app to work, you need to deploy a Firebase cloud function that generates JWT tokens for Virgil's APIs. [Follow setup instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
-* Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function url from the Event column
-* Go to AS -> app/src/main/java/com/android/virgilsecurity/virgilonfire/di/NetworkModule.java and change variable 'BASE_URL' to:
+### Firebase Android app setup
+* In your Firebase project (on the Firebase console), click the **gear icon** -> **Project settings**
+* Click **Add app** and choose **Add Firebase to your Android app**. Fill in all required fields.
+* Download the generated **google-services.json** file from Project Settings and copy it to the 'app' folder, as metioned in the instructions by Firebase. You're good to go!
+
+#### Firebase cloud functions setup
+
+> In order for the app to work, you need to deploy a Firebase function that creates JWT tokens for your authenticated users. If you already deployed this function for either the iOS or Android apps, you don't need to do it again.
+
+* Otherwise, [follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
+* Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function's url
+* Go to Android Studio -> `app/src/main/java/com/android/virgilsecurity/virgilonfire/di/NetworkModule.java` and change variable `BASE_URL` to:
 ```
 https://YOUR_FUNCTION_URL.cloudfunctions.net/api/
 ```
