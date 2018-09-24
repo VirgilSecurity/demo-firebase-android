@@ -2,13 +2,12 @@
 You can reuse this sample in any projects where you want to end-to-end protect user data, documents, images using Virgil's end-to-end encryption. [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
 ## Clone project
-
-Clone the repo to your computer: using your Android Studio, navigate to 'File -> New -> Project from Version Control -> Git' and fill in the 'Git Repository URL' field with: 
+In Android Studio, go to 'File -> New -> Project from Version Control -> Git' and paste in the repo's URL: 
 ```bash
 https://github.com/VirgilSecurity/demo-firebase-android
 ```
 
-## Let's set up your Firebase account for the app
+## Set up your Firebase account for the app
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
 * **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
