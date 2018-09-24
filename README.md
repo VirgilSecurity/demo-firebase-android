@@ -19,9 +19,9 @@ In order for the app to work, you need to deploy a Firebase function that gives 
 
 * **Copy your new Firebase function's URL**: go to the Firebase console -> your project -> Functions tab and copy your new function's url
 * **Go to Android Studio -> `app/src/main/java/com/android/virgilsecurity/virgilonfire/di/NetworkModule.java` and change the variable `BASE_URL` to**:
-```
-https://YOUR_FUNCTION_URL.cloudfunctions.net/api/
-```
+  ```
+  https://YOUR_FUNCTION_URL.cloudfunctions.net/api/
+  ```
 * Go back to your project's page in Firebase console, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"Android: Add Firebase to your Android app"**
 * Name your Android package and click **Register app**
