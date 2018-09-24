@@ -11,7 +11,7 @@ https://github.com/VirgilSecurity/demo-firebase-android
 ## Let's set up your Firebase account for the app
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-* **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+**[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
 > You only need to do this once - if you did it already earlier or for your iOS or JavaScript apps, don't need to do it again.
 
