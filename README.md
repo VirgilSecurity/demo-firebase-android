@@ -1,5 +1,5 @@
-# demo-firebase-android
-End-to-end encrypted, HIPAA-compliant Android chat sample app for Firebase. While this is a chat app, you can reuse it in any other apps to protect user data, documents, images using Virgil's end-to-end encryption. Only HIPAA-compliant for chat use-cases.
+# End-to-end encrypted, HIPAA-compliant Android chat app for Firebase.
+You can reuse this sample in any projects where you want to end-to-end protect user data, documents, images using Virgil's end-to-end encryption. [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
 ## Clone project
 
@@ -11,7 +11,7 @@ https://github.com/VirgilSecurity/demo-firebase-android
 ## Let's set up your Firebase account for the app
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-**[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+* **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
 > You only need to do this once - if you did it already earlier or for your iOS or JavaScript apps, don't need to do it again.
 
