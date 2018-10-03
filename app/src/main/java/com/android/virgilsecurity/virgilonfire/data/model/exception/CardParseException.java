@@ -59,8 +59,4 @@ public class CardParseException extends RuntimeException {
     public CardParseException(Throwable cause) {
         super(cause);
     }
-
-    public CardParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

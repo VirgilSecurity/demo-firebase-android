@@ -53,6 +53,7 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.ThreadsListFra
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.dialog.CreateThreadDialog;
 import com.android.virgilsecurity.virgilonfire.ui.login.LogInActivity;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.android.virgilsecurity.virgilonfire.util.common.OnFinishTimer;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -170,10 +171,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
         TextView tvUsernameDrawer =
                 nvNavigation.getHeaderView(0)
                             .findViewById(R.id.tvUsernameDrawer);
-        tvUsernameDrawer.setText(firebaseAuth.getCurrentUser()
-                                             .getEmail()
-                                             .toLowerCase()
-                                             .split("@")[0]);
+        tvUsernameDrawer.setText(UserUtils.currentIdentity(firebaseAuth));
 
         if (getActionBar() != null) {
             getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -190,7 +188,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                                                    getString(R.string.enter_username));
 
                     createThreadDialog.setOnCreateThreadDialogListener((username -> {
-                        if (firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0].equals(username)) {
+                        if (UserUtils.currentIdentity(firebaseAuth).equals(username)) {
                             UiUtils.toast(this, R.string.no_chat_with_yourself);
                         } else {
                             createThreadDialog.showProgress(true);

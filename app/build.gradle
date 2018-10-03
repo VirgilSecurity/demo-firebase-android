@@ -60,8 +60,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     // Support
     implementation "com.android.support:appcompat-v7:$supportLibrary"
     implementation "com.android.support.constraint:constraint-layout:$constraintLayout"
@@ -92,6 +90,12 @@ dependencies {
     // Virgil Security
     implementation "com.virgilsecurity.sdk:crypto-android:$virgilCrypto"
     implementation "com.virgilsecurity.sdk:sdk:$virgilSdk"
+    implementation ('com.virgilsecurity:pythia:0.2.0') {
+        exclude group: 'com.virgilsecurity.sdk', module: 'crypto'
+    }
+    implementation ('com.virgilsecurity:keyknox:0.1.0') {
+        exclude group: 'com.virgilsecurity.sdk', module: 'crypto'
+    }
 
     // Dagger
     implementation "com.google.dagger:dagger-android:$dagger"

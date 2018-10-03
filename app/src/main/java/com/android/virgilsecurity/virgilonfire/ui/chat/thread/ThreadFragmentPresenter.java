@@ -132,8 +132,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
     public void requestSendMessage(List<Card> interlocutorCards, Message message, ChatThread chatThread) {
         List<VirgilPublicKey> publicKeys = new ArrayList<>();
 
-        for (Card card : userManager.getUserCards())
-            publicKeys.add((VirgilPublicKey) card.getPublicKey());
+            publicKeys.add((VirgilPublicKey) userManager.getUserCard().getPublicKey());
 
         for (Card card : interlocutorCards)
             publicKeys.add((VirgilPublicKey) card.getPublicKey());

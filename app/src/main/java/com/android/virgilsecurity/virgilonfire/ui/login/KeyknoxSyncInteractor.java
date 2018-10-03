@@ -31,7 +31,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.model.exception;
+package com.android.virgilsecurity.virgilonfire.ui.login;
+
+import com.virgilsecurity.sdk.cards.Card;
+
+import java.util.List;
 
 /**
  * . _  _
@@ -39,24 +43,13 @@ package com.android.virgilsecurity.virgilonfire.data.model.exception;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    5/22/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-public class CardsNotFoundException extends RuntimeException {
+public interface KeyknoxSyncInteractor {
 
-    public CardsNotFoundException() {
-    }
+    void onKeyknoxSyncSuccess();
 
-    public CardsNotFoundException(String message) {
-        super(message);
-    }
-
-    public CardsNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public CardsNotFoundException(Throwable cause) {
-        super(cause);
-    }
+    void onKeyknoxSyncError(Throwable t);
 }

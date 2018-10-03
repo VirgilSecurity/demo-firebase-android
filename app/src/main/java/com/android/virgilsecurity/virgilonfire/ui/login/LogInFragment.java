@@ -34,7 +34,6 @@
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -49,10 +48,10 @@ import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi;
-import com.android.virgilsecurity.virgilonfire.ui.login.dialog.NewKeyDialog;
 import com.android.virgilsecurity.virgilonfire.util.DefaultSymbolsInputFilter;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.android.virgilsecurity.virgilonfire.util.Validator;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
@@ -76,7 +75,7 @@ import butterknife.BindView;
 
 public final class LogInFragment
         extends BaseFragmentDi<LogInActivity>
-        implements LogInVirgilInteractor, LogInKeyStorageInteractor, RefreshUserCardsInteractor {
+        implements LogInVirgilInteractor, LogInKeyStorageInteractor, KeyknoxSyncInteractor {
 
     private static final String DEFAULT_POSTFIX = "@virgilfirebase.com";
     private static final String COLLECTION_USERS = "Users";
@@ -273,8 +272,8 @@ public final class LogInFragment
     }
 
     @Override public void onSearchCardSuccess(List<Card> cards) {
-        presenter.requestIfKeyExists(cards.get(0)
-                                          .getIdentity());
+        userManager.setUserCards(cards.get(0));
+        presenter.requestIfKeyExists(cards.get(0).getIdentity());
     }
 
     @SuppressLint("RestrictedApi") @Override public void onSearchCardError(Throwable t) {
@@ -283,7 +282,8 @@ public final class LogInFragment
                 return t.getMessage();
 
             return null;
-        }); // If we can't resolve error here -
+        });
+        // If we can't resolve error here -
         // then it's normal behaviour. Proceed.
         if (error != null) {
             showProgress(false);
@@ -295,18 +295,13 @@ public final class LogInFragment
             return;
         }
 
-        presenter.requestPublishCard(firebaseAuth.getCurrentUser()
-                                                 .getEmail()
-                                                 .toLowerCase()
-                                                 .split("@")[0]);
+        presenter.requestPublishCard(UserUtils.currentIdentity(firebaseAuth),
+                                     etPassword.getText().toString());
     }
 
 
     @Override public void onPublishCardSuccess(Card card) {
-        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser()
-                                                      .getEmail()
-                                                      .toLowerCase()
-                                                      .split("@")[0]);
+        activity.startChatControlActivity(UserUtils.currentIdentity(firebaseAuth));
     }
 
     @Override public void onPublishCardError(Throwable t) {
@@ -318,57 +313,29 @@ public final class LogInFragment
     }
 
     @Override public void onKeyExists() {
-        presenter.requestRefreshUserCards(firebaseAuth.getCurrentUser()
-                                                      .getEmail()
-                                                      .toLowerCase()
-                                                      .split("@")[0]);
+        activity.startChatControlActivity(UserUtils.currentIdentity(firebaseAuth));
     }
 
     @Override public void onKeyNotExists() {
         showProgress(false);
 
-        presenter.disposeAll();
-        NewKeyDialog newKeyDialog = new NewKeyDialog(activity,
-                                                     R.style.NotTransBtnsDialogTheme,
-                                                     getString(R.string.new_private_key),
-                                                     getString(R.string.new_private_key_generation));
+        presenter.requestSyncWithKeyknox(UserUtils.currentIdentity(firebaseAuth),
+                                         etPassword.getText().toString());
+    }
 
-        newKeyDialog.setOnNewKeysDialogListener(new NewKeyDialog.OnCreateNewKeysListener() {
-            @Override public void onCreateNewKeys(View v, Dialog dialog) {
-                showProgress(true);
-                dialog.dismiss();
-                presenter.requestPublishCard(firebaseAuth.getCurrentUser()
-                                                         .getEmail()
-                                                         .toLowerCase()
-                                                         .split("@")[0]);
-            }
+    @Override public void onKeyknoxSyncSuccess() {
+        activity.startChatControlActivity(UserUtils.currentIdentity(firebaseAuth));
+    }
 
-            @Override public void onCancelCreateNewKeys(View v, Dialog dialog) {
-                firebaseAuth.signOut();
-                dialog.cancel();
-            }
-        });
-
-        newKeyDialog.show();
+    @Override public void onKeyknoxSyncError(Throwable t) {
+        showProgress(false);
+        firebaseAuth.signOut();
+        UiUtils.toast(this, errorResolver.resolve(t));
     }
 
     @Override public void onStop() {
         super.onStop();
 
         presenter.disposeAll();
-    }
-
-    @Override public void onRefreshUserCardsSuccess(List<Card> cards) {
-        userManager.setUserCards(cards);
-        activity.startChatControlActivity(firebaseAuth.getCurrentUser()
-                                                      .getEmail()
-                                                      .toLowerCase()
-                                                      .split("@")[0]);
-    }
-
-    @Override public void onRefreshUserCardsError(Throwable t) {
-
-        firebaseAuth.signOut();
-        UiUtils.toast(this, errorResolver.resolve(t));
     }
 }

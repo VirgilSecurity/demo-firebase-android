@@ -45,6 +45,7 @@ import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException;
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
@@ -84,10 +85,7 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
     @Override public String onGetToken(TokenContext tokenContext) {
         try {
             Response<TokenResponse> response = helper.getToken(userManager.getToken(),
-                                                               firebaseAuth.getCurrentUser()
-                                                                           .getEmail()
-                                                                           .toLowerCase()
-                                                                           .split("@")[0])
+                                                               UserUtils.currentIdentity(firebaseAuth))
                                                      .execute();
 
             if (response.errorBody() != null && response.code() == 401) {
@@ -110,10 +108,7 @@ public class GetTokenCallbackImpl implements CallbackJwtProvider.GetTokenCallbac
                 }
 
                 response = helper.getToken(userManager.getToken(),
-                                           firebaseAuth.getCurrentUser()
-                                                       .getEmail()
-                                                       .toLowerCase()
-                                                       .split("@")[0])
+                                           UserUtils.currentIdentity(firebaseAuth))
                                  .execute();
             }
 

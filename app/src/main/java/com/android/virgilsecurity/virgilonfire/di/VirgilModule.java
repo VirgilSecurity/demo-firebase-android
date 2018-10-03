@@ -36,12 +36,20 @@ package com.android.virgilsecurity.virgilonfire.di;
 import android.content.Context;
 
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import com.android.virgilsecurity.virgilonfire.data.model.SyncKeyStorageWrapper;
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.GetTokenCallbackImpl;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivityComponent;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
+import com.virgilsecurity.pythia.brainkey.BrainKey;
+import com.virgilsecurity.pythia.brainkey.BrainKeyContext;
+import com.virgilsecurity.pythia.client.PythiaClient;
+import com.virgilsecurity.pythia.client.VirgilPythiaClient;
+import com.virgilsecurity.pythia.crypto.PythiaCrypto;
+import com.virgilsecurity.pythia.crypto.VirgilPythiaCrypto;
 import com.virgilsecurity.sdk.cards.ModelSigner;
 import com.virgilsecurity.sdk.cards.validation.CardVerifier;
 import com.virgilsecurity.sdk.cards.validation.VirgilCardVerifier;
@@ -116,17 +124,17 @@ public class VirgilModule {
         return new PrivateKeyStorage(privateKeyExporter, keyStorage);
     }
 
-    @Provides CardVerifier provideCardVerifier(CardCrypto cardCrypto) {
+    @Provides static CardVerifier provideCardVerifier(CardCrypto cardCrypto) {
         return new VirgilCardVerifier(cardCrypto);
     }
 
-    @Provides VirgilHelper provideVirgilHelper(CardClient cardClient,
-                                               ModelSigner modelSigner,
-                                               CardCrypto cardCrypto,
-                                               AccessTokenProvider tokenProvider,
-                                               CardVerifier cardVerifier,
-                                               PrivateKeyStorage privateKeyStorage,
-                                               FirebaseAuth firebaseAuth) {
+    @Provides static VirgilHelper provideVirgilHelper(CardClient cardClient,
+                                                      ModelSigner modelSigner,
+                                                      CardCrypto cardCrypto,
+                                                      AccessTokenProvider tokenProvider,
+                                                      CardVerifier cardVerifier,
+                                                      PrivateKeyStorage privateKeyStorage,
+                                                      FirebaseAuth firebaseAuth) {
         return new VirgilHelper(() -> cardClient,
                                 () -> modelSigner,
                                 () -> cardCrypto,
@@ -138,5 +146,32 @@ public class VirgilModule {
 
     @Provides @Singleton static VirgilRx provideVirgilRx(VirgilHelper virgilHelper) {
         return new VirgilRx(virgilHelper);
+    }
+
+    @Provides @Singleton static PythiaCrypto providePythiaCrypto() {
+        return new VirgilPythiaCrypto();
+    }
+
+    @Provides @Singleton static PythiaClient providePythiaClient() {
+        return new VirgilPythiaClient();
+    }
+
+    @Provides @Singleton static BrainKeyContext provideBrainKeyContext(AccessTokenProvider accessTokenProvider,
+                                                                       PythiaCrypto pythiaCrypto,
+                                                                       PythiaClient pythiaClient) {
+        return new BrainKeyContext.Builder()
+                .setAccessTokenProvider(accessTokenProvider)
+                .setPythiaCrypto(pythiaCrypto)
+                .setPythiaClient(pythiaClient)
+                .build();
+    }
+
+    @Provides @Singleton static BrainKey provideBrainKey(BrainKeyContext brainKeyContext) {
+        return new BrainKey(brainKeyContext);
+    }
+
+    @Provides @Singleton
+    static SyncKeyStorageWrapper provideSyncKeyStorageWrapper(AccessTokenProvider accessTokenProvider, Context context) {
+        return SyncKeyStorageWrapper.getInstance(accessTokenProvider, context.getFilesDir().getAbsolutePath());
     }
 }

@@ -44,6 +44,7 @@ import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage;
 import com.android.virgilsecurity.virgilonfire.data.model.Message;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -120,10 +121,7 @@ public class ThreadRVAdapter extends RecyclerView.Adapter<ThreadRVAdapter.Holder
     @Override public int getItemViewType(int position) {
         if (items.get(position)
                  .getSender()
-                 .equals(firebaseAuth.getCurrentUser()
-                                     .getEmail()
-                                     .toLowerCase()
-                                     .split("@")[0])) {
+                 .equals(UserUtils.currentIdentity(firebaseAuth))) {
             return MessageType.ME;
         } else {
             return MessageType.YOU;

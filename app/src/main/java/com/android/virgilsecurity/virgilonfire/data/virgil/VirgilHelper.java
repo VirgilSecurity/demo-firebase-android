@@ -33,9 +33,8 @@
 
 package com.android.virgilsecurity.virgilonfire.data.virgil;
 
-import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
-import com.android.virgilsecurity.virgilonfire.data.model.exception.DecryptionException;
 import com.android.virgilsecurity.virgilonfire.data.model.exception.KeyGenerationException;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 import com.virgilsecurity.sdk.cards.CardManager;
@@ -45,6 +44,7 @@ import com.virgilsecurity.sdk.cards.validation.CardVerifier;
 import com.virgilsecurity.sdk.client.CardClient;
 import com.virgilsecurity.sdk.client.exceptions.VirgilServiceException;
 import com.virgilsecurity.sdk.crypto.CardCrypto;
+import com.virgilsecurity.sdk.crypto.PrivateKey;
 import com.virgilsecurity.sdk.crypto.VirgilCardCrypto;
 import com.virgilsecurity.sdk.crypto.VirgilCrypto;
 import com.virgilsecurity.sdk.crypto.VirgilKeyPair;
@@ -53,10 +53,13 @@ import com.virgilsecurity.sdk.crypto.VirgilPublicKey;
 import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
 import com.virgilsecurity.sdk.crypto.exceptions.EncryptionException;
 import com.virgilsecurity.sdk.jwt.contract.AccessTokenProvider;
+import com.virgilsecurity.sdk.storage.KeyEntry;
 import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
 import com.virgilsecurity.sdk.utils.ConvertionUtils;
+import com.virgilsecurity.sdk.utils.Tuple;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
@@ -64,6 +67,8 @@ import java.util.List;
  */
 
 public class VirgilHelper {
+
+    public static final String KEYKNOX_POSTFIX = "_keyknox";
 
     private final CardManager cardManager;
     private final PrivateKeyStorage privateKeyStorage;
@@ -132,13 +137,7 @@ public class VirgilHelper {
 
         try {
             byte[] decryptedData =
-                    getVirgilCrypto().decrypt(cipherData,
-                                              (VirgilPrivateKey) privateKeyStorage.load(
-                                                      firebaseAuth.getCurrentUser()
-                                                                  .getEmail()
-                                                                  .toLowerCase()
-                                                                  .split("@")[0])
-                                                                                  .getLeft());
+                    getVirgilCrypto().decrypt(cipherData, (VirgilPrivateKey) load().getLeft());
             return ConvertionUtils.toString(decryptedData);
         } catch (CryptoException e) {
             if (text.isEmpty()) {
@@ -147,6 +146,15 @@ public class VirgilHelper {
                 e.printStackTrace();
                 return "Message encrypted";
             }
+        }
+    }
+
+    public Tuple<PrivateKey, Map<String, String>> load() {
+        try {
+            return privateKeyStorage.load(UserUtils.currentIdentity(firebaseAuth));
+        } catch (CryptoException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -170,6 +178,16 @@ public class VirgilHelper {
 
     public CardManager getCardManager() {
         return cardManager;
+    }
+
+    public void storeKey(KeyEntry keyEntry) {
+        try {
+            privateKeyStorage.store(getVirgilCrypto().importPrivateKey(keyEntry.getValue()),
+                                    UserUtils.currentIdentity(firebaseAuth) + KEYKNOX_POSTFIX,
+                                    keyEntry.getMeta());
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
     }
 
 

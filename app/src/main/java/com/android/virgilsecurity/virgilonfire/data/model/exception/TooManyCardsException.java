@@ -31,11 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.ui.login;
-
-import com.virgilsecurity.sdk.cards.Card;
-
-import java.util.List;
+package com.android.virgilsecurity.virgilonfire.data.model.exception;
 
 /**
  * . _  _
@@ -43,13 +39,24 @@ import java.util.List;
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    5/22/18
+ * ....|  _/    4/16/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-public interface RefreshUserCardsInteractor {
+public class TooManyCardsException extends RuntimeException {
 
-    void onRefreshUserCardsSuccess(List<Card> cards);
+    public TooManyCardsException() {
+    }
 
-    void onRefreshUserCardsError(Throwable t);
+    public TooManyCardsException(String message) {
+        super(message);
+    }
+
+    public TooManyCardsException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public TooManyCardsException(Throwable cause) {
+        super(cause);
+    }
 }

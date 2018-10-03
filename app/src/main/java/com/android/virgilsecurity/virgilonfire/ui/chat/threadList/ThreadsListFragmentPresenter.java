@@ -41,6 +41,7 @@ import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -112,10 +113,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                 firebaseFirestore.collection(COLLECTION_CHANNELS)
                                  .addSnapshotListener((documentSnapshots, e) -> {
                                      firebaseFirestore.collection(COLLECTION_USERS)
-                                                      .document(firebaseAuth.getCurrentUser()
-                                                                            .getEmail()
-                                                                            .toLowerCase()
-                                                                            .split("@")[0])
+                                                      .document(UserUtils.currentIdentity(firebaseAuth))
                                                       .get()
                                                       .addOnCompleteListener(task -> {
                                                           updateThreads(documentSnapshots, task);
@@ -138,10 +136,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
                         List<String> members = (List<String>) document.get(KEY_PROPERTY_MEMBERS);
                         long messagesCount = (Long) document.get(KEY_PROPERTY_COUNT);
 
-                        String senderId = members.get(0).equals(firebaseAuth.getCurrentUser()
-                                                                            .getEmail()
-                                                                            .toLowerCase()
-                                                                            .split("@")[0])
+                        String senderId = members.get(0).equals(UserUtils.currentIdentity(firebaseAuth))
                                           ? members.get(0) : members.get(1);
                         String receiverId = members.get(0)
                                                    .equals(senderId) ? members.get(1)
@@ -205,7 +200,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     private Completable createThread(String interlocutor, String newThreadId) {
         return Completable.create(emitter -> {
             List<String> members = new ArrayList<>();
-            members.add(firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0]);
+            members.add(UserUtils.currentIdentity(firebaseAuth));
             members.add(interlocutor);
             CreateChannelRequest createChannelRequest = new CreateChannelRequest(members, 0);
 
@@ -237,12 +232,12 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     }
 
     private Completable updateUserMe(String newThreadId) {
-        return getUserChannels(firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0])
+        return getUserChannels(UserUtils.currentIdentity(firebaseAuth))
                 .flatMapCompletable(channels -> {
                     return Completable.create(emitter -> {
                         channels.add(newThreadId);
                         firebaseFirestore.collection(COLLECTION_USERS)
-                                         .document(firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0])
+                                         .document(UserUtils.currentIdentity(firebaseAuth))
                                          .update("channels", channels)
                                          .addOnCompleteListener(task -> {
                                              if (task.isSuccessful())
@@ -273,7 +268,7 @@ public class ThreadsListFragmentPresenter implements BasePresenter {
     }
 
     private String generateNewChannelId(String interlocutor) {
-        String userMe = firebaseAuth.getCurrentUser().getEmail().toLowerCase().split("@")[0];
+        String userMe = UserUtils.currentIdentity(firebaseAuth);
         byte[] concatenatedHashedUsersData;
 
         try {

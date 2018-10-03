@@ -31,20 +31,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire;
+package com.android.virgilsecurity.virgilonfire.util;
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    10/2/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
 
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ * UserUtils
  */
-public class ExampleUnitTest {
-    @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+public class UserUtils {
+
+    public static String currentIdentity(FirebaseAuth firebaseAuth) {
+        return firebaseAuth.getCurrentUser()
+                           .getEmail()
+                           .toLowerCase()
+                           .split("@")[0];
     }
 }

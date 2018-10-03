@@ -33,13 +33,32 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
-import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
+import android.util.Pair;
+
+import com.android.virgilsecurity.virgilonfire.data.model.SyncKeyStorageWrapper;
+import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
+import com.virgilsecurity.keyknox.storage.SyncKeyStorage;
+import com.virgilsecurity.pythia.brainkey.BrainKey;
+import com.virgilsecurity.pythia.model.exception.VirgilPythiaServiceException;
+import com.virgilsecurity.sdk.cards.Card;
+import com.virgilsecurity.sdk.crypto.PrivateKey;
+import com.virgilsecurity.sdk.crypto.PublicKey;
+import com.virgilsecurity.sdk.crypto.VirgilKeyPair;
+import com.virgilsecurity.sdk.crypto.VirgilPrivateKey;
+import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
+import com.virgilsecurity.sdk.storage.KeyEntry;
 import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
+import com.virgilsecurity.sdk.utils.Tuple;
+
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -56,25 +75,34 @@ public class LogInPresenter implements BasePresenter {
     private final LogInVirgilInteractor logInVirgilInteractor;
     private final LogInKeyStorageInteractor logInKeyStorageInteractor;
     private final VirgilRx virgilRx;
+    private final VirgilHelper virgilHelper;
     private final PrivateKeyStorage privateKeyStorage;
-    private final RefreshUserCardsInteractor refreshUserCardsInteractor;
+    private final KeyknoxSyncInteractor keyknoxSyncInteractor;
+    private final BrainKey brainKey;
+    private final SyncKeyStorageWrapper syncKeyStorageWrapper;
 
     @Inject
     public LogInPresenter(VirgilRx virgilRx,
+                          VirgilHelper virgilHelper,
                           PrivateKeyStorage privateKeyStorage,
                           LogInVirgilInteractor logInVirgilInteractor,
                           LogInKeyStorageInteractor logInKeyStorageInteractor,
-                          RefreshUserCardsInteractor refreshUserCardsInteractor) {
+                          KeyknoxSyncInteractor keyknoxSyncInteractor,
+                          BrainKey brainKey,
+                          SyncKeyStorageWrapper syncKeyStorageWrapper) {
         this.virgilRx = virgilRx;
+        this.virgilHelper = virgilHelper;
         this.privateKeyStorage = privateKeyStorage;
         this.logInVirgilInteractor = logInVirgilInteractor;
         this.logInKeyStorageInteractor = logInKeyStorageInteractor;
-        this.refreshUserCardsInteractor = refreshUserCardsInteractor;
+        this.keyknoxSyncInteractor = keyknoxSyncInteractor;
+        this.brainKey = brainKey;
+        this.syncKeyStorageWrapper = syncKeyStorageWrapper;
 
         compositeDisposable = new CompositeDisposable();
     }
 
-    public void requestSearchCards(String identity) {
+    void requestSearchCards(String identity) {
         Disposable searchCardDisposable =
                 virgilRx.searchCards(identity)
                         .observeOn(AndroidSchedulers.mainThread())
@@ -89,11 +117,29 @@ public class LogInPresenter implements BasePresenter {
         compositeDisposable.add(searchCardDisposable);
     }
 
-    public void requestPublishCard(String identity) {
+    void requestPublishCard(String identity, String password) {
         Disposable publishCardDisposable =
-                virgilRx.publishCard(identity)
-                        .observeOn(AndroidSchedulers.mainThread())
+                generateBrainKey(password)
                         .subscribeOn(Schedulers.io())
+                        .flatMap(keyPair -> {
+                            syncKeyStorageWrapper.setIdentity(identity);
+                            syncKeyStorageWrapper.setPrivateKey(keyPair.getPrivateKey());
+                            syncKeyStorageWrapper.setPublicKey(keyPair.getPublicKey());
+                            SyncKeyStorage syncKeyStorage = syncKeyStorageWrapper.initSyncKeyStorage();
+
+                            return Single.zip(virgilRx.publishCard(identity),
+                                              Single.just(syncKeyStorage),
+                                              syncKeyknox(syncKeyStorage),
+                                              (card, ignored1, ignored2) -> {
+                                                  return new Pair<Card, SyncKeyStorage>(card, syncKeyStorage);
+                                              });
+                        }).observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(pair -> Single.zip(Single.just(pair.first),
+                                                    storeInKeyknox(pair.second,
+                                                                   identity).subscribeOn(Schedulers.io()),
+                                                    (cardTemp, aVoid) -> cardTemp))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((card, throwable) -> {
                             if (throwable == null) {
                                 logInVirgilInteractor.onPublishCardSuccess(card);
@@ -106,26 +152,59 @@ public class LogInPresenter implements BasePresenter {
         compositeDisposable.add(publishCardDisposable);
     }
 
-    public void requestIfKeyExists(String keyName) {
+    void requestIfKeyExists(String keyName) {
         if (privateKeyStorage.exists(keyName))
             logInKeyStorageInteractor.onKeyExists();
         else
             logInKeyStorageInteractor.onKeyNotExists();
     }
 
-    public void requestRefreshUserCards(String username) {
-        Disposable refreshUserCardsDisposable =
-                virgilRx.searchCards(username)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(refreshUserCardsInteractor::onRefreshUserCardsSuccess,
-                                   refreshUserCardsInteractor::onRefreshUserCardsError);
-
-        compositeDisposable.add(refreshUserCardsDisposable);
-    }
-
     @Override public void disposeAll() {
         compositeDisposable.clear();
     }
 
+    void requestSyncWithKeyknox(String identity, String password) {
+        Disposable syncKeyknoxDisposable =
+                generateBrainKey(password)
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(keyPair -> {
+                            syncKeyStorageWrapper.setIdentity(identity);
+                            syncKeyStorageWrapper.setPrivateKey(keyPair.getPrivateKey());
+                            syncKeyStorageWrapper.setPublicKey(keyPair.getPublicKey());
+                            SyncKeyStorage syncKeyStorage = syncKeyStorageWrapper.initSyncKeyStorage();
+
+                            return syncKeyknox(syncKeyStorage).subscribeOn(Schedulers.io());
+                        }).observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(syncKeyStorageTemp -> {
+                                       KeyEntry keyEntry =
+                                               syncKeyStorageTemp.retrieve(identity +
+                                                                                   VirgilHelper.KEYKNOX_POSTFIX);
+                                       virgilHelper.storeKey(keyEntry);
+                                       keyknoxSyncInteractor.onKeyknoxSyncSuccess();
+                                   },
+                                   keyknoxSyncInteractor::onKeyknoxSyncError);
+
+        compositeDisposable.add(syncKeyknoxDisposable);
+    }
+
+    private Single<SyncKeyStorage> syncKeyknox(SyncKeyStorage syncKeyStorage) {
+        return Single.fromCallable(() -> {
+            syncKeyStorage.sync();
+            return syncKeyStorage;
+        });
+    }
+
+    private Single<Void> storeInKeyknox(SyncKeyStorage syncKeyStorage, String identity) {
+        return Single.fromCallable(() -> {
+            Tuple<PrivateKey, Map<String, String>> keyData = virgilHelper.load();
+            syncKeyStorage.store(identity + VirgilHelper.KEYKNOX_POSTFIX,
+                                 ((VirgilPrivateKey) keyData.getLeft()).getRawKey(),
+                                 keyData.getRight());
+            return null;
+        });
+    }
+
+    private Single<VirgilKeyPair> generateBrainKey(String password) {
+        return Single.fromCallable(() -> brainKey.generateKeyPair(password));
+    }
 }

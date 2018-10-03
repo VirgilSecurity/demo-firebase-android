@@ -66,50 +66,30 @@ import java.util.List;
 
 public class UserManager extends PropertyManager {
 
-    private static final String USER_CARDS = "USER_CARDS";
+    private static final String USER_CARD = "USER_CARD";
     private static final String TOKEN = "TOKEN";
 
     public UserManager(Context context) {
         super(context);
     }
 
-    public void setUserCards(List<Card> cards) {
-        List<RawSignedModel> rawSignedModels = new ArrayList<>();
-        for (Card card : cards)
-            rawSignedModels.add(card.getRawCard());
-
-        String serialized = new Gson().toJson(rawSignedModels);
-
-        setValue(USER_CARDS, serialized);
+    public void setUserCards(Card card) {
+        setValue(USER_CARD, card.getRawCard().exportAsJson());
     }
 
-    public List<Card> getUserCards() {
-        String serialized = getValue(USER_CARDS,
-                                     SupportedTypes.STRING,
-                                     null);
+    public Card getUserCard() {
+        String serialized = getValue(USER_CARD, SupportedTypes.STRING, null);
 
-        List<RawSignedModel> rawSignedModels =
-                new Gson()
-                        .fromJson(serialized ,
-                                  new TypeToken<List<RawSignedModel>>() {
-                                  }.getType());
-
-        List<Card> cards = new ArrayList<>();
-        CardCrypto cardCrypto = new VirgilCardCrypto();
-        for (RawSignedModel cardModel : rawSignedModels) {
-            try {
-                cards.add(Card.parse(cardCrypto, cardModel));
-            } catch (CryptoException e) {
-                e.printStackTrace();
-                throw new CardParseException();
-            }
+        try {
+            return Card.parse(new VirgilCardCrypto(), RawSignedModel.fromJson(serialized));
+        } catch (CryptoException e) {
+            e.printStackTrace();
+            throw new CardParseException();
         }
-
-        return cards;
     }
 
     public void clearUserCard() {
-        clearValue(USER_CARDS);
+        clearValue(USER_CARD);
     }
 
 

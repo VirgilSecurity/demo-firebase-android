@@ -59,6 +59,7 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity;
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor;
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
+import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
@@ -211,10 +212,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
 
     private void sendMessage(String text) {
         showProgress(true);
-        Message message = new DefaultMessage(firebaseAuth.getCurrentUser()
-                                                         .getEmail()
-                                                         .toLowerCase()
-                                                         .split("@")[0],
+        Message message = new DefaultMessage(UserUtils.currentIdentity(firebaseAuth),
                                              chatThread.getReceiver(),
                                              text,
                                              new Timestamp(new Date()));

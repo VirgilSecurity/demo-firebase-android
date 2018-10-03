@@ -33,13 +33,6 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.login;
 
-import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
-import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
-import com.android.virgilsecurity.virgilonfire.util.DefaultErrorResolver;
-import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
-import com.google.firebase.auth.FirebaseAuth;
-import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
-
 import dagger.Module;
 import dagger.Provides;
 
@@ -59,7 +52,7 @@ public class LogInFragmentModule {
         return logInFragment;
     }
 
-    @Provides RefreshUserCardsInteractor provideRefreshUserCardsInteractor(LogInFragment logInFragment) {
+    @Provides KeyknoxSyncInteractor provideRefreshUserCardsInteractor(LogInFragment logInFragment) {
         return logInFragment;
     }
 }

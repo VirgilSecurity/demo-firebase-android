@@ -59,11 +59,4 @@ public class GenerateHashException extends RuntimeException {
     public GenerateHashException(Throwable cause) {
         super(cause);
     }
-
-    public GenerateHashException(String message,
-                                 Throwable cause,
-                                 boolean enableSuppression,
-                                 boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }
