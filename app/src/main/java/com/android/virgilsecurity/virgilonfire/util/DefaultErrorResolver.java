@@ -35,6 +35,7 @@ package com.android.virgilsecurity.virgilonfire.util;
 
 import android.support.annotation.Nullable;
 
+import com.android.virgilsecurity.virgilonfire.data.model.exception.AccountResetedException;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
@@ -85,6 +86,8 @@ public final class DefaultErrorResolver extends ErrorResolver {
             return "Id is malformed";
         } else if (t instanceof FirebaseAuthUserCollisionException) {
             return "User with current Id already exists";
+        } else if (t instanceof AccountResetedException) {
+            return "Account has been reseted.\nYou can't use it.";
         } else {
             return null;
         }

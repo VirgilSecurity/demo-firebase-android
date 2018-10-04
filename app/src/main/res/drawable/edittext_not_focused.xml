@@ -32,22 +32,23 @@
   ~ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<resources>
-    <color name="colorPrimary">#a31619</color>
-    <color name="colorPrimaryDark">#8b0f11</color>
-    <color name="colorAccent">#0366f2</color>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <color name="snow">#ffffffff</color>
-    <color name="yesterday_snow">#c6ffffff</color>
-    <color name="black">#ff000000</color>
-    <color name="timberwolf">#dbd7d2</color>
-    <color name="oxford_blue">#002147</color>
-    <color name="black_coral">#54626F</color>
-    <color name="chinese_silver">#CCCCCC</color>
-    <color name="black_olive">#3B3C36</color>
-    <color name="baby_pink_trans">#e0f1e2e2</color>
-    <color name="virgil_light">#ae4244</color>
-    <color name="virgil_light_trans">#97ae4244</color>
-    <color name="virgilGrayTrans">#45000000</color>
+    <item
+        android:bottom="2dp"
+        android:left="-3dp"
+        android:right="-4dp"
+        android:top="-3dp">
 
-</resources>
+        <shape android:shape="rectangle">
+
+            <stroke
+                android:width="2dp"
+                android:color="@color/virgilGrayTrans" />
+
+            <solid
+                android:color="@android:color/transparent" />
+        </shape>
+    </item>
+
+</layer-list>

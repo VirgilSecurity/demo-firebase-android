@@ -31,20 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.ui.chat;
-
-import dagger.Module;
-import dagger.Provides;
-
+package com.android.virgilsecurity.virgilonfire.data.model.exception;
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    10/4/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-@Module
-public class ChatControlActivityModule {
+/**
+ * AccountResetedException
+ */
+public class AccountResetedException extends RuntimeException {
 
-    @Provides ResetAccountInteractor providesChatControlActivityPresenter(ChatControlActivity activity) {
-        return activity;
+    public AccountResetedException() {
+        super();
+    }
+
+    public AccountResetedException(String message) {
+        super(message);
+    }
+
+    public AccountResetedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public AccountResetedException(Throwable cause) {
+        super(cause);
     }
 }

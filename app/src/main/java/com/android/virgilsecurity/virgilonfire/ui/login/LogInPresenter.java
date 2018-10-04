@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.ui.login;
 import android.util.Pair;
 
 import com.android.virgilsecurity.virgilonfire.data.model.SyncKeyStorageWrapper;
+import com.android.virgilsecurity.virgilonfire.data.model.exception.AccountResetedException;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
@@ -48,6 +49,7 @@ import com.virgilsecurity.sdk.crypto.PublicKey;
 import com.virgilsecurity.sdk.crypto.VirgilKeyPair;
 import com.virgilsecurity.sdk.crypto.VirgilPrivateKey;
 import com.virgilsecurity.sdk.crypto.exceptions.CryptoException;
+import com.virgilsecurity.sdk.crypto.exceptions.KeyEntryNotFoundException;
 import com.virgilsecurity.sdk.storage.KeyEntry;
 import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
 import com.virgilsecurity.sdk.utils.Tuple;
@@ -177,9 +179,19 @@ public class LogInPresenter implements BasePresenter {
                             return syncKeyknox(syncKeyStorage).subscribeOn(Schedulers.io());
                         }).observeOn(AndroidSchedulers.mainThread())
                         .subscribe(syncKeyStorageTemp -> {
-                                       KeyEntry keyEntry =
-                                               syncKeyStorageTemp.retrieve(identity +
-                                                                                   VirgilHelper.KEYKNOX_POSTFIX);
+                                       KeyEntry keyEntry = null;
+                                       try {
+                                           keyEntry = syncKeyStorageTemp.retrieve(identity +
+                                                                                          VirgilHelper.KEYKNOX_POSTFIX);
+                                       } catch (KeyEntryNotFoundException e) {
+                                            e.printStackTrace();
+                                       }
+
+                                       if (keyEntry == null) {
+                                           keyknoxSyncInteractor.onKeyknoxSyncError(new AccountResetedException());
+                                           return;
+                                       }
+
                                        virgilHelper.storeKey(keyEntry);
                                        keyknoxSyncInteractor.onKeyknoxSyncSuccess();
                                    },

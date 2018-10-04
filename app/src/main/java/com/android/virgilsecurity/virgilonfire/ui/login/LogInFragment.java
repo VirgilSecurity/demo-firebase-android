@@ -335,7 +335,11 @@ public final class LogInFragment
 
     @Override public void onKeyknoxSyncError(Throwable t) {
         showProgress(false);
+
         firebaseAuth.signOut();
+        userManager.clearToken();
+        userManager.clearUserCard();
+
         UiUtils.toast(this, errorResolver.resolve(t));
     }
 

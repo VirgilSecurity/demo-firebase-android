@@ -43,11 +43,22 @@ package com.android.virgilsecurity.virgilonfire.ui.chat;
  * ....|_|-
  */
 
+import com.android.virgilsecurity.virgilonfire.data.model.SyncKeyStorageWrapper;
+import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper;
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter;
+import com.virgilsecurity.keyknox.storage.SyncKeyStorage;
+import com.virgilsecurity.pythia.brainkey.BrainKey;
+import com.virgilsecurity.sdk.crypto.VirgilKeyPair;
+import com.virgilsecurity.sdk.storage.PrivateKeyStorage;
 
 import javax.inject.Inject;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * ChatControlActivityPresenter
@@ -55,14 +66,62 @@ import io.reactivex.disposables.CompositeDisposable;
 public class ChatControlActivityPresenter implements BasePresenter {
 
     private CompositeDisposable compositeDisposable;
+    private final BrainKey brainKey;
+    private final SyncKeyStorageWrapper syncKeyStorageWrapper;
+    private final PrivateKeyStorage privateKeyStorage;
+    private final ResetAccountInteractor resetAccountInteractor;
 
     @Inject
-    public ChatControlActivityPresenter() {
+    public ChatControlActivityPresenter(BrainKey brainKey,
+                                        SyncKeyStorageWrapper syncKeyStorageWrapper,
+                                        PrivateKeyStorage privateKeyStorage,
+                                        ResetAccountInteractor resetAccountInteractor) {
+        this.brainKey = brainKey;
+        this.syncKeyStorageWrapper = syncKeyStorageWrapper;
+        this.privateKeyStorage = privateKeyStorage;
+        this.resetAccountInteractor = resetAccountInteractor;
+
         compositeDisposable = new CompositeDisposable();
     }
 
-    void requestResetAccount() {
+    void requestResetAccount(String identity, String password) {
+        Disposable resetAccountDisposable =
+                generateBrainKey(password)
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(keyPair -> {
+                            syncKeyStorageWrapper.setIdentity(identity);
+                            syncKeyStorageWrapper.setPrivateKey(keyPair.getPrivateKey());
+                            syncKeyStorageWrapper.setPublicKey(keyPair.getPublicKey());
+                            SyncKeyStorage syncKeyStorage = syncKeyStorageWrapper.initSyncKeyStorage();
 
+                            return syncKeyknox(syncKeyStorage);
+                        })
+                        .flatMap(syncKeyStorage -> {
+                            return deleteKeyknoxEntry(identity + VirgilHelper.KEYKNOX_POSTFIX,
+                                                      syncKeyStorage).subscribeOn(Schedulers.io())
+                                                                     .toSingleDefault(new Object());
+                        })
+                        .map(object -> {
+                            privateKeyStorage.delete(identity);
+                            return object;
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(ignored -> resetAccountInteractor.onResetAccountSuccess(),
+                                   resetAccountInteractor::onResetAccountError);
+
+        compositeDisposable.add(resetAccountDisposable);
+    }
+
+    private Single<VirgilKeyPair> generateBrainKey(String password) {
+        return Single.fromCallable(() -> brainKey.generateKeyPair(password));
+    }
+
+    private Completable deleteKeyknoxEntry(String identity, SyncKeyStorage syncKeyStorage) {
+        return Completable.fromAction(() -> syncKeyStorage.delete(identity));
+    }
+
+    private Single<SyncKeyStorage> syncKeyknox(SyncKeyStorage syncKeyStorage) {
+        return Completable.fromAction(syncKeyStorage::sync).toSingleDefault(syncKeyStorage);
     }
 
     @Override public void disposeAll() {

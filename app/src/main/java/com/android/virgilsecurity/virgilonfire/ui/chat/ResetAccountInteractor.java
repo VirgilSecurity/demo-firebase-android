@@ -32,19 +32,23 @@
  */
 
 package com.android.virgilsecurity.virgilonfire.ui.chat;
-
-import dagger.Module;
-import dagger.Provides;
-
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    10/4/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-@Module
-public class ChatControlActivityModule {
+/**
+ * ResetAccountInteractor
+ */
+public interface ResetAccountInteractor {
 
-    @Provides ResetAccountInteractor providesChatControlActivityPresenter(ChatControlActivity activity) {
-        return activity;
-    }
+    void onResetAccountSuccess();
+
+    void onResetAccountError(Throwable t);
 }

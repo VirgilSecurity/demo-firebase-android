@@ -49,10 +49,12 @@ import com.android.virgilsecurity.virgilonfire.R;
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager;
 import com.android.virgilsecurity.virgilonfire.data.model.ChatThread;
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseActivityDi;
+import com.android.virgilsecurity.virgilonfire.ui.chat.bottomSheet.ResetAccountBottomSheet;
 import com.android.virgilsecurity.virgilonfire.ui.chat.thread.ThreadFragment;
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.ThreadsListFragment;
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.dialog.CreateThreadDialog;
 import com.android.virgilsecurity.virgilonfire.ui.login.LogInActivity;
+import com.android.virgilsecurity.virgilonfire.util.ErrorResolver;
 import com.android.virgilsecurity.virgilonfire.util.UiUtils;
 import com.android.virgilsecurity.virgilonfire.util.UserUtils;
 import com.android.virgilsecurity.virgilonfire.util.common.OnFinishTimer;
@@ -73,7 +75,16 @@ import dagger.android.HasFragmentInjector;
  * -__o
  */
 
-public class ChatControlActivity extends BaseActivityDi implements HasFragmentInjector {
+public class ChatControlActivity extends BaseActivityDi implements HasFragmentInjector, ResetAccountInteractor {
+
+    private ResetAccountBottomSheet bottomSheet;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({ChatState.THREADS_LIST, ChatState.THREAD})
+    public @interface ChatState {
+        String THREADS_LIST = "THREADS_LIST";
+        String THREAD = "THREAD";
+    }
 
     public static final String USERNAME = "USERNAME";
 
@@ -86,6 +97,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     @Inject UserManager userManager;
     @Inject FirebaseAuth firebaseAuth;
     @Inject ChatControlActivityPresenter presenter;
+    @Inject ErrorResolver errorResolver;
 
     @BindView(R.id.toolbar)
     protected Toolbar toolbar;
@@ -95,13 +107,6 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     protected DrawerLayout dlDrawer;
     @BindView(R.id.drawerFooterResetAccount)
     protected View drawerFooterResetAccount;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @StringDef({ChatState.THREADS_LIST, ChatState.THREAD})
-    public @interface ChatState {
-        String THREADS_LIST = "THREADS_LIST";
-        String THREAD = "THREAD";
-    }
 
     public static void start(Activity from) {
         from.startActivity(new Intent(from, ChatControlActivity.class));
@@ -222,8 +227,41 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
         });
 
         drawerFooterResetAccount.setOnClickListener(v -> {
-            presenter.requestResetAccount();
+            bottomSheet = new ResetAccountBottomSheet(this);
+            bottomSheet.setup();
+            bottomSheet.setTitle("Reset account");
+            bottomSheet.setBody("You will loose all your history.\nEnter your password to proceed:");
+            bottomSheet.setOnClickListener((view, password) -> {
+                switch (view.getId()) {
+                    case R.id.btnBottomSheetCancel:
+                        bottomSheet.dismiss();
+                        break;
+                    case R.id.btnBottomSheetSubmit:
+                        bottomSheet.showProgress(true);
+                        presenter.requestResetAccount(UserUtils.currentIdentity(firebaseAuth), password);
+                        break;
+                }
+            });
+
+            bottomSheet.show();
         });
+    }
+
+    @Override public void onResetAccountSuccess() {
+        bottomSheet.dismiss();
+        showBaseLoading(true);
+
+        userManager.clearUserCard();
+        firebaseAuth.signOut();
+        threadFragment.disposeAll();
+        threadsListFragment.disposeAll();
+
+        LogInActivity.startClearTop(this);
+    }
+
+    @Override public void onResetAccountError(Throwable t) {
+        UiUtils.toast(this, errorResolver.resolve(t));
+        bottomSheet.showProgress(false);
     }
 
     @Override protected void onDestroy() {
