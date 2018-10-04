@@ -73,5 +73,6 @@
     <!-- Drawer -->
     <string name="log_out">Log out</string>
     <string name="create_thread">Create thread</string>
+    <string name="reset_account">Reset account</string>
 
 </resources>

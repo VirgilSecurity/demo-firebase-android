@@ -57,6 +57,7 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import io.reactivex.Completable;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -188,20 +189,16 @@ public class LogInPresenter implements BasePresenter {
     }
 
     private Single<SyncKeyStorage> syncKeyknox(SyncKeyStorage syncKeyStorage) {
-        return Single.fromCallable(() -> {
-            syncKeyStorage.sync();
-            return syncKeyStorage;
-        });
+        return Completable.fromAction(syncKeyStorage::sync).toSingleDefault(syncKeyStorage);
     }
 
-    private Single<Void> storeInKeyknox(SyncKeyStorage syncKeyStorage, String identity) {
-        return Single.fromCallable(() -> {
+    private Single<Object> storeInKeyknox(SyncKeyStorage syncKeyStorage, String identity) {
+        return Completable.fromAction(() -> {
             Tuple<PrivateKey, Map<String, String>> keyData = virgilHelper.load();
             syncKeyStorage.store(identity + VirgilHelper.KEYKNOX_POSTFIX,
                                  ((VirgilPrivateKey) keyData.getLeft()).getRawKey(),
                                  keyData.getRight());
-            return null;
-        });
+        }).toSingleDefault(new Object());
     }
 
     private Single<VirgilKeyPair> generateBrainKey(String password) {

@@ -35,11 +35,11 @@ apply plugin: 'com.android.application'
 //apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.android.virgilsecurity.virgilonfire"
-        minSdkVersion 21
-        targetSdkVersion 26
+        minSdkVersion 24
+        targetSdkVersion 28
         versionCode 1
         versionName majorVersion + "." + minorVersion + "." + patchVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

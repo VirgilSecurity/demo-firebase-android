@@ -228,7 +228,12 @@ public final class LogInFragment
                             } else {
                                 activity.runOnUiThread(() -> {
                                     showProgress(false);
-                                    UiUtils.toast(this, "Create user was not successful");
+
+                                    String errorSignUp = errorResolver.resolve(task.getException());
+                                    if (errorSignUp == null)
+                                        UiUtils.toast(this, "Create user was not successful");
+                                    else
+                                        UiUtils.toast(this, errorSignUp);
                                 });
                             }
                         });
@@ -301,6 +306,7 @@ public final class LogInFragment
 
 
     @Override public void onPublishCardSuccess(Card card) {
+        userManager.setUserCards(card);
         activity.startChatControlActivity(UserUtils.currentIdentity(firebaseAuth));
     }
 

@@ -183,7 +183,7 @@ public class VirgilHelper {
     public void storeKey(KeyEntry keyEntry) {
         try {
             privateKeyStorage.store(getVirgilCrypto().importPrivateKey(keyEntry.getValue()),
-                                    UserUtils.currentIdentity(firebaseAuth) + KEYKNOX_POSTFIX,
+                                    UserUtils.currentIdentity(firebaseAuth),
                                     keyEntry.getMeta());
         } catch (CryptoException e) {
             e.printStackTrace();

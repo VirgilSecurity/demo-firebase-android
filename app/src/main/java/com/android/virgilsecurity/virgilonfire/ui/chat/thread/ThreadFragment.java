@@ -65,6 +65,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.virgilsecurity.sdk.cards.Card;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -120,19 +121,17 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
             }
         });
         srlRefresh.setOnRefreshListener(() -> {
-            presenter.turnOffMessageListener();
+//            presenter.turnOffMessageListener();
+            presenter.disposeAll();
             presenter.turnOnMessageListener(chatThread);
         });
     }
 
-    @Override public void onResume() {
-        super.onResume();
-    }
+    @Override public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
 
-    @Override public void onPause() {
-        super.onPause();
-
-        presenter.turnOffMessageListener();
+        if (hidden)
+            presenter.disposeAll();
     }
 
     public void disposeAll() {
@@ -170,8 +169,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
             }
 
             @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                lockSendUi(charSequence.toString()
-                                       .isEmpty());
+                lockSendUi(charSequence.toString().isEmpty());
             }
 
             @Override public void afterTextChanged(Editable editable) {
@@ -195,9 +193,8 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     @OnClick({R.id.btnSend}) void onInterfaceClick(View v) {
         switch (v.getId()) {
             case R.id.btnSend:
-                String text = etMessage.getText()
-                                       .toString()
-                                       .trim();
+                String text = etMessage.getText().toString().trim();
+
                 if (!text.isEmpty()) {
                     if (interlocutorCards != null) {
                         lockSendUi(true);
@@ -211,7 +208,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     }
 
     private void sendMessage(String text) {
-        showProgress(true);
+        lockSendUi(true);
         Message message = new DefaultMessage(UserUtils.currentIdentity(firebaseAuth),
                                              chatThread.getReceiver(),
                                              text,
@@ -264,6 +261,7 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
     }
 
     private void showProgress(boolean show) {
+        rvChat.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
         pbLoading.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -271,14 +269,14 @@ public class ThreadFragment extends BaseFragmentDi<ChatControlActivity>
         lockSendUi(false);
         srlRefresh.setRefreshing(false);
 
-        showProgress(false);
-        Collections.sort(messages, (o1, o2) -> Long.compare(o1.getMessageId(), o2.getMessageId()));
+        messages.sort(Comparator.comparingLong(DefaultMessage::getMessageId));
         adapter.setItems(messages);
         ((DefaultChatThread) chatThread).setMessagesCount(messages.size());
 
         if (rvChat.getAdapter().getItemCount() > THRESHOLD_SCROLL) {
             rvChat.postDelayed(() -> {
-                rvChat.smoothScrollToPosition(adapter.getItemCount() - 1);
+                rvChat.scrollToPosition(adapter.getItemCount() - 1);
+                showProgress(false);
             }, 400);
         }
 

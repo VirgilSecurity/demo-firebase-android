@@ -42,6 +42,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.TextView;
 
 import com.android.virgilsecurity.virgilonfire.R;
@@ -84,6 +85,7 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     @Inject protected DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
     @Inject UserManager userManager;
     @Inject FirebaseAuth firebaseAuth;
+    @Inject ChatControlActivityPresenter presenter;
 
     @BindView(R.id.toolbar)
     protected Toolbar toolbar;
@@ -91,6 +93,8 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
     protected NavigationView nvNavigation;
     @BindView(R.id.dlDrawer)
     protected DrawerLayout dlDrawer;
+    @BindView(R.id.drawerFooterResetAccount)
+    protected View drawerFooterResetAccount;
 
     @Retention(RetentionPolicy.SOURCE)
     @StringDef({ChatState.THREADS_LIST, ChatState.THREAD})
@@ -216,6 +220,16 @@ public class ChatControlActivity extends BaseActivityDi implements HasFragmentIn
                     return false;
             }
         });
+
+        drawerFooterResetAccount.setOnClickListener(v -> {
+            presenter.requestResetAccount();
+        });
+    }
+
+    @Override protected void onDestroy() {
+        super.onDestroy();
+
+        presenter.disposeAll();
     }
 
     public void newThreadDialogShowProgress(boolean show) {

@@ -85,6 +85,7 @@ import io.reactivex.schedulers.Schedulers;
  * ....|_|-
  */
 public class ThreadFragmentPresenter implements BasePresenter {
+
     private static final String COLLECTION_CHANNELS = "Channels";
     private static final String COLLECTION_MESSAGES = "Messages";
     private static final String KEY_PROPERTY_COUNT = "count";
@@ -129,7 +130,7 @@ public class ThreadFragmentPresenter implements BasePresenter {
         compositeDisposable = new CompositeDisposable();
     }
 
-    public void requestSendMessage(List<Card> interlocutorCards, Message message, ChatThread chatThread) {
+    void requestSendMessage(List<Card> interlocutorCards, Message message, ChatThread chatThread) {
         List<VirgilPublicKey> publicKeys = new ArrayList<>();
 
             publicKeys.add((VirgilPublicKey) userManager.getUserCard().getPublicKey());
@@ -202,9 +203,13 @@ public class ThreadFragmentPresenter implements BasePresenter {
 
     @Override public void disposeAll() {
         compositeDisposable.clear();
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+            listenerRegistration = null;
+        }
     }
 
-    @SuppressLint("CheckResult") public void turnOnMessageListener(ChatThread chatThread) {
+    @SuppressLint("CheckResult") void turnOnMessageListener(ChatThread chatThread) {
         listenerRegistration =
                 firestore.collection(COLLECTION_CHANNELS)
                          .document(chatThread.getThreadId())
@@ -242,7 +247,8 @@ public class ThreadFragmentPresenter implements BasePresenter {
                                             .subscribe(getMessagesInteractor::onGetMessagesSuccess,
                                                        getMessagesInteractor::onGetMessagesError);
                              } else {
-                                 roomDb.messageDao().getAllById(chatThread.getThreadId())
+                                 roomDb.messageDao()
+                                       .getAllById(chatThread.getThreadId())
                                        .subscribeOn(Schedulers.io())
                                        .observeOn(AndroidSchedulers.mainThread())
                                        .subscribe(getMessagesInteractor::onGetMessagesSuccess,
@@ -273,8 +279,10 @@ public class ThreadFragmentPresenter implements BasePresenter {
         }
     }
 
-    public void turnOffMessageListener() {
-        if (listenerRegistration != null)
-            listenerRegistration.remove();
-    }
+//    void turnOffMessageListener() {
+//        if (listenerRegistration != null) {
+//            listenerRegistration.remove();
+//            listenerRegistration = null;
+//        }
+//    }
 }
