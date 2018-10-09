@@ -1,7 +1,7 @@
 # End-to-end encrypted, HIPAA-compliant Android chat app for Firebase.
 You can reuse this sample in any projects where you want to end-to-end protect user data, documents, images using Virgil's end-to-end encryption. [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
-* Looking for other client platforms? [iOS](https://github.com/VirgilSecurity/demo-firebase-ios) [JavaScript (browser)](https://github.com/VirgilSecurity/demo-firebase-js)
+* Looking for other client platforms? [iOS](https://github.com/VirgilSecurity/demo-firebase-ios) | [JavaScript (browser)](https://github.com/VirgilSecurity/demo-firebase-js)
 
 ## Clone project
 In Android Studio, go to 'File -> New -> Project from Version Control -> GitHub and paste in the repo's URL: 
