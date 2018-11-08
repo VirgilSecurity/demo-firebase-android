@@ -31,71 +31,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.data.model
 
-buildscript {
-    ext.kotlin_version = '1.3.0'
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    4/2/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+interface Token {
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-
-        classpath 'com.google.gms:google-services:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
-    }
+    val token: String
 }
-
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
-
-        supportLibrary = "28.0.0"
-        constraintLayout = "1.1.3"
-        virgilSdk = "5.0.4"
-        virgilCrypto = "5.0.4@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.15"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.4"
-        firebaseAuth = "16.0.5"
-        firebaseFirestore = "17.1.2"
-        room = "1.1.1"
-//        crashlytics = "2.9.3"
-    }
-
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-

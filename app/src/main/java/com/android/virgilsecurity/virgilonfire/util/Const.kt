@@ -31,71 +31,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.util
 
-buildscript {
-    ext.kotlin_version = '1.3.0'
+/**
+ * Created by Danylo Oliinyk on 11/23/17 at Virgil Security.
+ * -__o
+ */
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+class Const {
 
-        classpath 'com.google.gms:google-services:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
-    }
-}
-
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
-
-        supportLibrary = "28.0.0"
-        constraintLayout = "1.1.3"
-        virgilSdk = "5.0.4"
-        virgilCrypto = "5.0.4@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.15"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.4"
-        firebaseAuth = "16.0.5"
-        firebaseFirestore = "17.1.2"
-        room = "1.1.1"
-//        crashlytics = "2.9.3"
+    internal object Http {
+        val BAD_REQUEST = 400
+        val UNAUTHORIZED = 401
+        val FORBIDDEN = 403
+        val NOT_ACCEPTABLE = 406
+        val UNPROCESSABLE_ENTITY = 422
+        val SERVER_ERROR = 500
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
+    object TableNames {
+        val USER_NAME = "username"
+        val OBJECT_ID = "objectId"
+        val SENDER_USERNAME = "senderUsername"
+        val SENDER_ID = "senderId"
+        val RECIPIENT_USERNAME = "recipientUsername"
+        val RECIPIENT_ID = "recipientId"
+        val THREAD_ID = "threadId"
+        val MESSAGE_BODY = "body"
+        val CREATED_AT_CRITERIA = "createdAt"
+        val CREATED_AT_DATE = "createdAtDate"
+        val TIMESTAMP = "timestamp"
     }
 }
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-

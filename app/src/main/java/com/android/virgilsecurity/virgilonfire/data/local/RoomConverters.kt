@@ -31,71 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.data.local
 
-buildscript {
-    ext.kotlin_version = '1.3.0'
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    6/14/186/14/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+import android.arch.persistence.room.TypeConverter
 
-        classpath 'com.google.gms:google-services:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+import com.google.firebase.Timestamp
 
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
-    }
-}
+/**
+ * RoomConverters
+ */
+class RoomConverters {
 
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
-
-        supportLibrary = "28.0.0"
-        constraintLayout = "1.1.3"
-        virgilSdk = "5.0.4"
-        virgilCrypto = "5.0.4@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.15"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.4"
-        firebaseAuth = "16.0.5"
-        firebaseFirestore = "17.1.2"
-        room = "1.1.1"
-//        crashlytics = "2.9.3"
+    @TypeConverter fun fromSeconds(seconds: Long?): Timestamp? {
+        return if (seconds == null)
+            null
+        else
+            Timestamp(seconds, 0)
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
+    @TypeConverter fun toSeconds(timestamp: Timestamp?): Long? {
+        return timestamp?.seconds
     }
 }
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-

@@ -32,14 +32,15 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 //apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.android.virgilsecurity.virgilonfire"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 1
         versionName majorVersion + "." + minorVersion + "." + patchVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -62,8 +63,12 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
     // Support
     implementation "com.android.support:appcompat-v7:$supportLibrary"
+    implementation "com.android.support:support-v4:$supportLibrary"
     implementation "com.android.support.constraint:constraint-layout:$constraintLayout"
     implementation "com.android.support:design:$supportLibrary"
 
@@ -102,7 +107,9 @@ dependencies {
     implementation "org.apache.commons:commons-lang3:$apacheCommons"
 
     // Firebase
-    implementation "com.google.firebase:firebase-core:$firebaseCore"
+    implementation ("com.google.firebase:firebase-core:$firebaseCore") {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
     implementation "com.google.firebase:firebase-auth:$firebaseAuth"
     implementation "com.google.firebase:firebase-firestore:$firebaseFirestore"
 //    implementation "com.crashlytics.sdk.android:crashlytics:$crashlytics"
@@ -114,3 +121,6 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+repositories {
+    mavenCentral()
+}

@@ -31,71 +31,64 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.ui.base
 
-buildscript {
-    ext.kotlin_version = '1.3.0'
+import android.app.Activity
+import android.app.Fragment
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+import butterknife.ButterKnife
 
-        classpath 'com.google.gms:google-services:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+/**
+ * Created by Danylo Oliinyk on 16.11.17 at Virgil Security.
+ * -__o
+ */
 
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
-    }
-}
+abstract class BaseFragment<A : Activity> : Fragment() {
 
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
+    protected var activity: A
 
-        supportLibrary = "28.0.0"
-        constraintLayout = "1.1.3"
-        virgilSdk = "5.0.4"
-        virgilCrypto = "5.0.4@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.15"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.4"
-        firebaseAuth = "16.0.5"
-        firebaseFirestore = "17.1.2"
-        room = "1.1.1"
-//        crashlytics = "2.9.3"
+    protected abstract val layout: Int
+
+    protected abstract fun postButterInit()
+
+    override fun onAttach(activity: Activity) {
+        super.onAttach(activity)
+
+        this.activity = activity as A
     }
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        activity = context as A
+    }
+
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        return inflater.inflate(layout, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ButterKnife.bind(this, view)
+
+        postButterInit()
+    }
+
+    protected fun hideKeyboard() {
+        val view = activity.currentFocus
+        if (view != null) {
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+            imm?.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 }
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-

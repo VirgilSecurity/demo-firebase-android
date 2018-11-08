@@ -31,71 +31,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.android.virgilsecurity.virgilonfire.util
 
-buildscript {
-    ext.kotlin_version = '1.3.0'
+import android.text.InputFilter
+import android.text.Spanned
 
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://maven.fabric.io/public'
+class DefaultSymbolsInputFilter : InputFilter {
+
+    override fun filter(source: CharSequence, start: Int, end: Int,
+                        dest: Spanned, dstart: Int, dend: Int): CharSequence? {
+
+        val constraint = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-()/='+:?!%&*<>;{}@#_"
+
+        val builder = StringBuilder()
+        for (i in start until end) {
+            val c = source[i]
+            if (constraint.contains(c.toString())) {
+                builder.append(c)
+            }
         }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
 
-        classpath 'com.google.gms:google-services:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-        // Crashlytics
-//        classpath 'io.fabric.tools:gradle:1.25.4'
+        val allCharactersValid = builder.length == end - start
+        return if (allCharactersValid) null else builder.toString()
     }
 }
-
-allprojects {
-    ext {
-        appName = "FbaseDemo"
-        majorVersion = "0"
-        minorVersion = "1"
-        patchVersion = "1"
-
-        supportLibrary = "28.0.0"
-        constraintLayout = "1.1.3"
-        virgilSdk = "5.0.4"
-        virgilCrypto = "5.0.4@aar"
-        rxJava = "2.1.5"
-        rxAndroid = "2.0.2"
-        retrofit = "2.3.0"
-        gson = "2.8.0"
-        butterKnife = "8.8.1"
-        networkTracker = "0.12.2"
-        dagger = "2.15"
-        loggingInterceptor = "3.10.0"
-        rxRetrofitAdapter = "2.0.2"
-        converterGson = "2.3.0"
-        apacheCommons = "3.7"
-        firebaseCore = "16.0.4"
-        firebaseAuth = "16.0.5"
-        firebaseFirestore = "17.1.2"
-        room = "1.1.1"
-//        crashlytics = "2.9.3"
-    }
-
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://maven.fabric.io/public'
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
