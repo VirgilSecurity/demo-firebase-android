@@ -33,10 +33,9 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.threadList
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
 import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor
-
 import dagger.Module
 import dagger.Provides
 
@@ -46,11 +45,14 @@ import dagger.Provides
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * ThreadsListFragmentModule class.
+ */
 @Module
 class ThreadsListFragmentModule {
 
@@ -59,7 +61,7 @@ class ThreadsListFragmentModule {
     }
 
     @Provides internal fun providesDataReceivedInteractor(
-            threadsListFragment: ThreadsListFragment): DataReceivedInteractor<List<DefaultChatThread>> {
+            threadsListFragment: ThreadsListFragment): DataReceivedInteractor<MutableList<ChatThread>> {
         return threadsListFragment
     }
 

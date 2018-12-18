@@ -39,77 +39,67 @@ import android.preference.PreferenceManager
 import android.support.annotation.StringDef
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * PropertyManager class.
+ */
 open class PropertyManager(context: Context) {
 
+    @Retention(AnnotationRetention.SOURCE)
     @StringDef(SupportedTypes.STRING,
                SupportedTypes.BOOLEAN,
                SupportedTypes.INTEGER,
                SupportedTypes.FLOAT)
     annotation class SupportedTypes {
         companion object {
-            val STRING = "STRING"
-            val BOOLEAN = "BOOLEAN"
-            val INTEGER = "INTEGER"
-            val FLOAT = "FLOAT"
+            const val STRING = "STRING"
+            const val BOOLEAN = "BOOLEAN"
+            const val INTEGER = "INTEGER"
+            const val FLOAT = "FLOAT"
         }
     }
 
-    init {
-        preferences = PreferenceManager.getDefaultSharedPreferences(context)
-    }
+    private val preferences: SharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(context)
 
-    private fun edit(performer: Performer<SharedPreferences.Editor>) {
+    private fun edit(performer: (SharedPreferences.Editor) -> Unit) {
         val editor = preferences.edit()
-        performer.performOperation(editor)
+        performer(editor)
         editor.apply()
     }
 
-    internal fun <T> setValue(key: String, value: T) {
+    internal fun <T> setValue(key: String, value: T) =
+            when (value) {
+                is String -> edit { editor -> editor.putString(key, value as String) }
+                is Boolean -> edit { editor -> editor.putBoolean(key, value as Boolean) }
+                is Int -> edit { editor -> editor.putInt(key, value as Int) }
+                is Float -> edit { editor -> editor.putFloat(key, value as Float) }
+                else -> throw UnsupportedOperationException("Not yet implemented.")
+            }
 
-        if (value is String) {
-            edit({ editor -> editor.putString(key, value as String) })
-        } else if (value is Boolean) {
-            edit({ editor -> editor.putBoolean(key, value as Boolean) })
-        } else if (value is Int) {
-            edit({ editor -> editor.putInt(key, value as Int) })
-        } else if (value is Float) {
-            edit({ editor -> editor.putFloat(key, value as Float) })
-        } else {
-            throw UnsupportedOperationException("Not yet implemented.")
-        }
-    }
+    /**
+     * Returns value from shared preferences with provided [key]. Choose one of [SupportedTypes]
+     * (for example [SupportedTypes.BOOLEAN]). Default value will be used if no value is stored.
+     */
+    @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+    internal fun <T> getValue(key: String,
+                              @PropertyManager.SupportedTypes type:
+                              String, defaultValue: T?): T = when (type) {
+        SupportedTypes.STRING -> preferences.getString(key, defaultValue as String)
+        SupportedTypes.BOOLEAN -> preferences.getBoolean(key, defaultValue as Boolean)
+        SupportedTypes.INTEGER -> preferences.getInt(key, defaultValue as Int)
+        SupportedTypes.FLOAT -> preferences.getFloat(key, defaultValue as Float)
+        else -> throw UnsupportedOperationException("Not implemented yet.")
+    } as T
 
-    internal fun <T> getValue(key: String, @SupportedTypes type: String, defaultValue: T): T {
-
-        val value: Any?
-        if (type == SupportedTypes.STRING) {
-            value = preferences.getString(key, defaultValue as String)
-        } else if (type == SupportedTypes.BOOLEAN) {
-            value = preferences.getBoolean(key, defaultValue as Boolean)
-        } else if (type == SupportedTypes.INTEGER) {
-            value = preferences.getInt(key, defaultValue as Int)
-        } else if (type == SupportedTypes.FLOAT) {
-            value = preferences.getFloat(key, defaultValue as Float)
-        } else {
-            throw UnsupportedOperationException("Not yet implemented.")
-        }
-        return value as T?
-    }
-
-    internal fun clearValue(key: String) {
-        edit({ editor -> editor.remove(key) })
-    }
-
-    interface Performer<T> {
-        fun performOperation(victim: T)
-    }
-
-    companion object {
-
-        private var preferences: SharedPreferences
-    }
+    internal fun clearValue(key: String) = edit { editor -> editor.remove(key) }
 }

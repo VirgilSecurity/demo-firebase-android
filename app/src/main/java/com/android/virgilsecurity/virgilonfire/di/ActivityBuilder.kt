@@ -45,19 +45,32 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * ActivityBuilder class.
+ */
 @Module
 abstract class ActivityBuilder {
 
-    @ContributesAndroidInjector(modules = arrayOf(LogInActivityModule::class,
-                                                  LogInFragmentProvider::class))
+    @ContributesAndroidInjector(modules = [
+        LogInActivityModule::class,
+        LogInFragmentProvider::class
+    ])
     internal abstract fun bindLogInActivity(): LogInActivity
 
-    @ContributesAndroidInjector(modules = arrayOf(ChatControlActivityModule::class,
-                                                  ThreadFragmentProvider::class,
-                                                  ThreadsListFragmentProvider::class))
+    @ContributesAndroidInjector(modules = [
+        ChatControlActivityModule::class,
+        ThreadFragmentProvider::class,
+        ThreadsListFragmentProvider::class
+    ])
     internal abstract fun bindChatControlActivity(): ChatControlActivity
 }

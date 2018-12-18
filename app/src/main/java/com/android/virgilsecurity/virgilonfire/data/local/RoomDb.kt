@@ -39,7 +39,7 @@ package com.android.virgilsecurity.virgilonfire.data.local
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    6/13/186/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
@@ -48,12 +48,12 @@ import android.arch.persistence.room.Database
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverters
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
+import com.android.virgilsecurity.virgilonfire.data.model.Message
 
 /**
- * RoomDb
+ * RoomDb class.
  */
-@Database(entities = arrayOf(DefaultMessage::class), version = 3)
+@Database(entities = [Message::class], version = 3)
 @TypeConverters(RoomConverters::class)
 abstract class RoomDb : RoomDatabase() {
 

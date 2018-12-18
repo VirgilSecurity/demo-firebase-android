@@ -44,10 +44,19 @@ import dagger.Module
 import dagger.Provides
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * LogInFragmentModule class.
+ */
 @Module
 class LogInFragmentModule {
 

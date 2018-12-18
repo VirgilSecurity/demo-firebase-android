@@ -38,27 +38,34 @@ import android.net.NetworkInfo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.TextView
-
+import butterknife.ButterKnife
 import com.android.virgilsecurity.virgilonfire.R
 import com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
-
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit
 
-import butterknife.ButterKnife
-import io.reactivex.android.schedulers.AndroidSchedulers
-
 /**
- * Created by Danylo Oliinyk on 16.11.17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * BaseActivity class.
+ */
 abstract class BaseActivity : AppCompatActivity() {
 
+    private var networkDisposable: Disposable? = null
     private var tvToolbarTitle: TextView? = null
     private var ibToolbarBack: View? = null
     private var ibToolbarHamburger: View? = null
@@ -143,11 +150,21 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        ReactiveNetwork.observeNetworkConnectivity(applicationContext)
-                .debounce(1000, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { connectivity -> showNoNetwork(connectivity.state != NetworkInfo.State.CONNECTED) }
+        networkDisposable =
+                ReactiveNetwork.observeNetworkConnectivity(applicationContext)
+                        .debounce(1000, TimeUnit.MILLISECONDS)
+                        .distinctUntilChanged()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { connectivity ->
+                            showNoNetwork(connectivity.state != NetworkInfo.State.CONNECTED)
+                        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        if (networkDisposable != null)
+            networkDisposable!!.dispose()
     }
 
     override fun onDestroy() {

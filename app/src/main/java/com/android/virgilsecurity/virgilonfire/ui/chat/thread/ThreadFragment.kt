@@ -33,7 +33,6 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread
 
-import android.content.Context
 import android.support.v4.content.ContextCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -41,41 +40,45 @@ import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
-
+import butterknife.BindView
+import butterknife.OnClick
 import com.android.virgilsecurity.virgilonfire.R
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
-import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
-import com.android.virgilsecurity.virgilonfire.data.model.Message
-import com.android.virgilsecurity.virgilonfire.data.model.exception.CardsNotFoundException
-import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.*
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver
 import com.android.virgilsecurity.virgilonfire.util.UiUtils
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.virgilsecurity.sdk.cards.Card
-
-import java.util.Collections
-import java.util.Date
-
+import java.util.*
 import javax.inject.Inject
 
-import butterknife.BindView
-import butterknife.OnClick
-
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/18/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedInteractor<Message>, OnMessageSentInteractor, SearchCardsInteractor, GetMessagesInteractor {
+/**
+ * ThreadFragment class.
+ */
+class ThreadFragment
+    : BaseFragmentDi<ChatControlActivity>(),
+        DataReceivedInteractor<Message>,
+        OnMessageSentInteractor,
+        SearchCardsInteractor,
+        GetMessagesInteractor {
 
     @Inject
     protected var adapter: ThreadRVAdapter? = null
@@ -128,7 +131,7 @@ class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedIntera
         }
         srlRefresh!!.setOnRefreshListener {
             presenter!!.turnOffMessageListener()
-            presenter!!.turnOnMessageListener(chatThread)
+            presenter!!.turnOnMessageListener(chatThread!!)
         }
     }
 
@@ -147,8 +150,8 @@ class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedIntera
     }
 
     override fun onDataReceived(receivedData: Message) {
-        adapter!!.addItem(receivedData as DefaultMessage)
-        activity.showBaseLoading(false)
+        adapter!!.addItem(receivedData as Message)
+        rootActivity!!.showBaseLoading(false)
         showProgress(false)
     }
 
@@ -216,49 +219,53 @@ class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedIntera
 
     private fun sendMessage(text: String) {
         showProgress(true)
-        val message = DefaultMessage(firebaseAuth!!.currentUser!!
-                                             .email!!
-                                             .toLowerCase()
-                                             .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0],
-                                     chatThread!!.receiver,
-                                     text,
-                                     Timestamp(Date()))
+        val message = Message(UserUtils.currentUsername(firebaseAuth!!),
+                              chatThread!!.receiver,
+                              text,
+                              Timestamp(Date()))
 
-        presenter!!.requestSendMessage(interlocutorCards, message, chatThread)
+        presenter!!.requestSendMessage(interlocutorCards!!, message, chatThread!!)
         etMessage!!.setText("")
     }
 
-    fun setChatThread(chatThread: ChatThread) {
-        this.chatThread = chatThread
+    fun setChatThread(ChatThread: ChatThread) {
+        this.chatThread = ChatThread
 
         showProgress(true)
         lockSendUi(true)
-        activity.changeToolbarTitleExposed(this.chatThread!!.receiver)
+        rootActivity!!.changeToolbarTitleExposed(this.chatThread!!.receiver)
 
         adapter!!.clearItems()
         interlocutorCards = null
-        presenter!!.requestSearchCards(chatThread.receiver)
+        presenter!!.requestSearchCards(ChatThread.receiver)
     }
 
     override fun onSearchSuccess(cards: List<Card>) {
-        if (cards.size == 0) {
+        if (cards.isEmpty()) {
             presenter!!.disposeAll()
             UiUtils.toast(this, R.string.no_cards_found)
             throw CardsNotFoundException("LogInFragment -> No cards was found")
         }
 
         interlocutorCards = cards
-        presenter!!.turnOnMessageListener(chatThread)
+        presenter!!.turnOnMessageListener(chatThread!!)
         lockSendUi(false)
     }
 
     override fun onSearchError(t: Throwable) {
-        val error = errorResolver!!.resolve(t) { resolvedError ->
-            if (t is ServiceException)
-                return@errorResolver.resolve t . message
-                        null
-        } // If we can't resolve error here -
-        // then it's normal behaviour. Proceed.
+        val error =
+                errorResolver!!.resolve(t, object : ErrorResolver.ErrorNotImplementedHandler {
+                    override fun onCustomError(resolvedError: String?): String? {
+                        return if (t is ServiceException)
+                            t.message
+                            ?: "No error message from service."
+                        else
+                            null
+                    }
+
+                }) // If we can't resolve error here -
+                   // then it's normal behaviour. Proceed.
+
         if (error != null) {
             UiUtils.toast(this, error)
             presenter!!.disposeAll()
@@ -273,14 +280,14 @@ class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedIntera
         pbLoading!!.visibility = if (show) View.VISIBLE else View.INVISIBLE
     }
 
-    override fun onGetMessagesSuccess(messages: MutableList<DefaultMessage>) {
+    override fun onGetMessagesSuccess(messages: MutableList<Message>) {
         lockSendUi(false)
         srlRefresh!!.isRefreshing = false
 
         showProgress(false)
-        Collections.sort(messages) { o1, o2 -> java.lang.Long.compare(o1.messageId, o2.messageId) }
+        messages.sortWith(Comparator { o1, o2 -> o1.messageId.compareTo(o2.messageId) })
         adapter!!.setItems(messages)
-        (chatThread as DefaultChatThread).messagesCount = messages.size
+        chatThread!!.messagesCount = messages.size.toLong()
 
         if (rvChat!!.adapter!!.itemCount > THRESHOLD_SCROLL) {
             rvChat!!.postDelayed({ rvChat!!.smoothScrollToPosition(adapter!!.itemCount - 1) }, 400)
@@ -294,8 +301,8 @@ class ThreadFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedIntera
 
         showProgress(false)
 
-        val err = errorResolver!!.resolve(t)
-        UiUtils.toast(this, err ?: t.message)
+        val err: String? = errorResolver!!.resolve(t)
+        UiUtils.toast(this, err ?: t.message ?: "No error message")
     }
 
     companion object {

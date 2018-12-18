@@ -33,6 +33,8 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model
 
+import com.google.firebase.firestore.PropertyName
+
 /**
  * . _  _
  * .| || | _
@@ -43,7 +45,4 @@ package com.android.virgilsecurity.virgilonfire.data.model
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-interface Token {
-
-    val token: String
-}
+class Token(@PropertyName("token") val token: String)

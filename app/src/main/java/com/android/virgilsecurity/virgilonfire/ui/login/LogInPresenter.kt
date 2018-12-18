@@ -36,6 +36,7 @@ package com.android.virgilsecurity.virgilonfire.ui.login
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter
+import com.virgilsecurity.sdk.cards.Card
 import com.virgilsecurity.sdk.storage.PrivateKeyStorage
 
 import javax.inject.Inject
@@ -43,13 +44,23 @@ import javax.inject.Inject
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * LogInPresenter class.
+ */
 class LogInPresenter @Inject
 constructor(private val virgilRx: VirgilRx,
             private val privateKeyStorage: PrivateKeyStorage,
@@ -105,12 +116,13 @@ constructor(private val virgilRx: VirgilRx,
         val refreshUserCardsDisposable = virgilRx.searchCards(username)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .subscribe(Consumer<List<Card>> {
-                    refreshUserCardsInteractor.onRefreshUserCardsSuccess(it)
-                },
-                           Consumer<Throwable> {
-                               refreshUserCardsInteractor.onRefreshUserCardsError(it)
-                           })
+                .subscribeBy(
+                    onSuccess = {
+                        refreshUserCardsInteractor.onRefreshUserCardsSuccess(it)
+                    },
+                    onError = {
+                        refreshUserCardsInteractor.onRefreshUserCardsError(it)
+                    })
 
         compositeDisposable.add(refreshUserCardsDisposable)
     }

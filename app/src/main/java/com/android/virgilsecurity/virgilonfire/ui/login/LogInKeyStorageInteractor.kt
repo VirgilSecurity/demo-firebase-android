@@ -39,11 +39,14 @@ package com.android.virgilsecurity.virgilonfire.ui.login
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    3/28/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * LogInKeyStorageInteractor interface.
+ */
 interface LogInKeyStorageInteractor {
 
     fun onKeyExists()

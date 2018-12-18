@@ -33,7 +33,7 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.chat.thread
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
+import com.android.virgilsecurity.virgilonfire.data.model.Message
 
 /**
  * . _  _
@@ -41,13 +41,17 @@ import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    5/22/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
+
+/**
+ * GetMessagesInteractor interface.
+ */
 interface GetMessagesInteractor {
 
-    fun onGetMessagesSuccess(messages: List<DefaultMessage>)
+    fun onGetMessagesSuccess(messages: MutableList<Message>)
 
     fun onGetMessagesError(t: Throwable)
 }

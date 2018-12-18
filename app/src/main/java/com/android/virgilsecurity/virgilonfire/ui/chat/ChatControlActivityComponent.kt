@@ -37,10 +37,19 @@ import dagger.Subcomponent
 import dagger.android.AndroidInjector
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * ChatControlActivityComponent interface.
+ */
 @Subcomponent(modules = arrayOf(ChatControlActivityModule::class))
 interface ChatControlActivityComponent : AndroidInjector<ChatControlActivity> {
 

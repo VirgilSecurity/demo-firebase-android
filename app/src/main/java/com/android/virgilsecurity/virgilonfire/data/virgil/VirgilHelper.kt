@@ -33,14 +33,12 @@
 
 package com.android.virgilsecurity.virgilonfire.data.virgil
 
-import com.android.virgilsecurity.virgilonfire.data.local.UserManager
-import com.android.virgilsecurity.virgilonfire.data.model.exception.DecryptionException
-import com.android.virgilsecurity.virgilonfire.data.model.exception.KeyGenerationException
+import com.android.virgilsecurity.virgilonfire.data.model.KeyGenerationException
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.virgilsecurity.sdk.cards.Card
 import com.virgilsecurity.sdk.cards.CardManager
 import com.virgilsecurity.sdk.cards.ModelSigner
-import com.virgilsecurity.sdk.cards.model.RawSignedModel
 import com.virgilsecurity.sdk.cards.validation.CardVerifier
 import com.virgilsecurity.sdk.client.CardClient
 import com.virgilsecurity.sdk.client.exceptions.VirgilServiceException
@@ -61,13 +59,13 @@ import com.virgilsecurity.sdk.utils.ConvertionUtils
  * -__o
  */
 
-class VirgilHelper(initCardClient: InitCardClient,
-                   initModelSigner: InitModelSigner,
-                   initCardCrypto: InitCardCrypto,
-                   initAccessTokenProvider: InitAccessTokenProvider,
-                   initCardVerifier: InitCardVerifier,
-                   initPrivateKeyStorage: InitPrivateKeyStorage,
-                   initFirebaseAuth: InitFirebaseAuth) {
+class VirgilHelper(cardClient: CardClient,
+                   modelSigner: ModelSigner,
+                   cardCrypto: CardCrypto,
+                   accessTokenProvider: AccessTokenProvider,
+                   cardVerifier: CardVerifier,
+                   privateKeyStorage: PrivateKeyStorage,
+                   firebaseAuth: FirebaseAuth) {
 
     val cardManager: CardManager
     private val privateKeyStorage: PrivateKeyStorage
@@ -78,12 +76,10 @@ class VirgilHelper(initCardClient: InitCardClient,
 
     init {
 
-        this.privateKeyStorage = initPrivateKeyStorage.initialize()
-        this.firebaseAuth = initFirebaseAuth.initialize()
+        this.privateKeyStorage = privateKeyStorage
+        this.firebaseAuth = firebaseAuth
 
-        cardManager = CardManager(initCardCrypto.initialize(),
-                                  initAccessTokenProvider.initialize(),
-                                  initCardVerifier.initialize())
+        cardManager = CardManager(cardCrypto, accessTokenProvider, cardVerifier)
 
     }
 
@@ -136,22 +132,19 @@ class VirgilHelper(initCardClient: InitCardClient,
     fun decrypt(text: String): String {
         val cipherData = ConvertionUtils.base64ToBytes(text)
 
-        try {
-            val decryptedData = virgilCrypto.decrypt(cipherData,
-                                                     privateKeyStorage.load(
-                                                         firebaseAuth.currentUser!!
-                                                                 .email!!
-                                                                 .toLowerCase()
-                                                                 .split("@".toRegex()).dropLastWhile(
-                                                                     { it.isEmpty() }).toTypedArray()[0])
-                                                             .left as VirgilPrivateKey)
-            return ConvertionUtils.toString(decryptedData)
+        return try {
+            val decryptedData =
+                    virgilCrypto.decrypt(cipherData,
+                                         privateKeyStorage.load(
+                                             UserUtils.currentUsername(firebaseAuth)).left
+                                                 as VirgilPrivateKey)
+            ConvertionUtils.toString(decryptedData)
         } catch (e: CryptoException) {
             if (text.isEmpty()) {
-                return "Message Deleted"
+                "Message Deleted"
             } else {
                 e.printStackTrace()
-                return "Message encrypted"
+                "Message encrypted"
             }
         }
 
@@ -164,39 +157,10 @@ class VirgilHelper(initCardClient: InitCardClient,
             encryptedData = virgilCrypto.encrypt(toEncrypt, publicKeys)
         } catch (e: EncryptionException) {
             e.printStackTrace()
-            throw com.android.virgilsecurity.virgilonfire.data.model.exception.EncryptionException(
+            throw com.android.virgilsecurity.virgilonfire.data.model.EncryptionException(
                 "Failed to encrypt data ):")
         }
 
         return ConvertionUtils.toBase64String(encryptedData)
-    }
-
-
-    interface InitCardClient {
-        fun initialize(): CardClient
-    }
-
-    interface InitModelSigner {
-        fun initialize(): ModelSigner
-    }
-
-    interface InitCardCrypto {
-        fun initialize(): CardCrypto
-    }
-
-    interface InitAccessTokenProvider {
-        fun initialize(): AccessTokenProvider
-    }
-
-    interface InitCardVerifier {
-        fun initialize(): CardVerifier
-    }
-
-    interface InitPrivateKeyStorage {
-        fun initialize(): PrivateKeyStorage
-    }
-
-    interface InitFirebaseAuth {
-        fun initialize(): FirebaseAuth
     }
 }

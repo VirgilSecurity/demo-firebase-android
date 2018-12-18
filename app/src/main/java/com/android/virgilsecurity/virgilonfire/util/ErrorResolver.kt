@@ -39,11 +39,14 @@ package com.android.virgilsecurity.virgilonfire.util
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    3/28/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * ErrorResolver class.
+ */
 abstract class ErrorResolver {
 
     protected abstract fun baseResolve(t: Throwable): String?
@@ -72,7 +75,7 @@ abstract class ErrorResolver {
      *
      * @return resolved error as `String`
      */
-    fun resolve(t: Throwable, handler: ErrorNotImplementedHandler): String {
+    fun resolve(t: Throwable, handler: ErrorNotImplementedHandler): String? {
         val resolvedError = baseResolve(t)
 
         return resolvedError ?: handler.onCustomError(null)
@@ -93,7 +96,7 @@ abstract class ErrorResolver {
      */
     fun resolve(t: Throwable,
                 handler: ErrorNotImplementedHandler,
-                useHandlerAnyway: Boolean): String {
+                useHandlerAnyway: Boolean): String? {
         if (useHandlerAnyway) {
             return handler.onCustomError(baseResolve(t))
         } else {
@@ -104,7 +107,7 @@ abstract class ErrorResolver {
     }
 
     interface ErrorNotImplementedHandler {
-        fun onCustomError(resolvedError: String?): String
+        fun onCustomError(resolvedError: String?): String?
     }
 
     companion object {

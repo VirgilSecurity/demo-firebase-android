@@ -42,11 +42,14 @@ import dagger.android.AndroidInjector
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * ThreadFragmentComponent interface.
+ */
 @Subcomponent(modules = arrayOf(ThreadFragmentModule::class))
 interface ThreadFragmentComponent : AndroidInjector<ThreadFragment> {
 

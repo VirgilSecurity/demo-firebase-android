@@ -39,20 +39,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
-import com.android.virgilsecurity.virgilonfire.R
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
-import com.android.virgilsecurity.virgilonfire.data.model.Message
-import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper
-import com.google.firebase.auth.FirebaseAuth
-
-import java.util.ArrayList
-import java.util.Collections
-
-import javax.inject.Inject
-
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.android.virgilsecurity.virgilonfire.R
+import com.android.virgilsecurity.virgilonfire.data.model.Message
+import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
+import com.google.firebase.auth.FirebaseAuth
+import java.util.*
+import javax.inject.Inject
 
 /**
  * . _  _
@@ -60,57 +55,56 @@ import butterknife.ButterKnife
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    12/18/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
-class ThreadRVAdapter @Inject internal constructor(private val virgilHelper: VirgilHelper,
-                                                   private val firebaseAuth: FirebaseAuth) : RecyclerView.Adapter<ThreadRVAdapter.HolderMessage>() {
-    private var items: MutableList<DefaultMessage>? = null
+/**
+ * ThreadRVAdapter class.
+ */
+class ThreadRVAdapter @Inject internal constructor(
+        private val virgilHelper: VirgilHelper,
+        private val firebaseAuth: FirebaseAuth
+) : RecyclerView.Adapter<ThreadRVAdapter.HolderMessage>() {
 
+    private var items: MutableList<Message>? = null
+
+    @Retention(AnnotationRetention.SOURCE)
     @IntDef(MessageType.ME, MessageType.YOU)
     private annotation class MessageType {
         companion object {
-            val ME = 0
-            val YOU = 1
+            const val ME = 0
+            const val YOU = 1
         }
     }
 
     init {
-
-        items = emptyList<DefaultMessage>()
+        items = emptyList<Message>().toMutableList()
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): HolderMessage {
-        val viewHolder: HolderMessage
         val inflater = LayoutInflater.from(viewGroup.context)
 
-        when (viewType) {
-            MessageType.ME -> viewHolder = HolderMessage(inflater.inflate(R.layout.layout_holder_me,
-                                                                          viewGroup,
-                                                                          false))
-            MessageType.YOU -> viewHolder = HolderMessage(inflater.inflate(R.layout.layout_holder_you,
-                                                                           viewGroup,
-                                                                           false))
-            else -> viewHolder = HolderMessage(inflater.inflate(R.layout.layout_holder_me,
-                                                                viewGroup,
-                                                                false))
+        return when (viewType) {
+            MessageType.ME -> HolderMessage(inflater.inflate(R.layout.layout_holder_me,
+                                                             viewGroup,
+                                                             false))
+            MessageType.YOU -> HolderMessage(inflater.inflate(R.layout.layout_holder_you,
+                                                              viewGroup,
+                                                              false))
+            else -> HolderMessage(inflater.inflate(R.layout.layout_holder_me,
+                                                   viewGroup,
+                                                   false))
         }
-        return viewHolder
     }
 
     override fun onBindViewHolder(viewHolder: HolderMessage, position: Int) {
-        viewHolder.bind(virgilHelper.decrypt(items!![position]
-                                                     .body))
+        viewHolder.bind(virgilHelper.decrypt(items!![position].body!!))
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (items!![position]
-                        .sender == firebaseAuth.currentUser!!
-                        .email!!
-                        .toLowerCase()
-                        .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]) {
+        return if (items!![position].sender == UserUtils.currentUsername(firebaseAuth)) {
             MessageType.ME
         } else {
             MessageType.YOU
@@ -121,18 +115,18 @@ class ThreadRVAdapter @Inject internal constructor(private val virgilHelper: Vir
         return if (items != null) items!!.size else -1
     }
 
-    internal fun setItems(items: MutableList<DefaultMessage>?) {
+    internal fun setItems(items: MutableList<Message>?) {
         if (items != null) {
             items.removeAll(this.items!!)
             this.items = ArrayList(items)
         } else {
-            this.items = emptyList<DefaultMessage>()
+            this.items = emptyList<Message>().toMutableList()
         }
 
         notifyDataSetChanged()
     }
 
-    internal fun addItem(item: DefaultMessage) {
+    internal fun addItem(item: Message) {
         if (items == null || items!!.isEmpty())
             items = ArrayList()
 
@@ -145,7 +139,7 @@ class ThreadRVAdapter @Inject internal constructor(private val virgilHelper: Vir
             items!!.clear()
     }
 
-    internal class HolderMessage(v: View) : RecyclerView.ViewHolder(v) {
+    class HolderMessage(v: View) : RecyclerView.ViewHolder(v) {
 
         @BindView(R.id.tvMessage)
         var tvMessage: TextView? = null

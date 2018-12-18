@@ -37,29 +37,36 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
-
+import butterknife.BindView
 import com.android.virgilsecurity.virgilonfire.R
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
 import com.android.virgilsecurity.virgilonfire.ui.CompleteInteractor
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor
 import com.android.virgilsecurity.virgilonfire.util.ErrorResolver
 import com.android.virgilsecurity.virgilonfire.util.UiUtils
-
-import java.util.Collections
-import java.util.Comparator
-
+import java.util.*
 import javax.inject.Inject
 
-import butterknife.BindView
-
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-class ThreadsListFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedInteractor<List<DefaultChatThread>>, CompleteInteractor<ThreadListFragmentPresenterReturnTypes> {
+/**
+ * ThreadsListFragment class.
+ */
+class ThreadsListFragment
+    : BaseFragmentDi<ChatControlActivity>(),
+        DataReceivedInteractor<MutableList<ChatThread>>,
+        CompleteInteractor<ThreadListFragmentPresenterReturnTypes> {
 
     @Inject
     protected var adapter: ThreadsListRVAdapter? = null
@@ -88,10 +95,12 @@ class ThreadsListFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedI
         layoutManager.reverseLayout = false
         rvContacts!!.layoutManager = layoutManager
         rvContacts!!.adapter = adapter
-        adapter!!.setClickListener { position, thread ->
-            activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
-                                              thread)
-        }
+        adapter!!.setClickListener(object : ThreadsListRVAdapter.ClickListener {
+            override fun onItemClicked(position: Int, thread: ChatThread) {
+                rootActivity!!.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
+                                                        thread)
+            }
+        })
         srlRefresh!!.setOnRefreshListener {
             presenter!!.turnOffThreadsListener()
             presenter!!.turnOnThreadsListener()
@@ -120,18 +129,18 @@ class ThreadsListFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedI
 
     }
 
-    override fun onDataReceived(receivedData: List<DefaultChatThread>) {
+    override fun onDataReceived(receivedData: MutableList<ChatThread>) {
         srlRefresh!!.isRefreshing = false
 
-        Collections.sort(receivedData) { o1, o2 -> o1.receiver.compareTo(o2.receiver) }
+        receivedData.sortWith(Comparator { o1, o2 -> o1.receiver.compareTo(o2.receiver) })
         adapter!!.setItems(receivedData)
-        activity.showBaseLoading(false)
+        rootActivity!!.showBaseLoading(false)
         showProgress(false)
 
         if (isCreateNewThread) {
             isCreateNewThread = false
-            activity.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
-                                              adapter!!.getItemById(interlocutor))
+            rootActivity!!.changeFragmentWithThread(ChatControlActivity.ChatState.THREAD,
+                                                    adapter!!.getItemById(interlocutor!!))
         }
 
         if (receivedData.isEmpty())
@@ -143,8 +152,8 @@ class ThreadsListFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedI
     override fun onDataReceivedError(t: Throwable) {
         srlRefresh!!.isRefreshing = false
 
-        val err = errorResolver!!.resolve(t)
-        UiUtils.toast(this, err ?: t.message)
+        val err: String? = errorResolver!!.resolve(t)
+        UiUtils.toast(this, err ?: t.message ?: "No error message")
     }
 
     private fun showProgress(show: Boolean) {
@@ -165,16 +174,16 @@ class ThreadsListFragment : BaseFragmentDi<ChatControlActivity>(), DataReceivedI
         when (type) {
             ThreadListFragmentPresenterReturnTypes.CREATE_THREAD -> {
                 tvEmpty!!.visibility = View.GONE
-                activity.newThreadDialogDismiss()
+                rootActivity!!.newThreadDialogDismiss()
             }
-            ThreadListFragmentPresenterReturnTypes.REMOVE_CHAT_THREAD -> activity.newThreadDialogShowProgress(
-                false)
+            ThreadListFragmentPresenterReturnTypes.REMOVE_CHAT_THREAD ->
+                rootActivity!!.newThreadDialogShowProgress(false)
         }
     }
 
     override fun onError(t: Throwable) {
-        presenter!!.requestRemoveThread(interlocutor)
-        val err = errorResolver!!.resolve(t)
-        UiUtils.toast(this, err ?: t.message)
+        presenter!!.requestRemoveThread(interlocutor!!)
+        val err: String? = errorResolver!!.resolve(t)
+        UiUtils.toast(this, err ?: t.message ?: "No error message")
     }
 }

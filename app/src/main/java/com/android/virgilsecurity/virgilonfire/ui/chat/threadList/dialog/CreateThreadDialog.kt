@@ -58,14 +58,23 @@ import butterknife.OnClick
 import butterknife.internal.Utils
 
 /**
- * Created by Danylo Oliinyk on 11/26/17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * CreateThreadDialog class.
+ */
 class CreateThreadDialog : Dialog {
 
     private var onCreateThreadDialogListener: OnCreateThreadDialogListener? = null
-    private val title: String?
+    private var title: String? = null
     private var message: String? = null
 
     @BindView(R.id.flRoot)
@@ -132,12 +141,12 @@ class CreateThreadDialog : Dialog {
         when (v.id) {
             R.id.btnCancel -> cancel()
             R.id.btnOk -> {
-                val error: String?
+                val error: String? = Validator.validate(etUsername!!,
+                                                        Validator.FieldType.ID_WITH_NO_AT)
 
-                error = Validator.validate(etUsername!!, Validator.FieldType.ID_WITH_NO_AT)
                 if (error != null) {
                     etUsername!!.error = error
-                    break
+                    return
                 }
 
                 onCreateThreadDialogListener!!.onCreateThread(etUsername!!.text.toString())

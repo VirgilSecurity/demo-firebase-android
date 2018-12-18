@@ -39,9 +39,13 @@ package com.android.virgilsecurity.virgilonfire.ui.chat
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/17/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * DataReceivedInteractor interface.
  */
 interface DataReceivedInteractor<T> {
 

@@ -39,9 +39,13 @@ package com.android.virgilsecurity.virgilonfire.ui
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    5/21/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * CompleteInteractor interface.
  */
 interface CompleteInteractor<E : Enum<E>> {
 

@@ -34,67 +34,27 @@
 package com.android.virgilsecurity.virgilonfire.ui.base
 
 import android.app.Activity
-import android.app.Fragment
-import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-
-import butterknife.ButterKnife
 import dagger.android.AndroidInjection
 
 /**
- * Created by Danylo Oliinyk on 16.11.17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-abstract class BaseFragmentDi<A : Activity> : Fragment() {
-
-    protected var activity: A
-
-    protected abstract val layout: Int
-
-    protected abstract fun postButterInit()
-
-    override fun onAttach(activity: Activity) {
-        super.onAttach(activity)
-
-        this.activity = activity as A
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        activity = context as A
-    }
+/**
+ * BaseFragmentDi class.
+ */
+abstract class BaseFragmentDi<A : Activity> : BaseFragment<A>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-    }
-
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        return inflater.inflate(layout, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        ButterKnife.bind(this, view)
-
-        postButterInit()
-    }
-
-    protected fun hideKeyboard() {
-        val view = activity.currentFocus
-        if (view != null) {
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-            imm?.hideSoftInputFromWindow(view.windowToken, 0)
-        }
     }
 }

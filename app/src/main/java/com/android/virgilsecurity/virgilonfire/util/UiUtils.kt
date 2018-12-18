@@ -33,23 +33,28 @@
 
 package com.android.virgilsecurity.virgilonfire.util
 
+
 import android.app.Fragment
 import android.app.FragmentManager
 import android.app.FragmentTransaction
 import android.content.Context
-import android.support.design.widget.TextInputLayout
 import android.util.Log
-import android.widget.EditText
 import android.widget.Toast
 
-
-import com.android.virgilsecurity.virgilonfire.R
-
 /**
- * Created by Danylo Oliinyk on 11/17/17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * UiUtils class.
+ */
 object UiUtils {
 
     fun toast(context: Context, text: String) {

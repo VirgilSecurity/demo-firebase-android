@@ -55,22 +55,31 @@ import dagger.Module
 import dagger.Provides
 
 /**
- * Created by Danylo Oliinyk on 3/26/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-@Module(subcomponents = arrayOf(ChatControlActivityComponent::class))
+/**
+ * UtilModule class.
+ */
+@Module(subcomponents = [ChatControlActivityComponent::class])
 class UtilModule {
 
-    @Provides @Singleton internal fun provideErrorResolver(): ErrorResolver {
+    @Provides @Singleton fun provideErrorResolver(): ErrorResolver {
         return DefaultErrorResolver()
     }
 
-    @Provides internal fun provideFirebaseAuth(): FirebaseAuth {
+    @Provides fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
     }
 
-    @Provides internal fun provideFirebaseFirestore(): FirebaseFirestore {
+    @Provides fun provideFirebaseFirestore(): FirebaseFirestore {
         val firestore = FirebaseFirestore.getInstance()
         val settings = FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)
@@ -83,15 +92,16 @@ class UtilModule {
     @Provides
     @Singleton
     @Named(InjectionConstants.ROOM_DB_NAME)
-    internal fun provideRoomDbName(context: Context): String {
+    fun provideRoomDbName(context: Context): String {
         return context.getString(R.string.room_db_name)
     }
 
     @Provides
     @Singleton
-    internal fun provideRoom(context: Context, @Named(InjectionConstants.ROOM_DB_NAME) roomDbName: String): RoomDb {
+    fun provideRoom(context: Context,
+                    @Named(InjectionConstants.ROOM_DB_NAME) roomDbName: String): RoomDb {
         return Room.databaseBuilder<RoomDb>(context.applicationContext,
-                                            RoomDb::class.java!!,
+                                            RoomDb::class.java,
                                             roomDbName)
                 .fallbackToDestructiveMigration()
                 .build()

@@ -46,6 +46,7 @@ import com.virgilsecurity.sdk.cards.ModelSigner
 import com.virgilsecurity.sdk.cards.validation.CardVerifier
 import com.virgilsecurity.sdk.cards.validation.VirgilCardVerifier
 import com.virgilsecurity.sdk.client.CardClient
+import com.virgilsecurity.sdk.client.VirgilCardClient
 import com.virgilsecurity.sdk.crypto.CardCrypto
 import com.virgilsecurity.sdk.crypto.PrivateKeyExporter
 import com.virgilsecurity.sdk.crypto.VirgilCardCrypto
@@ -63,82 +64,90 @@ import dagger.Module
 import dagger.Provides
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-@Module(subcomponents = arrayOf(ChatControlActivityComponent::class))
+/**
+ * Virgil module class
+ */
+@Module(subcomponents = [ChatControlActivityComponent::class])
 class VirgilModule {
 
-    @Provides internal fun provideCardVerifier(cardCrypto: CardCrypto): CardVerifier {
+    @Provides fun provideCardVerifier(cardCrypto: CardCrypto): CardVerifier {
         return VirgilCardVerifier(cardCrypto)
     }
 
-    @Provides internal fun provideVirgilHelper(cardClient: CardClient,
+    @Provides fun provideVirgilHelper(cardClient: CardClient,
                                                modelSigner: ModelSigner,
                                                cardCrypto: CardCrypto,
                                                tokenProvider: AccessTokenProvider,
                                                cardVerifier: CardVerifier,
                                                privateKeyStorage: PrivateKeyStorage,
                                                firebaseAuth: FirebaseAuth): VirgilHelper {
-        return VirgilHelper({ cardClient },
-                            { modelSigner },
-                            { cardCrypto },
-                            { tokenProvider },
-                            { cardVerifier },
-                            { privateKeyStorage },
-                            { firebaseAuth })
+        return VirgilHelper(cardClient,
+                            modelSigner,
+                            cardCrypto,
+                            tokenProvider,
+                            cardVerifier,
+                            privateKeyStorage,
+                            firebaseAuth)
     }
 
     companion object {
 
-        @Provides @Singleton internal fun provideVirgilCrypto(): VirgilCrypto {
+        @Provides @Singleton fun provideVirgilCrypto(): VirgilCrypto {
             return VirgilCrypto()
         }
 
-        @Provides @Singleton internal fun provideCardClient(): CardClient {
-            return CardClient()
+        @Provides @Singleton fun provideCardClient(): CardClient {
+            return VirgilCardClient()
         }
 
-        @Provides @Singleton internal fun provideModelSigner(cardCrypto: CardCrypto): ModelSigner {
+        @Provides @Singleton fun provideModelSigner(cardCrypto: CardCrypto): ModelSigner {
             return ModelSigner(cardCrypto)
         }
 
-        @Provides @Singleton internal fun provideCardCrypto(): CardCrypto {
+        @Provides @Singleton fun provideCardCrypto(): CardCrypto {
             return VirgilCardCrypto()
         }
 
-        @Provides @Singleton internal fun provideGetTokenCallback(
+        @Provides @Singleton fun provideGetTokenCallback(
                 serviceHelper: ServiceHelper,
                 userManager: UserManager,
-                firebaseAuth: FirebaseAuth,
-                context: Context): CallbackJwtProvider.GetTokenCallback {
+                firebaseAuth: FirebaseAuth): CallbackJwtProvider.GetTokenCallback {
 
-            return GetTokenCallbackImpl(serviceHelper, userManager, firebaseAuth, context)
+            return GetTokenCallbackImpl(serviceHelper, userManager, firebaseAuth)
         }
 
-        @Provides @Singleton internal fun provideAccessTokenProvider(
+        @Provides @Singleton fun provideAccessTokenProvider(
                 getTokenCallback: CallbackJwtProvider.GetTokenCallback): AccessTokenProvider {
 
             return CallbackJwtProvider(getTokenCallback)
         }
 
-        @Provides @Singleton internal fun providePrivateKeyExporter(): PrivateKeyExporter {
+        @Provides @Singleton fun providePrivateKeyExporter(): PrivateKeyExporter {
             return VirgilPrivateKeyExporter()
         }
 
-        @Provides @Singleton internal fun provideKeyStorage(context: Context): KeyStorage {
+        @Provides @Singleton fun provideKeyStorage(context: Context): KeyStorage {
             return JsonFileKeyStorage(context.filesDir.absolutePath)
         }
 
-        @Provides @Singleton internal fun providePrivateKeyStorage(
+        @Provides @Singleton fun providePrivateKeyStorage(
                 privateKeyExporter: PrivateKeyExporter,
                 keyStorage: KeyStorage): PrivateKeyStorage {
 
             return PrivateKeyStorage(privateKeyExporter, keyStorage)
         }
 
-        @Provides @Singleton internal fun provideVirgilRx(virgilHelper: VirgilHelper): VirgilRx {
+        @Provides @Singleton fun provideVirgilRx(virgilHelper: VirgilHelper): VirgilRx {
             return VirgilRx(virgilHelper)
         }
     }

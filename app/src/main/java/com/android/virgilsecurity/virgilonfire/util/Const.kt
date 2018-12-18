@@ -34,23 +34,32 @@
 package com.android.virgilsecurity.virgilonfire.util
 
 /**
- * Created by Danylo Oliinyk on 11/23/17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * Const class.
+ */
 class Const {
 
     internal object Http {
-        val BAD_REQUEST = 400
-        val UNAUTHORIZED = 401
-        val FORBIDDEN = 403
-        val NOT_ACCEPTABLE = 406
-        val UNPROCESSABLE_ENTITY = 422
-        val SERVER_ERROR = 500
+        const val BAD_REQUEST = 400
+        const val UNAUTHORIZED = 401
+        const val FORBIDDEN = 403
+        const val NOT_ACCEPTABLE = 406
+        const val UNPROCESSABLE_ENTITY = 422
+        const val SERVER_ERROR = 500
     }
 
     object TableNames {
-        val USER_NAME = "username"
+        val USER_NAME = "currentUsername"
         val OBJECT_ID = "objectId"
         val SENDER_USERNAME = "senderUsername"
         val SENDER_ID = "senderId"

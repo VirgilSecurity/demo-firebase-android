@@ -39,7 +39,7 @@ package com.android.virgilsecurity.virgilonfire.data.local
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    6/13/186/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
@@ -49,23 +49,21 @@ import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy
 import android.arch.persistence.room.Query
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
+import com.android.virgilsecurity.virgilonfire.data.model.Message
 
-import io.reactivex.Completable
-import io.reactivex.Observable
 import io.reactivex.Single
 
 /**
- * MessageDao
+ * MessageDao class.
  */
 @Dao
 interface MessageDao {
 
     @Query("SELECT * FROM defaultmessage WHERE channel_id LIKE :channelId") fun getAllById(
-            channelId: String): Single<List<DefaultMessage>>
+            channelId: String): Single<List<Message>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE) fun inertMessage(message: DefaultMessage)
+    @Insert(onConflict = OnConflictStrategy.IGNORE) fun inertMessage(message: Message)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertAll(messages: List<DefaultMessage>): Array<Long>
+    fun insertAll(messages: List<Message>): Array<Long>
 }

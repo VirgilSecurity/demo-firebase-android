@@ -48,14 +48,23 @@ import butterknife.ButterKnife
 import butterknife.OnClick
 
 /**
- * Created by Danylo Oliinyk on 11/26/17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * NewKeyDialog interface.
+ */
 class NewKeyDialog : Dialog {
 
     private var onCreateNewKeysListener: OnCreateNewKeysListener? = null
-    private val title: String?
+    private var title: String? = null
     private var message: String? = null
 
     @BindView(R.id.flRoot)

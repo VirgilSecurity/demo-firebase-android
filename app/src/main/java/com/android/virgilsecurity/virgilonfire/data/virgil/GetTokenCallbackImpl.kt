@@ -33,85 +33,72 @@
 
 package com.android.virgilsecurity.virgilonfire.data.virgil
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
-
-import com.android.virgilsecurity.virgilonfire.JwtExampleApp
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken
-import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse
-import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.Token
 import com.android.virgilsecurity.virgilonfire.data.remote.ServiceHelper
-import com.android.virgilsecurity.virgilonfire.util.UiUtils
-import com.google.android.gms.tasks.Task
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GetTokenResult
 import com.virgilsecurity.sdk.jwt.TokenContext
 import com.virgilsecurity.sdk.jwt.accessProviders.CallbackJwtProvider
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 
 import java.io.IOException
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-import retrofit2.Response
-
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-class GetTokenCallbackImpl(private val helper: ServiceHelper,
-                           private val userManager: UserManager,
-                           private val firebaseAuth: FirebaseAuth,
-                           private val context: Context) : CallbackJwtProvider.GetTokenCallback {
+/**
+ * GetTokenCallbackImpl class.
+ */
+class GetTokenCallbackImpl(
+        private val helper: ServiceHelper,
+        private val userManager: UserManager,
+        private val firebaseAuth: FirebaseAuth
+) : CallbackJwtProvider.GetTokenCallback {
 
     override fun onGetToken(tokenContext: TokenContext): String {
         try {
-            var response = helper.getToken(userManager.token,
-                                           firebaseAuth.currentUser!!
-                                                   .email!!
-                                                   .toLowerCase()
-                                                   .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
-                    .execute()
+            var response = helper.getToken(
+                userManager.token,
+                UserUtils.currentUsername(firebaseAuth)
+            ).execute()
 
             if (response.errorBody() != null && response.code() == 401) {
-                //                new Handler(Looper.getMainLooper()).post(() -> {
-                //                    UiUtils.toast(context, "Session is ended. Re-signIn please to refresh your token.");
-                //                });
-
-                val executor = Executors.newSingleThreadExecutor()
-
-                val getTokenResultTask = firebaseAuth.currentUser!!.getIdToken(true)
-                getTokenResultTask.addOnCompleteListener(executor) { task ->
-                    if (task.isSuccessful())
-                        userManager.setToken(DefaultToken(task.getResult()!!.getToken()))
+                runBlocking {
+                    GlobalScope.async {
+                        firebaseAuth.currentUser!!
+                                .getIdToken(true)
+                                .result
+                    }.await().run {
+                        userManager.setToken(Token(this!!.token!!))
+                    }
                 }
 
-                try {
-                    executor.awaitTermination(2, TimeUnit.SECONDS)
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-
-                response = helper.getToken(userManager.token,
-                                           firebaseAuth.currentUser!!
-                                                   .email!!
-                                                   .toLowerCase()
-                                                   .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
-                        .execute()
+                response = helper.getToken(
+                    userManager.token,
+                    UserUtils.currentUsername(firebaseAuth)
+                ).execute()
             }
 
             return response.body()!!.token
-        } catch (e: IOException) {
-            e.printStackTrace()
-            throw ServiceException("Failed on get token")
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
+        } catch (t: Throwable) {
+            t.printStackTrace()
             throw ServiceException("Failed on get token")
         }
-
     }
 }

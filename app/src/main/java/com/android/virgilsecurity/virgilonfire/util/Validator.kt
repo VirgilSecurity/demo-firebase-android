@@ -41,9 +41,13 @@ import android.widget.EditText
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    5/17/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * Validator class.
  */
 object Validator {
 

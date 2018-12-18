@@ -36,15 +36,23 @@ package com.android.virgilsecurity.virgilonfire.util.common
 import android.os.CountDownTimer
 
 /**
- * Created by Danylo Oliinyk on 11/27/17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-abstract class OnFinishTimer(millisInFuture: Long, countDownInterval: Long) : CountDownTimer(
-    millisInFuture,
-    countDownInterval) {
+/**
+ * OnFinishTimer class.
+ */
+abstract class OnFinishTimer(
+        millisInFuture: Long,
+        countDownInterval: Long
+) : CountDownTimer(millisInFuture, countDownInterval) {
 
-    override fun onTick(l: Long) {
-
-    }
+    override fun onTick(l: Long) {}
 }

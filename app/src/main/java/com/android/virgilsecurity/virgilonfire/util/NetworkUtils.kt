@@ -41,16 +41,24 @@ import com.virgilsecurity.sdk.crypto.exceptions.KeyEntryNotFoundException
 import retrofit2.HttpException
 
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * NetworkUtils class.
+ */
 object NetworkUtils {
 
     fun resolveError(t: Throwable): String {
-        return if (t is HttpException) {
-
-            when (t.code()) {
+        return when (t) {
+            is HttpException -> when (t.code()) {
                 Const.Http.BAD_REQUEST -> "Bad Request"
                 Const.Http.UNAUTHORIZED -> "Unauthorized"
                 Const.Http.FORBIDDEN -> "Forbidden"
@@ -59,16 +67,15 @@ object NetworkUtils {
                 Const.Http.SERVER_ERROR -> "Server error"
                 else -> "Oops.. Something went wrong ):"
             }
-        } else if (t is VirgilKeyIsNotFoundException) {
-            "Username is not registered yet"
-        } else if (t is VirgilKeyIsAlreadyExistsException) {
-            "Username is already registered. Please, try another one."
-        } else if (t is KeyEntryNotFoundException) {
-            "Username is not found on this device. Maybe you deleted your private key"
-        } else if (t is VirgilCardIsNotFoundException) {
-            "Virgil Card is not found.\nYou can not start chat with user without Virgil Card."
-        } else {
-            "Something went wrong"
+            is VirgilKeyIsNotFoundException ->
+                "Username is not registered yet"
+            is VirgilKeyIsAlreadyExistsException ->
+                "Username is already registered. Please, try another one."
+            is KeyEntryNotFoundException ->
+                "Username is not found on this device. Maybe you deleted your private key"
+            is VirgilCardIsNotFoundException ->
+                "Virgil Card is not found.\nYou can not start chat with user without Virgil Card."
+            else -> "Something went wrong"
         }
     }
 }

@@ -33,21 +33,28 @@
 
 package com.android.virgilsecurity.virgilonfire.data.remote
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken
 import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse
 
 import retrofit2.Call
-import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Header
 import retrofit2.http.POST
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * JwtExampleService interface.
+ */
 interface JwtExampleService {
 
     @FormUrlEncoded

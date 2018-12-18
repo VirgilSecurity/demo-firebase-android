@@ -33,26 +33,27 @@
 
 package com.android.virgilsecurity.virgilonfire.data.remote
 
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken
+import com.android.virgilsecurity.virgilonfire.data.model.Token
 import com.android.virgilsecurity.virgilonfire.data.model.TokenResponse
 
 import retrofit2.Call
 import retrofit2.Retrofit
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
 class ServiceHelper(retrofit: Retrofit) {
 
-    private val service: JwtExampleService
+    private val service: JwtExampleService = retrofit.create(JwtExampleService::class.java)
 
-    init {
-        this.service = retrofit.create(JwtExampleService::class.java!!)
-    }
-
-    fun getToken(token: DefaultToken, identity: String): Call<TokenResponse> {
-        return service.getToken("Bearer " + token.token, identity)
-    }
+    fun getToken(token: Token, identity: String): Call<TokenResponse> =
+        service.getToken("Bearer " + token.token, identity)
 }

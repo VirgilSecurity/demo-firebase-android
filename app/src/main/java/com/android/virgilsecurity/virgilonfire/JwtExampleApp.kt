@@ -35,20 +35,25 @@ package com.android.virgilsecurity.virgilonfire
 
 import android.app.Activity
 import android.app.Application
-
-import com.android.virgilsecurity.virgilonfire.di.DaggerAppComponent
-
-import javax.inject.Inject
-
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
+import javax.inject.Inject
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * JwtExampleApp class.
+ */
 class JwtExampleApp : Application(), HasActivityInjector {
 
     @Inject

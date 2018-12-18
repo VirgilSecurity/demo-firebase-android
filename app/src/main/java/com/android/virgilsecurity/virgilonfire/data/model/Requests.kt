@@ -31,7 +31,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.model.exception
+package com.android.virgilsecurity.virgilonfire.data.model
+
+import com.google.firebase.firestore.PropertyName
 
 /**
  * . _  _
@@ -39,26 +41,14 @@ package com.android.virgilsecurity.virgilonfire.data.model.exception
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-class EncryptionException : RuntimeException {
 
-    constructor() {}
+/**
+ * Requests class.
+ */
 
-    constructor(message: String) : super(message) {}
-
-    constructor(message: String, cause: Throwable) : super(message, cause) {}
-
-    constructor(cause: Throwable) : super(cause) {}
-
-    constructor(message: String,
-                cause: Throwable,
-                enableSuppression: Boolean,
-                writableStackTrace: Boolean) : super(message,
-                                                     cause,
-                                                     enableSuppression,
-                                                     writableStackTrace) {
-    }
-}
+class CreateChannelRequest(@PropertyName("members") val members: List<String>,
+                           @PropertyName("count") val count: Long)

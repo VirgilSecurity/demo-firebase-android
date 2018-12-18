@@ -45,28 +45,39 @@ import android.view.inputmethod.InputMethodManager
 import butterknife.ButterKnife
 
 /**
- * Created by Danylo Oliinyk on 16.11.17 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * BaseFragment class.
+ */
 abstract class BaseFragment<A : Activity> : Fragment() {
 
-    protected var activity: A
+    protected var rootActivity: A? = null
 
     protected abstract val layout: Int
 
     protected abstract fun postButterInit()
 
+    @Suppress("UNCHECKED_CAST")
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
 
-        this.activity = activity as A
+        this.rootActivity = activity as A
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        activity = context as A
+        rootActivity = context as A
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -86,9 +97,9 @@ abstract class BaseFragment<A : Activity> : Fragment() {
     protected fun hideKeyboard() {
         val view = activity.currentFocus
         if (view != null) {
-            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-            imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            val imm =
+                    activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 }

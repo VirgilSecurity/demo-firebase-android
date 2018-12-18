@@ -33,24 +33,22 @@
 
 package com.android.virgilsecurity.virgilonfire.ui.login
 
-/**
- * Created by Danylo Oliinyk on 3/28/18 at Virgil Security.
- * -__o
- */
-
 import com.virgilsecurity.sdk.cards.Card
 
 /**
- * _  _
- * | || | _
+ * . _  _
+ * .| || | _
  * -| || || |   Created by:
- * | || || |-  Danylo Oliinyk
- * \_  || |   on
- * |  _/    3/28/18
- * -| | \    at Virgil Security
- * |_|-
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * LogInVirgilInteractor interface.
+ */
 interface LogInVirgilInteractor {
 
     fun onSearchCardSuccess(cards: List<Card>)

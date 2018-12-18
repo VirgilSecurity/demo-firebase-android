@@ -39,20 +39,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-
-import com.android.virgilsecurity.virgilonfire.R
-import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser
-import com.android.virgilsecurity.virgilonfire.data.model.User
-
-import java.util.ArrayList
-import java.util.Collections
-
-import javax.inject.Inject
-
 import butterknife.BindView
 import butterknife.ButterKnife
+import com.android.virgilsecurity.virgilonfire.R
+import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
+import java.util.*
 
 /**
  * . _  _
@@ -60,18 +51,21 @@ import butterknife.ButterKnife
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * ThreadsListRVAdapter class.
+ */
 class ThreadsListRVAdapter internal constructor() : RecyclerView.Adapter<ThreadsListRVAdapter.ThreadHolder>() {
 
-    private var items: List<DefaultChatThread>? = null
+    private var items: List<ChatThread>? = null
     private var clickListener: ClickListener? = null
 
     init {
-        items = emptyList<DefaultChatThread>()
+        items = emptyList<ChatThread>()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup,
@@ -80,7 +74,7 @@ class ThreadsListRVAdapter internal constructor() : RecyclerView.Adapter<Threads
         val view = LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_list_threads, parent, false)
 
-        return ThreadHolder(view, clickListener)
+        return ThreadHolder(view, clickListener!!)
     }
 
     override fun onBindViewHolder(holder: ThreadHolder, position: Int) {
@@ -91,12 +85,12 @@ class ThreadsListRVAdapter internal constructor() : RecyclerView.Adapter<Threads
         return if (items != null) items!!.size else -1
     }
 
-    internal fun setItems(items: MutableList<DefaultChatThread>?) {
+    internal fun setItems(items: MutableList<ChatThread>?) {
         if (items != null) {
             items.removeAll(this.items!!)
             this.items = ArrayList(items)
         } else {
-            this.items = emptyList<DefaultChatThread>()
+            this.items = emptyList()
         }
 
         notifyDataSetChanged()
@@ -115,7 +109,7 @@ class ThreadsListRVAdapter internal constructor() : RecyclerView.Adapter<Threads
         return null
     }
 
-    internal class ThreadHolder(view: View, private val listener: ClickListener) : RecyclerView.ViewHolder(
+    class ThreadHolder(view: View, private val listener: ClickListener) : RecyclerView.ViewHolder(
         view) {
 
         @BindView(R.id.rlItemRoot)

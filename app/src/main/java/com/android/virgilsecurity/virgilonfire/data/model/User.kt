@@ -33,7 +33,32 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model
 
-interface User {
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
 
-    val name: String
-}
+import java.util.Date
+
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+
+
+/**
+ * User class.
+ */
+class User(@Exclude
+           var name: String,
+
+           @PropertyName("createdAt")
+           var createdAt: Timestamp,
+
+           @PropertyName("channels")
+           var channels: List<String>)

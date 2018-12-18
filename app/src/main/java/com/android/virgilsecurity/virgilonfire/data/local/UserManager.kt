@@ -34,62 +34,38 @@
 package com.android.virgilsecurity.virgilonfire.data.local
 
 import android.content.Context
-
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken
 import com.android.virgilsecurity.virgilonfire.data.model.Token
-import com.android.virgilsecurity.virgilonfire.data.model.exception.CardParseException
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.InstanceCreator
-import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonWriter
 import com.virgilsecurity.sdk.cards.Card
-import com.virgilsecurity.sdk.cards.model.RawSignature
 import com.virgilsecurity.sdk.cards.model.RawSignedModel
-import com.virgilsecurity.sdk.crypto.CardCrypto
-import com.virgilsecurity.sdk.crypto.PublicKey
 import com.virgilsecurity.sdk.crypto.VirgilCardCrypto
-import com.virgilsecurity.sdk.crypto.VirgilPublicKey
-import com.virgilsecurity.sdk.crypto.exceptions.CryptoException
-
-import java.io.IOException
-import java.lang.reflect.Type
-import java.util.ArrayList
+import java.util.*
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * UserManager class.
+ */
 class UserManager(context: Context) : PropertyManager(context) {
 
     var userCards: List<Card>
-        get() {
-            val serialized = getValue<String>(USER_CARDS,
-                                              PropertyManager.SupportedTypes.STRING,
-                                              null)
-
-            val rawSignedModels = Gson()
-                    .fromJson<List<RawSignedModel>>(serialized,
-                                                    object : TypeToken<List<RawSignedModel>>() {
-
-                                                    }.type)
-
-            val cards = ArrayList<Card>()
-            val cardCrypto = VirgilCardCrypto()
-            for (cardModel in rawSignedModels) {
-                try {
-                    cards.add(Card.parse(cardCrypto, cardModel))
-                } catch (e: CryptoException) {
-                    e.printStackTrace()
-                    throw CardParseException()
-                }
-
-            }
-
-            return cards
+        get() = getValue<String>(USER_CARDS,
+                                 PropertyManager.SupportedTypes.STRING,
+                                 null).let { serialized ->
+            (deserializeFromJson<List<RawSignedModel>>(serialized) to VirgilCardCrypto())
+                    .let { pair ->
+                        pair.first.map { cardModel -> Card.parse(pair.second, cardModel) }
+                    }
         }
         set(cards) {
             val rawSignedModels = ArrayList<RawSignedModel>()
@@ -101,11 +77,11 @@ class UserManager(context: Context) : PropertyManager(context) {
             setValue(USER_CARDS, serialized)
         }
 
-    val token: DefaultToken
+    val token: Token
         get() = Gson().fromJson(
             getValue<Any>(TOKEN,
                           PropertyManager.SupportedTypes.STRING, null) as String,
-            DefaultToken::class.java!!
+            Token::class.java
         )
 
     fun clearUserCard() {
@@ -121,9 +97,12 @@ class UserManager(context: Context) : PropertyManager(context) {
         clearValue(TOKEN)
     }
 
+    private fun <T> deserializeFromJson(serialized: String): T =
+            Gson().fromJson<T>(serialized, object : TypeToken<T>() {}.type)
+
     companion object {
 
-        private val USER_CARDS = "USER_CARDS"
-        private val TOKEN = "TOKEN"
+        private const val USER_CARDS = "USER_CARDS"
+        private const val TOKEN = "TOKEN"
     }
 }

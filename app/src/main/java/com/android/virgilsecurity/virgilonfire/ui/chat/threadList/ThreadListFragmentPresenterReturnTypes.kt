@@ -39,9 +39,13 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.threadList
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    5/21/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * ThreadListFragmentPresenterReturnTypes class.
  */
 enum class ThreadListFragmentPresenterReturnTypes {
     CREATE_THREAD,

@@ -41,8 +41,9 @@ import android.support.design.widget.NavigationView
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.widget.Toolbar
 import android.view.Gravity
+import android.view.View
 import android.widget.TextView
-
+import butterknife.BindView
 import com.android.virgilsecurity.virgilonfire.R
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
 import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
@@ -52,24 +53,29 @@ import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.ThreadsListFra
 import com.android.virgilsecurity.virgilonfire.ui.chat.threadList.dialog.CreateThreadDialog
 import com.android.virgilsecurity.virgilonfire.ui.login.LogInActivity
 import com.android.virgilsecurity.virgilonfire.util.UiUtils
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
 import com.android.virgilsecurity.virgilonfire.util.common.OnFinishTimer
 import com.google.firebase.auth.FirebaseAuth
-
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-
-import javax.inject.Inject
-
-import butterknife.BindView
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasFragmentInjector
+import java.lang.annotation.RetentionPolicy
+import javax.inject.Inject
 
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * ChatControlActivity class.
+ */
 class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
 
     private var createThreadDialog: CreateThreadDialog? = null
@@ -94,12 +100,12 @@ class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
     protected override val layout: Int
         get() = R.layout.activity_chat_control
 
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(AnnotationRetention.SOURCE)
     @StringDef(ChatState.THREADS_LIST, ChatState.THREAD)
     annotation class ChatState {
         companion object {
-            val THREADS_LIST = "THREADS_LIST"
-            val THREAD = "THREAD"
+            const val THREADS_LIST = "THREADS_LIST"
+            const val THREAD = "THREAD"
         }
     }
 
@@ -119,31 +125,34 @@ class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
         changeFragmentWithThread(tag, null)
     }
 
-    fun changeFragmentWithThread(@ChatState tag: String, chatThread: ChatThread?) {
+    fun changeFragmentWithThread(@ChatState tag: String, ChatThread: ChatThread?) {
         if (tag == ChatState.THREADS_LIST) {
             dlDrawer!!.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-            showBackButton(false) { view -> onBackPressed() }
-            showHamburger(true) { view ->
+            showBackButton(false, View.OnClickListener { onBackPressed() })
+
+            showHamburger(true, View.OnClickListener {
                 if (!dlDrawer!!.isDrawerOpen(Gravity.START))
                     dlDrawer!!.openDrawer(Gravity.START)
                 else
                     dlDrawer!!.closeDrawer(Gravity.START)
-            }
+            })
 
             changeToolbarTitle(getString(R.string.app_name))
 
-            UiUtils.hideFragment(fragmentManager, threadFragment)
-            UiUtils.showFragment(fragmentManager, threadsListFragment)
+            UiUtils.hideFragment(fragmentManager, threadFragment!!)
+            UiUtils.showFragment(fragmentManager, threadsListFragment!!)
         } else {
-            if (chatThread != null)
-                threadFragment!!.setChatThread(chatThread)
+            if (ChatThread != null)
+                threadFragment!!.setChatThread(ChatThread)
 
             dlDrawer!!.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            showBackButton(true) { view -> onBackPressed() }
-            showHamburger(false) { view -> }
+            showBackButton(true, View.OnClickListener { onBackPressed() })
 
-            UiUtils.hideFragment(fragmentManager, threadsListFragment)
-            UiUtils.showFragment(fragmentManager, threadFragment)
+            showHamburger(false, null)
+
+
+            UiUtils.hideFragment(fragmentManager, threadsListFragment!!)
+            UiUtils.showFragment(fragmentManager, threadFragment!!)
         }
     }
 
@@ -154,10 +163,7 @@ class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
     private fun initDrawer() {
         val tvUsernameDrawer = nvNavigation!!.getHeaderView(0)
                 .findViewById<TextView>(R.id.tvUsernameDrawer)
-        tvUsernameDrawer.setText(firebaseAuth!!.currentUser!!
-                                         .email!!
-                                         .toLowerCase()
-                                         .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+        tvUsernameDrawer.text = UserUtils.currentUsername(firebaseAuth!!)
 
         if (actionBar != null) {
             actionBar!!.setDisplayHomeAsUpEnabled(true)
@@ -172,19 +178,23 @@ class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
                                                             getString(R.string.create_thread),
                                                             getString(R.string.enter_username))
 
-                    createThreadDialog!!.setOnCreateThreadDialogListener { username ->
-                        if (firebaseAuth!!.currentUser!!.email!!.toLowerCase().split("@".toRegex()).dropLastWhile(
-                                    { it.isEmpty() }).toTypedArray()[0] == username) {
-                            UiUtils.toast(this, R.string.no_chat_with_yourself)
-                        } else {
-                            createThreadDialog!!.showProgress(true)
-                            threadsListFragment!!.issueCreateThread(username.toLowerCase())
-                        }
-                    }
+                    createThreadDialog!!.setOnCreateThreadDialogListener(
+                        object : CreateThreadDialog.OnCreateThreadDialogListener {
+                            override fun onCreateThread(username: String) {
+                                if (UserUtils.currentUsername(firebaseAuth!!) == username) {
+                                    UiUtils.toast(this@ChatControlActivity,
+                                                  R.string.no_chat_with_yourself)
+                                } else {
+                                    createThreadDialog!!.showProgress(true)
+                                    threadsListFragment!!.issueCreateThread(username.toLowerCase())
+                                }
+                            }
+
+                        })
 
                     createThreadDialog!!.show()
 
-                    return@nvNavigation.setNavigationItemSelectedListener true
+                    return@setNavigationItemSelectedListener true
                 }
                 R.id.itemLogOut -> {
                     dlDrawer!!.closeDrawer(Gravity.START)
@@ -198,10 +208,9 @@ class ChatControlActivity : BaseActivityDi(), HasFragmentInjector {
                     threadFragment!!.disposeAll()
                     threadsListFragment!!.disposeAll()
                     LogInActivity.startClearTop(this)
-                    return@nvNavigation.setNavigationItemSelectedListener true
+                    return@setNavigationItemSelectedListener true
                 }
-                else -> return@nvNavigation.setNavigationItemSelectedListener
-                false
+                else -> return@setNavigationItemSelectedListener false
             }
         }
     }

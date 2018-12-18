@@ -31,35 +31,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.util
+package com.android.virgilsecurity.virgilonfire.data.model
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-
-import java.lang.reflect.Type
+import com.google.firebase.firestore.PropertyName
 
 /**
- * .._  _
+ * . _  _
  * .| || | _
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-object SerializationUtils {
 
-    private val gson: Gson? = null
+/**
+ * Responses class.
+ */
 
-    private val mapper: Gson
-        get() = gson ?: Gson()
+class UsersResponse(@PropertyName("users") val users: List<User>)
 
-    fun toJson(toSerialize: Any): String {
-        return mapper.toJson(toSerialize)
-    }
-
-    fun <T> fromJson(toDeserialize: String, classType: Type): T {
-        return mapper.fromJson(toDeserialize, classType)
-    }
-}
+class TokenResponse(@PropertyName("token") val token: String)

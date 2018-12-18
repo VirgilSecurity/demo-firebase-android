@@ -41,6 +41,7 @@ import com.android.virgilsecurity.virgilonfire.R
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseActivityDi
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity
 import com.android.virgilsecurity.virgilonfire.util.UiUtils
+import com.android.virgilsecurity.virgilonfire.util.UserUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -56,9 +57,13 @@ import dagger.android.HasFragmentInjector
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * LogInActivity class.
  */
 class LogInActivity : BaseActivityDi(), HasFragmentInjector {
 
@@ -73,7 +78,7 @@ class LogInActivity : BaseActivityDi(), HasFragmentInjector {
     override fun postButterInit() {
         val user = firebaseAuth!!.currentUser
         if (user != null)
-            startChatControlActivity(user.email!!.toLowerCase().split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+            startChatControlActivity(UserUtils.currentUsername(firebaseAuth!!))
 
         UiUtils.replaceFragmentNoTag(fragmentManager,
                                      R.id.flBaseContainer,

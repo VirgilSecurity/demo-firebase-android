@@ -48,28 +48,35 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-@Module(subcomponents = arrayOf(LogInActivityComponent::class))
+/**
+ * NetworkModule class.
+ */
+@Module(subcomponents = [LogInActivityComponent::class])
 object NetworkModule {
 
-    private val INTERCEPTOR_LOG = "INTERCEPTOR_LOG"
-    private val BASE_URL = "https://us-central1-fir-chat-ios-2c1d0.cloudfunctions.net/api/"
+    private const val INTERCEPTOR_LOG = "INTERCEPTOR_LOG"
+    private const val BASE_URL = "https://us-central1-fir-chat-ios-2c1d0.cloudfunctions.net/api/"
 
-    @Provides @Singleton internal fun provideInterceptor(): HttpLoggingInterceptor {
+    @Provides @Singleton fun provideInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor { message -> UiUtils.log(INTERCEPTOR_LOG, message) }
     }
 
-    @Provides
-    @Singleton
-    internal fun provideHttpClient(interceptor: HttpLoggingInterceptor): OkHttpClient {
+    @Provides @Singleton fun provideHttpClient(interceptor: HttpLoggingInterceptor): OkHttpClient {
         return OkHttpClient.Builder().addInterceptor(interceptor)
                 .build()
     }
 
-    @Provides @Singleton internal fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
+    @Provides @Singleton fun provideRetrofit(httpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -78,7 +85,7 @@ object NetworkModule {
                 .build()
     }
 
-    @Provides @Singleton internal fun provideServiceHelper(retrofit: Retrofit): ServiceHelper {
+    @Provides @Singleton fun provideServiceHelper(retrofit: Retrofit): ServiceHelper {
         return ServiceHelper(retrofit)
     }
 }

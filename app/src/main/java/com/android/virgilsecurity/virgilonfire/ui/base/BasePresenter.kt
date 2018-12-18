@@ -34,10 +34,19 @@
 package com.android.virgilsecurity.virgilonfire.ui.base
 
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * BasePresenter interface.
+ */
 interface BasePresenter {
 
     fun disposeAll()

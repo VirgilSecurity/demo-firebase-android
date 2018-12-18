@@ -39,6 +39,20 @@ import android.os.Bundle
 import com.android.virgilsecurity.virgilonfire.ui.chat.ChatControlActivity
 import com.android.virgilsecurity.virgilonfire.ui.login.LogInActivity
 
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+
+/**
+ * SplashActivity class.
+ */
 class SplashActivity : Activity() {
 
     private val isAuthenticated: Boolean

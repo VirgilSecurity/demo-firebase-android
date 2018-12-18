@@ -37,10 +37,19 @@ import dagger.Subcomponent
 import dagger.android.AndroidInjector
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * LogInFragmentComponent interface.
+ */
 @Subcomponent(modules = arrayOf(LogInFragmentModule::class))
 interface LogInFragmentComponent : AndroidInjector<LogInFragment> {
 

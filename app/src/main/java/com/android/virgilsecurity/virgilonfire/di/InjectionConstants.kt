@@ -39,11 +39,15 @@ package com.android.virgilsecurity.virgilonfire.di
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
+
+/**
+ * InjectionConstants class.
+ */
 object InjectionConstants {
 
-    val ROOM_DB_NAME = "ROOM_DB_NAME"
+    const val ROOM_DB_NAME = "ROOM_DB_NAME"
 }

@@ -42,11 +42,14 @@ import dagger.android.ContributesAndroidInjector
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/13/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
+/**
+ * ThreadsListFragmentProvider class.
+ */
 @Module
 abstract class ThreadsListFragmentProvider {
 

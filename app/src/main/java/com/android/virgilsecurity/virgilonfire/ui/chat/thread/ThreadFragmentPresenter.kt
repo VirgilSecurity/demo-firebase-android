@@ -35,42 +35,31 @@ package com.android.virgilsecurity.virgilonfire.ui.chat.thread
 
 import android.annotation.SuppressLint
 import android.content.Context
-
 import com.android.virgilsecurity.virgilonfire.data.local.RoomDb
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
 import com.android.virgilsecurity.virgilonfire.data.model.ChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultChatThread
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultMessage
 import com.android.virgilsecurity.virgilonfire.data.model.Message
-import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.ServiceException
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilHelper
 import com.android.virgilsecurity.virgilonfire.data.virgil.VirgilRx
 import com.android.virgilsecurity.virgilonfire.ui.base.BasePresenter
 import com.android.virgilsecurity.virgilonfire.ui.chat.DataReceivedInteractor
-import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.virgilsecurity.sdk.cards.Card
 import com.virgilsecurity.sdk.crypto.VirgilPublicKey
-
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-
-import javax.inject.Inject
-
 import io.reactivex.Completable
-import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import java.util.*
+import javax.inject.Inject
 
 /**
  * . _  _
@@ -78,9 +67,13 @@ import io.reactivex.schedulers.Schedulers
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/17/18
+ * ....|  _/    12/18/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * ThreadFragmentPresenter class.
  */
 class ThreadFragmentPresenter @Inject
 constructor(private val context: Context,
@@ -102,7 +95,9 @@ constructor(private val context: Context,
         compositeDisposable = CompositeDisposable()
     }
 
-    fun requestSendMessage(interlocutorCards: List<Card>, message: Message, chatThread: ChatThread) {
+    fun requestSendMessage(interlocutorCards: List<Card>,
+                           message: Message,
+                           chatThread: ChatThread) {
         val publicKeys = ArrayList<VirgilPublicKey>()
 
         for (card in userManager.userCards)
@@ -111,17 +106,22 @@ constructor(private val context: Context,
         for (card in interlocutorCards)
             publicKeys.add(card.publicKey as VirgilPublicKey)
 
-        val encryptedText = virgilHelper.encrypt(message.body, publicKeys)
-        val encryptedMessage = DefaultMessage(message.sender,
-                                              message.receiver,
-                                              encryptedText,
-                                              Timestamp(Date()))
+        val encryptedText = virgilHelper.encrypt(message.body!!, publicKeys)
+        val encryptedMessage = Message(message.sender,
+                                       message.receiver,
+                                       encryptedText,
+                                       Timestamp(Date()))
 
-        val sendMessageRequest = sendMessage(encryptedMessage,
-                                             chatThread.threadId,
-                                             (chatThread as DefaultChatThread).messagesCount)
-                .subscribe(Action { onMessageSentInteractor.onSendMessageSuccess() },
-                           Consumer<Throwable> { onMessageSentInteractor.onSendMessageError(it) })
+        val sendMessageRequest =
+                sendMessage(encryptedMessage,
+                            chatThread.threadId,
+                            chatThread.messagesCount).subscribeBy(
+                    onComplete = {
+                        onMessageSentInteractor.onSendMessageSuccess()
+                    },
+                    onError = {
+                        onMessageSentInteractor.onSendMessageError(it)
+                    })
 
         compositeDisposable.add(sendMessageRequest)
     }
@@ -140,7 +140,9 @@ constructor(private val context: Context,
         compositeDisposable.add(searchCardDisposable)
     }
 
-    private fun sendMessage(message: DefaultMessage, channelId: String, messagesCount: Long?): Completable {
+    private fun sendMessage(message: Message,
+                            channelId: String,
+                            messagesCount: Long?): Completable {
         return Completable.create { emitter ->
             firestore.collection(COLLECTION_CHANNELS)
                     .document(channelId)
@@ -151,7 +153,7 @@ constructor(private val context: Context,
                         if (task.isSuccessful) {
                             emitter.onComplete()
                         } else {
-                            emitter.onError(task.getException())
+                            emitter.onError(task.exception!!)
                         }
                     }
         }.andThen(Completable.create { emitter ->
@@ -162,7 +164,7 @@ constructor(private val context: Context,
                         if (task.isSuccessful)
                             emitter.onComplete()
                         else
-                            emitter.onError(task.getException())
+                            emitter.onError(task.exception!!)
                     }
         }).observeOn(Schedulers.io())
                 .andThen(Completable.create { insertMessageEmitter ->
@@ -177,25 +179,22 @@ constructor(private val context: Context,
         compositeDisposable.clear()
     }
 
-    @SuppressLint("CheckResult") fun turnOnMessageListener(chatThread: ChatThread) {
+    @SuppressLint("CheckResult") fun turnOnMessageListener(ChatThread: ChatThread) {
         listenerRegistration = firestore.collection(COLLECTION_CHANNELS)
-                .document(chatThread.threadId)
+                .document(ChatThread.threadId)
                 .collection(COLLECTION_MESSAGES)
                 .addSnapshotListener { queryDocumentSnapshots, e ->
                     if (e != null) {
                         getMessagesInteractor.onGetMessagesError(e)
-                        return@firestore.collection(COLLECTION_CHANNELS)
-                                .document(chatThread.threadId)
-                                .collection(COLLECTION_MESSAGES)
-                                .addSnapshotListener
+                        return@addSnapshotListener
                     }
 
-                    val messages = ArrayList<DefaultMessage>()
+                    val messages = ArrayList<Message>()
 
-                    for (snapshot in queryDocumentSnapshots) {
-                        val message = snapshot.toObject(DefaultMessage::class.java!!)
-                        message!!.messageId = java.lang.Long.parseLong(snapshot.getId())
-                        message!!.channelId = chatThread.threadId
+                    for (snapshot in queryDocumentSnapshots!!.iterator()) {
+                        val message = snapshot.toObject(Message::class.java)
+                        message.messageId = snapshot.id.toLong()
+                        message.channelId = ChatThread.threadId
                         messages.add(message)
                     }
 
@@ -207,50 +206,47 @@ constructor(private val context: Context,
 
                                     for (message in messages) {
                                         if (!message.body!!.isEmpty())
-                                            consumeMessage(message, chatThread)
+                                            consumeMessage(message, ChatThread)
                                     }
 
-                                    roomDb.messageDao().getAllById(chatThread.threadId)
+                                    roomDb.messageDao().getAllById(ChatThread.threadId)
                                 }
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(Consumer<List<DefaultMessage>> {
-                                    getMessagesInteractor.onGetMessagesSuccess(it)
-                                },
-                                           Consumer<Throwable> {
-                                               getMessagesInteractor.onGetMessagesError(it)
-                                           })
+                                .subscribeBy(
+                                    onSuccess = {
+                                        getMessagesInteractor.onGetMessagesSuccess(it.toMutableList())
+                                    },
+                                    onError = {
+                                        getMessagesInteractor.onGetMessagesError(it)
+                                    })
                     } else {
-                        roomDb.messageDao().getAllById(chatThread.threadId)
+                        roomDb.messageDao().getAllById(ChatThread.threadId)
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(Consumer<List<DefaultMessage>> {
-                                    getMessagesInteractor.onGetMessagesSuccess(it)
-                                },
-                                           Consumer<Throwable> {
-                                               getMessagesInteractor.onGetMessagesError(it)
-                                           })
+                                .subscribeBy(
+                                    onSuccess = {
+                                        getMessagesInteractor.onGetMessagesSuccess(it.toMutableList())
+                                    },
+                                    onError = {
+                                        getMessagesInteractor.onGetMessagesError(it)
+                                    })
                     }
                 }
     }
 
-    private fun consumeMessage(message: DefaultMessage, chatThread: ChatThread) {
-        if (message.sender == chatThread.receiver) {
-            val executor = Executors.newSingleThreadExecutor()
-
-            firestore.collection(COLLECTION_CHANNELS)
-                    .document(chatThread.threadId)
-                    .collection(COLLECTION_MESSAGES)
-                    .document(message.messageId.toString())
-                    .update(KEY_PROPERTY_BODY, "")
-                    .addOnCompleteListener(executor) { task ->
-                        if (!task.isSuccessful())
-                            throw ServiceException("Consuming message error")
-                    }
-
-            try {
-                executor.awaitTermination(2, TimeUnit.SECONDS)
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
+    private fun consumeMessage(message: Message, ChatThread: ChatThread) {
+        if (message.sender == ChatThread.receiver) {
+            runBlocking {
+                GlobalScope.async {
+                    firestore.collection(COLLECTION_CHANNELS)
+                            .document(ChatThread.threadId)
+                            .collection(COLLECTION_MESSAGES)
+                            .document(message.messageId.toString())
+                            .update(KEY_PROPERTY_BODY, "").isSuccessful
+                }.await().run {
+                    if (!this)
+                        throw ServiceException("Consuming message error")
+                }
             }
 
         }
@@ -262,9 +258,9 @@ constructor(private val context: Context,
     }
 
     companion object {
-        private val COLLECTION_CHANNELS = "Channels"
-        private val COLLECTION_MESSAGES = "Messages"
-        private val KEY_PROPERTY_COUNT = "count"
-        private val KEY_PROPERTY_BODY = "body"
+        private const val COLLECTION_CHANNELS = "Channels"
+        private const val COLLECTION_MESSAGES = "Messages"
+        private const val KEY_PROPERTY_COUNT = "count"
+        private const val KEY_PROPERTY_BODY = "body"
     }
 }

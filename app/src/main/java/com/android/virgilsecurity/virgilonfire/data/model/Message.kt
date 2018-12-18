@@ -33,16 +33,53 @@
 
 package com.android.virgilsecurity.virgilonfire.data.model
 
+import android.arch.persistence.room.ColumnInfo
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.Ignore
+import android.arch.persistence.room.PrimaryKey
+
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
+
 /**
- * Created by Danylo Oliinyk on 3/27/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-interface Message {
+/**
+ * Message class.
+ */
+@Entity
+class Message(@ColumnInfo(name = "sender")
+              @PropertyName("sender")
+              var sender: String?,
 
-    val sender: String
+              @ColumnInfo(name = "receiver")
+              @PropertyName("receiver")
+              var receiver: String?,
 
-    val receiver: String
+              @ColumnInfo(name = "body")
+              @PropertyName("body")
+              var body: String?,
 
-    val body: String
+              @ColumnInfo(name = "created_at")
+              @PropertyName("createdAt")
+              var createdAt: Timestamp?) {
+
+    @Exclude
+    @PrimaryKey
+    @get:Exclude
+    var messageId: Long = 0
+
+    @Exclude
+    @ColumnInfo(name = "channel_id")
+    @get:Exclude
+    var channelId: String? = null
 }

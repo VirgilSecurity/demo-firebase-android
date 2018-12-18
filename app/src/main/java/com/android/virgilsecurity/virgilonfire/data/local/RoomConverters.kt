@@ -39,7 +39,7 @@ package com.android.virgilsecurity.virgilonfire.data.local
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    6/14/186/14/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
@@ -49,7 +49,7 @@ import android.arch.persistence.room.TypeConverter
 import com.google.firebase.Timestamp
 
 /**
- * RoomConverters
+ * RoomConverters class.
  */
 class RoomConverters {
 

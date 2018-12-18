@@ -33,12 +33,10 @@
 
 package com.android.virgilsecurity.virgilonfire.util
 
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-
 import retrofit2.HttpException
 
 /**
@@ -47,16 +45,19 @@ import retrofit2.HttpException
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    3/28/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * DefaultErrorResolver class.
  */
 class DefaultErrorResolver : ErrorResolver() {
 
     override fun baseResolve(t: Throwable): String? {
-        return if (t is HttpException) {
-
-            when (t.code()) {
+        return when (t) {
+            is HttpException -> when (t.code()) {
                 Const.Http.BAD_REQUEST -> "Bad Request"
                 Const.Http.UNAUTHORIZED -> "Unauthorized"
                 Const.Http.FORBIDDEN -> "Forbidden"
@@ -65,18 +66,11 @@ class DefaultErrorResolver : ErrorResolver() {
                 Const.Http.SERVER_ERROR -> "Server error"
                 else -> null
             }
-        } else if (t is FirebaseAuthInvalidUserException) {
-            "This Id is not registered"
-        } else if (t is FirebaseAuthInvalidCredentialsException) {
-            "Password is wrong"
-        } else if (t is FirebaseAuthWeakPasswordException) {
-            "Password is not strong enough"
-        } else if (t is FirebaseAuthInvalidCredentialsException) {
-            "Id is malformed"
-        } else if (t is FirebaseAuthUserCollisionException) {
-            "User with current Id already exists"
-        } else {
-            null
+            is FirebaseAuthInvalidUserException -> "This Id is not registered"
+            is FirebaseAuthInvalidCredentialsException -> "Password is wrong"
+            is FirebaseAuthWeakPasswordException -> "Password is not strong enough"
+            is FirebaseAuthUserCollisionException -> "User with current Id already exists"
+            else -> null
         }
     }
 }

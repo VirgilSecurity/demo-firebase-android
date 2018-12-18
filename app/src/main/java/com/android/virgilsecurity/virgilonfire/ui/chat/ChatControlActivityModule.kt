@@ -36,9 +36,18 @@ package com.android.virgilsecurity.virgilonfire.ui.chat
 import dagger.Module
 
 /**
- * Created by Danylo Oliinyk on 3/23/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * ChatControlActivityModule class.
+ */
 @Module
 class ChatControlActivityModule

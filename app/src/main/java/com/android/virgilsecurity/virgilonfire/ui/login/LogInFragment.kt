@@ -42,38 +42,43 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.View
-
+import butterknife.BindView
 import com.android.virgilsecurity.virgilonfire.R
 import com.android.virgilsecurity.virgilonfire.data.local.UserManager
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultToken
-import com.android.virgilsecurity.virgilonfire.data.model.DefaultUser
-import com.android.virgilsecurity.virgilonfire.data.model.exception.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.ServiceException
+import com.android.virgilsecurity.virgilonfire.data.model.Token
+import com.android.virgilsecurity.virgilonfire.data.model.User
 import com.android.virgilsecurity.virgilonfire.ui.base.BaseFragmentDi
 import com.android.virgilsecurity.virgilonfire.ui.login.dialog.NewKeyDialog
-import com.android.virgilsecurity.virgilonfire.util.DefaultSymbolsInputFilter
-import com.android.virgilsecurity.virgilonfire.util.ErrorResolver
-import com.android.virgilsecurity.virgilonfire.util.UiUtils
-import com.android.virgilsecurity.virgilonfire.util.Validator
+import com.android.virgilsecurity.virgilonfire.util.*
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.virgilsecurity.sdk.cards.Card
-
-import java.util.ArrayList
-import java.util.Date
-
+import java.util.*
 import javax.inject.Inject
 
-import butterknife.BindView
 
 /**
- * Created by Danylo Oliinyk on 3/21/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, LogInKeyStorageInteractor, RefreshUserCardsInteractor {
+/**
+ * LogInFragment class.
+ */
+class LogInFragment
+    : BaseFragmentDi<LogInActivity>(),
+        LogInVirgilInteractor,
+        LogInKeyStorageInteractor,
+        RefreshUserCardsInteractor {
 
     @Inject
     protected var firebaseAuth: FirebaseAuth? = null
@@ -144,52 +149,52 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
 
 
     private fun initFirebaseAuth() {
-        btnSignIn!!.setOnClickListener { v ->
+        btnSignIn!!.setOnClickListener {
             showProgress(true)
 
-            var error: String?
+            var error: String? = Validator.validate(etId!!, Validator.FieldType.ID_WITH_NO_AT)
 
-            error = Validator.validate(etId!!, Validator.FieldType.ID_WITH_NO_AT)
             if (error != null) {
                 showProgress(false)
                 tilId!!.error = error
-                return@btnSignIn.setOnClickListener
+                return@setOnClickListener
             }
 
             error = Validator.validate(etPassword!!, Validator.FieldType.PASSWORD)
             if (error != null) {
                 showProgress(false)
                 tilPassword!!.error = error
-                return@btnSignIn.setOnClickListener
+                return@setOnClickListener
             }
+
 
             firebaseAuth!!.signInWithEmailAndPassword(etId!!.text!!
                                                               .toString()
                                                               .toLowerCase() + DEFAULT_POSTFIX,
                                                       etPassword!!.text!!
                                                               .toString())
-                    .addOnCompleteListener(OnCompleteListener<AuthResult> {
-                        this.handleSignInResult(it)
-                    })
+                    .addOnCompleteListener {
+                        if (it.isSuccessful)
+                            this.handleSignInResult(it)
+                    }
         }
 
-        btnSignUp!!.setOnClickListener { v ->
+        btnSignUp!!.setOnClickListener {
             showProgress(true)
 
-            var error: String?
+            var error: String? = Validator.validate(etId!!, Validator.FieldType.ID_WITH_NO_AT)
 
-            error = Validator.validate(etId!!, Validator.FieldType.ID_WITH_NO_AT)
             if (error != null) {
                 showProgress(false)
                 tilId!!.error = error
-                return@btnSignUp.setOnClickListener
+                return@setOnClickListener
             }
 
             error = Validator.validate(etPassword!!, Validator.FieldType.PASSWORD)
             if (error != null) {
                 showProgress(false)
                 tilPassword!!.error = error
-                return@btnSignUp.setOnClickListener
+                return@setOnClickListener
             }
 
             firebaseAuth!!.createUserWithEmailAndPassword(etId!!.text!!
@@ -198,9 +203,9 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
                                                           etPassword!!.text!!
                                                                   .toString())
                     .addOnCompleteListener { task ->
-                        val defaultUser = DefaultUser()
-                        defaultUser.createdAt = Timestamp(Date())
-                        defaultUser.channels = ArrayList()
+                        val defaultUser = User(UserUtils.currentUsername(firebaseAuth!!),
+                                               Timestamp(Date()),
+                                               listOf())
 
                         if (task.isSuccessful) {
                             firestore!!.collection(COLLECTION_USERS).document(etId!!.text!!
@@ -239,28 +244,27 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
         if (user != null) {
             firebaseAuth!!.currentUser!!.getIdToken(false).addOnCompleteListener { taskGetIdToken ->
                 if (taskGetIdToken.isSuccessful) {
-                    userManager!!.setToken(DefaultToken(taskGetIdToken.result!!.token))
-                    presenter!!.requestSearchCards(user.email!!.toLowerCase().split("@".toRegex()).dropLastWhile(
-                        { it.isEmpty() }).toTypedArray()[0])
+                    userManager!!.setToken(Token(taskGetIdToken.result!!.token!!))
+                    presenter!!.requestSearchCards(UserUtils.currentUsername(firebaseAuth!!))
                 } else {
-                    var error: String? = errorResolver!!.resolve(taskGetIdToken.exception)
+                    var error: String? = errorResolver!!.resolve(taskGetIdToken.exception!!)
                     if (error == null && taskGetIdToken.exception != null)
                         error = taskGetIdToken.exception!!
                                 .message
 
-                    UiUtils.toast(this, if (error == null) "Error getting token" else error)
+                    UiUtils.toast(this, error ?: "Error getting token")
                 }
             }
         } else {
             firebaseAuth!!.signOut()
             showProgress(false)
 
-            var error: String? = errorResolver!!.resolve(task.exception)
+            var error: String? = errorResolver!!.resolve(task.exception!!)
             if (error == null && task.exception != null)
                 error = task.exception!!
                         .message
 
-            UiUtils.toast(this, if (error == null) "Try again" else error)
+            UiUtils.toast(this, error ?: "Try again")
         }
     }
 
@@ -270,12 +274,18 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
     }
 
     @SuppressLint("RestrictedApi") override fun onSearchCardError(t: Throwable) {
-        val error = errorResolver!!.resolve(t) { resolvedError ->
-            if (t is ServiceException)
-                return@errorResolver.resolve t . message
-                        null
-        } // If we can't resolve error here -
-        // then it's normal behaviour. Proceed.
+        val error =
+                errorResolver!!.resolve(t, object : ErrorResolver.ErrorNotImplementedHandler {
+                    override fun onCustomError(resolvedError: String?): String? {
+                        return if (t is ServiceException)
+                            t.message
+                        else
+                            null
+                    }
+
+                }) // If we can't resolve error here -
+                   // then it's normal behaviour. Proceed.
+
         if (error != null) {
             showProgress(false)
 
@@ -286,18 +296,12 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
             return
         }
 
-        presenter!!.requestPublishCard(firebaseAuth!!.currentUser!!
-                                               .email!!
-                                               .toLowerCase()
-                                               .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+        presenter!!.requestPublishCard(UserUtils.currentUsername(firebaseAuth!!))
     }
 
 
     override fun onPublishCardSuccess(card: Card) {
-        presenter!!.requestRefreshUserCards(firebaseAuth!!.currentUser!!
-                                                    .email!!
-                                                    .toLowerCase()
-                                                    .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+        presenter!!.requestRefreshUserCards(UserUtils.currentUsername(firebaseAuth!!))
     }
 
     override fun onPublishCardError(t: Throwable) {
@@ -309,10 +313,7 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
     }
 
     override fun onKeyExists() {
-        presenter!!.requestRefreshUserCards(firebaseAuth!!.currentUser!!
-                                                    .email!!
-                                                    .toLowerCase()
-                                                    .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+        presenter!!.requestRefreshUserCards(UserUtils.currentUsername(firebaseAuth!!))
     }
 
     override fun onKeyNotExists() {
@@ -328,10 +329,7 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
             override fun onCreateNewKeys(v: View, dialog: Dialog) {
                 showProgress(true)
                 dialog.dismiss()
-                presenter!!.requestPublishCard(firebaseAuth!!.currentUser!!
-                                                       .email!!
-                                                       .toLowerCase()
-                                                       .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+                presenter!!.requestPublishCard(UserUtils.currentUsername(firebaseAuth!!))
             }
 
             override fun onCancelCreateNewKeys(v: View, dialog: Dialog) {
@@ -351,10 +349,7 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
 
     override fun onRefreshUserCardsSuccess(cards: List<Card>) {
         userManager!!.userCards = cards
-        activity.startChatControlActivity(firebaseAuth!!.currentUser!!
-                                                  .email!!
-                                                  .toLowerCase()
-                                                  .split("@".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
+        rootActivity!!.startChatControlActivity(UserUtils.currentUsername(firebaseAuth!!))
     }
 
     override fun onRefreshUserCardsError(t: Throwable) {
@@ -365,8 +360,8 @@ class LogInFragment : BaseFragmentDi<LogInActivity>(), LogInVirgilInteractor, Lo
 
     companion object {
 
-        private val DEFAULT_POSTFIX = "@virgilfirebase.com"
-        private val COLLECTION_USERS = "Users"
+        private const val DEFAULT_POSTFIX = "@virgilfirebase.com"
+        private const val COLLECTION_USERS = "Users"
 
         fun newInstance(): LogInFragment {
 

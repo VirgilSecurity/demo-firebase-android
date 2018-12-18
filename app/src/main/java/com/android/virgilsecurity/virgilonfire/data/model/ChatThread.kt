@@ -34,15 +34,20 @@
 package com.android.virgilsecurity.virgilonfire.data.model
 
 /**
- * Created by Danylo Oliinyk on 3/27/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
-interface ChatThread {
-
-    val threadId: String
-
-    val sender: String
-
-    val receiver: String
-}
+/**
+ * ChatThread class.
+ */
+data class ChatThread(val threadId: String,
+                      val sender: String,
+                      val receiver: String,
+                      var messagesCount: Long)

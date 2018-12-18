@@ -44,16 +44,27 @@ import dagger.Component
 import dagger.android.AndroidInjectionModule
 
 /**
- * Created by Danylo Oliinyk on 3/22/18 at Virgil Security.
- * -__o
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
  */
 
+/**
+ * AppComponent class.
+ */
 @Singleton
-@Component(modules = arrayOf(AndroidInjectionModule::class,
-                             NetworkModule::class,
-                             VirgilModule::class,
-                             UtilModule::class,
-                             ActivityBuilder::class))
+@Component(modules = [
+    AndroidInjectionModule::class,
+    NetworkModule::class,
+    VirgilModule::class,
+    UtilModule::class,
+    ActivityBuilder::class
+])
 interface AppComponent {
 
     @Component.Builder

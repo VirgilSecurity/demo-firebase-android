@@ -31,7 +31,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.model.exception
+package com.android.virgilsecurity.virgilonfire.data.model
 
 /**
  * . _  _
@@ -39,18 +39,52 @@ package com.android.virgilsecurity.virgilonfire.data.model.exception
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    ${DATE}
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
 
-class KeyGenerationException : RuntimeException {
+/**
+ * Exceptions class.
+ */
+class CardParseException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
 
-    constructor() {}
+class CardsNotFoundException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
 
-    constructor(message: String) : super(message) {}
+class DecryptionException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
 
-    constructor(message: String, cause: Throwable) : super(message, cause) {}
+class EncryptionException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
 
-    constructor(cause: Throwable) : super(cause) {}
+class GenerateHashException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
+
+class KeyGenerationException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
+}
+
+class ServiceException @JvmOverloads constructor(
+        override val message: String? = null, throwable: Throwable? = null
+) : RuntimeException(message, throwable) {
+    constructor(cause: Throwable) : this(null, cause)
 }

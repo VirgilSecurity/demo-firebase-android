@@ -41,9 +41,13 @@ import com.virgilsecurity.sdk.cards.Card
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/17/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
+ */
+
+/**
+ * SearchCardsInteractor interface.
  */
 interface SearchCardsInteractor {
 

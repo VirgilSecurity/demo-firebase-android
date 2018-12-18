@@ -36,12 +36,31 @@ package com.android.virgilsecurity.virgilonfire.util
 import android.text.InputFilter
 import android.text.Spanned
 
+/**
+ * . _  _
+ * .| || | _
+ * -| || || |   Created by:
+ * .| || || |-  Danylo Oliinyk
+ * ..\_  || |   on
+ * ....|  _/    12/17/18
+ * ...-| | \    at Virgil Security
+ * ....|_|-
+ */
+
+/**
+ * DefaultSymbolsInputFilter class.
+ */
 class DefaultSymbolsInputFilter : InputFilter {
 
-    override fun filter(source: CharSequence, start: Int, end: Int,
-                        dest: Spanned, dstart: Int, dend: Int): CharSequence? {
+    override fun filter(source: CharSequence,
+                        start: Int,
+                        end: Int,
+                        dest: Spanned,
+                        dstart: Int,
+                        dend: Int): CharSequence? {
 
-        val constraint = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,-()/='+:?!%&*<>;{}@#_"
+        val constraint = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0" +
+                         "123456789.,-()/='+:?!%&*<>;{}@#_"
 
         val builder = StringBuilder()
         for (i in start until end) {

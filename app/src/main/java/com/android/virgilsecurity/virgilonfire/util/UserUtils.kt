@@ -31,29 +31,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.android.virgilsecurity.virgilonfire.data.model.response
+package com.android.virgilsecurity.virgilonfire.util
 
-import com.android.virgilsecurity.virgilonfire.data.model.Response
-import com.android.virgilsecurity.virgilonfire.data.model.ResponseType
-import com.google.firebase.firestore.PropertyName
+import com.google.firebase.auth.FirebaseAuth
 
 /**
- * .._  _
+ * . _  _
  * .| || | _
  * -| || || |   Created by:
  * .| || || |-  Danylo Oliinyk
  * ..\_  || |   on
- * ....|  _/    4/16/18
+ * ....|  _/    12/17/18
  * ...-| | \    at Virgil Security
  * ....|_|-
  */
-class DefaultResponse<T>(type: ResponseType, @field:PropertyName("responseObject")
-override val responseObject: T) : Response {
 
-    @PropertyName("type")
-    override val type: String
+/**
+ * UserUtils class.
+ */
+object UserUtils {
 
-    init {
-        this.type = type.type
-    }
+    fun currentUsername(firebaseAuth: FirebaseAuth): String =
+            firebaseAuth.currentUser!!
+                    .email!!
+                    .toLowerCase()
+                    .split("@".toRegex())
+                    .toTypedArray()[0]
 }
